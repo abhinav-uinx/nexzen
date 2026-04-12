@@ -10,7 +10,7 @@ async function syncUserSession(session) {
     return
   }
 
-  await fetch('/api/auth/sync', {
+  const response = await fetch('/api/auth/sync', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -21,6 +21,12 @@ async function syncUserSession(session) {
       expiresAt: session.expires_at ? new Date(session.expires_at * 1000).toISOString() : null,
     }),
   })
+
+  const result = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(result.error || 'Could not save your login session.')
+  }
 }
 
 async function removeUserSession(session) {
@@ -34,6 +40,57 @@ async function removeUserSession(session) {
       Authorization: `Bearer ${session.access_token}`,
     },
   })
+}
+
+function hasAuthHash() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const hash = window.location.hash || ''
+  return (
+    hash.includes('access_token=') ||
+    hash.includes('refresh_token=') ||
+    hash.includes('provider_token=') ||
+    hash.includes('token_type=')
+  )
+}
+
+function getExistingName(user) {
+  const metadata = user?.user_metadata || {}
+  return `${metadata.full_name || metadata.name || metadata.user_name || ''}`.trim()
+}
+
+function cleanAuthHashFromUrl() {
+  if (typeof window === 'undefined' || !window.location.hash) {
+    return
+  }
+
+  const cleanUrl = `${window.location.pathname}${window.location.search}`
+  window.history.replaceState({}, document.title, cleanUrl)
+}
+
+function maybeRedirectAfterHashLogin(session) {
+  if (typeof window === 'undefined' || !session?.user) {
+    return
+  }
+
+  const provider = `${session.user?.app_metadata?.provider || ''}`.toLowerCase()
+  const hasProfileName = Boolean(getExistingName(session.user))
+
+  if (
+    (provider === 'google' ||
+      provider === 'github' ||
+      provider === 'facebook' ||
+      provider === 'linkedin_oidc') &&
+    !hasProfileName
+  ) {
+    cleanAuthHashFromUrl()
+    window.location.replace('/complete-profile?next=%2F')
+    return
+  }
+
+  cleanAuthHashFromUrl()
 }
 
 export function AuthProvider({ children }) {
@@ -65,6 +122,12 @@ export function AuthProvider({ children }) {
         setSession(currentSession)
         setUser(currentSession?.user || null)
 
+        const authHashPresent = hasAuthHash()
+
+        if (currentSession && authHashPresent) {
+          maybeRedirectAfterHashLogin(currentSession)
+        }
+
         if (currentSession) {
           await syncUserSession(currentSession)
         }
@@ -83,8 +146,19 @@ export function AuthProvider({ children }) {
       setSession(nextSession)
       setUser(nextSession?.user || null)
 
+      const authHashPresent = hasAuthHash()
+
+      if (nextSession && authHashPresent) {
+        maybeRedirectAfterHashLogin(nextSession)
+      }
+
       if (nextSession) {
-        await syncUserSession(nextSession)
+        try {
+          await syncUserSession(nextSession)
+          setAuthError('')
+        } catch (error) {
+          setAuthError(error instanceof Error ? error.message : 'Could not save your login session.')
+        }
       }
 
       if (event === 'SIGNED_OUT') {
