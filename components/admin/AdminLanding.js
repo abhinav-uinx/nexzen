@@ -12,7 +12,7 @@ function StatCard({ label, value, note }) {
   )
 }
 
-export default function AdminLanding({ categories, brands, stats, recentProducts, products }) {
+export default function AdminLanding({ adminBasePath = '/nexzen-control-room', categories, brands, stats, recentProducts, products }) {
   return (
     <section className="px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
@@ -24,7 +24,7 @@ export default function AdminLanding({ categories, brands, stats, recentProducts
           </p>
           <div className="mt-6 flex flex-wrap gap-4">
             <Link 
-              href="/admin/crm"
+              href={`${adminBasePath}/crm`}
               className="inline-flex justify-center rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)]"
             >
               Launch CRM Engine

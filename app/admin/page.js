@@ -123,6 +123,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <AdminLanding
+      adminBasePath={adminBasePath}
       categories={categories}
       brands={brands}
       products={products}
