@@ -154,26 +154,26 @@ export default function Navbar() {
 
           {!isAdminRoute &&
             (user ? (
-              <div ref={profileRef} className="relative hidden sm:block">
+              <div ref={profileRef} className="relative">
                 <button
                   type="button"
                   onClick={() => setProfileOpen((open) => !open)}
                   className={`inline-flex items-center gap-2 ${navLinkClass}`}
                 >
-                  <span className="relative inline-flex h-6 w-6 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-950 text-[11px] font-semibold text-white">
+                  <span className="relative sm:hidden inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-950 text-[11px] font-semibold text-white">
                     <Image
                       src={profileImageSrc}
                       alt="Profile logo"
                       fill
-                      sizes="24px"
+                      sizes="32px"
                       className="object-cover scale-110"
                     />
                   </span>
-                  <span>{userLabel}</span>
+                  <span className="hidden sm:inline-block font-medium">{userLabel}</span>
                 </button>
 
                 {profileOpen && (
-                  <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[320px] rounded-[1.75rem] border border-white/10 bg-[rgba(12,18,32,0.96)] p-4 text-white shadow-[0_24px_70px_rgba(2,6,23,0.45)] backdrop-blur-xl">
+                  <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[280px] sm:w-[320px] rounded-[1.75rem] border border-white/10 bg-[rgba(12,18,32,0.96)] p-4 text-white shadow-[0_24px_70px_rgba(2,6,23,0.45)] backdrop-blur-xl">
                     <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5 text-center">
                       <div className="relative mx-auto inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-950 text-2xl font-semibold">
                         <Image
