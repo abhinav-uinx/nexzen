@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/providers/AuthProvider'
 
 export default function ProductReviews({ productId }) {
   const [reviews, setReviews] = useState([])
@@ -11,6 +12,9 @@ export default function ProductReviews({ productId }) {
   const [comment, setComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const { session } = useAuth()
 
   useEffect(() => {
     fetchReviews()
@@ -37,9 +41,14 @@ export default function ProductReviews({ productId }) {
     // For image uploading, we'd add file inputs and base64 conversions here.
     // Simplifying to rating + comment for immediate stability.
     try {
+      const headers = { 'Content-Type': 'application/json' }
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
+      }
+
       const res = await fetch('/api/reviews', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ productId, rating, comment })
       })
       if (res.ok) {
@@ -65,7 +74,10 @@ export default function ProductReviews({ productId }) {
       <div className="flex justify-between items-center mb-8">
         <div>
           <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Community Feedback</p>
-          <h2 className="mt-2 font-heading text-3xl font-semibold text-slate-950">Customer Reviews</h2>
+          <div className="mt-2 flex items-baseline gap-3">
+            <h2 className="font-heading text-3xl font-semibold text-slate-950">Customer Reviews</h2>
+            <span className="text-sm font-medium text-slate-500">({reviews.length})</span>
+          </div>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -81,7 +93,7 @@ export default function ProductReviews({ productId }) {
         <p className="text-sm text-slate-500">No reviews yet. Be the first to review this product!</p>
       ) : (
         <div className="space-y-6">
-          {reviews.map(review => (
+          {(isExpanded ? reviews : reviews.slice(0, 3)).map(review => (
             <div key={review.id} className="border-b border-slate-100 pb-6 last:border-0 last:pb-0">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 overflow-hidden rounded-full bg-slate-200">
@@ -107,6 +119,15 @@ export default function ProductReviews({ productId }) {
               )}
             </div>
           ))}
+
+          {reviews.length > 3 && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4 transition"
+            >
+              {isExpanded ? 'Show less' : `Read all ${reviews.length} reviews`}
+            </button>
+          )}
         </div>
       )}
 
