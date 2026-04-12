@@ -154,7 +154,7 @@ export default function Navbar() {
 
           {!isAdminRoute &&
             (user ? (
-              <div ref={profileRef} className="relative">
+              <div ref={profileRef} className="relative order-last">
                 <button
                   type="button"
                   onClick={() => setProfileOpen((open) => !open)}
