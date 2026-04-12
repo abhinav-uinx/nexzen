@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/database/prisma'
-import { getAdminSession } from '@/lib/admin/auth'
+import { getAdminSession, getAdminCookieName } from '@/lib/admin/auth'
 import { cookies } from 'next/headers'
-import { getAdminCookieName } from '@/lib/admin/config'
 
 export async function GET(request) {
   try {

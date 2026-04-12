@@ -1,27 +1,40 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/database/prisma'
-import { getUser } from '@/lib/auth/supabase-server'
+import { createSupabaseServerClient } from '@/lib/auth/supabase-server'
+import { syncAuthenticatedUser } from '@/lib/auth/user-auth'
+
+function getBearerToken(request) {
+  const authorization = request.headers.get('authorization') || ''
+  if (!authorization.toLowerCase().startsWith('bearer ')) {
+    return null
+  }
+  return authorization.slice(7).trim()
+}
+
+async function getAppUserForRequest(request) {
+  const accessToken = getBearerToken(request)
+  if (!accessToken) return null
+
+  const supabase = createSupabaseServerClient()
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken)
+  
+  if (error || !user) return null
+
+  const appUser = await syncAuthenticatedUser({
+    user,
+    accessToken,
+    provider: user.app_metadata?.provider,
+    expiresAt: null,
+  })
+
+  return appUser
+}
 
 export async function POST(request) {
   try {
-    const user = await getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Ensure the Prisma User exists
-    let dbUser = await prisma.user.findUnique({
-      where: { email: user.email },
-    })
-
+    const dbUser = await getAppUserForRequest(request)
     if (!dbUser) {
-      dbUser = await prisma.user.create({
-        data: {
-          email: user.email,
-          authUserId: user.id,
-          name: user.user_metadata?.name || 'Store Customer',
-        },
-      })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
