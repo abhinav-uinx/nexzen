@@ -34,7 +34,7 @@ export async function POST(request) {
   try {
     const dbUser = await getAppUserForRequest(request)
     if (!dbUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized - Please sign in' }, { status: 401 })
     }
 
     const body = await request.json()
