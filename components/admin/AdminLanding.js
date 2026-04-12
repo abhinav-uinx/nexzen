@@ -1,5 +1,4 @@
 import AdminCatalogManager from '@/components/admin/AdminCatalogManager'
-import AdminOrdersManager from '@/components/admin/AdminOrdersManager'
 import Link from 'next/link'
 
 function StatCard({ label, value, note }) {
@@ -29,6 +28,12 @@ export default function AdminLanding({ adminBasePath = '/nexzen-control-room', c
             >
               Launch CRM Engine
             </Link>
+            <Link 
+              href={`${adminBasePath}/orders`}
+              className="inline-flex justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Manage Active Orders
+            </Link>
           </div>
         </div>
 
@@ -38,7 +43,6 @@ export default function AdminLanding({ adminBasePath = '/nexzen-control-room', c
           <StatCard label="Low Stock" value={stats.lowStock} note="Items at or below their low-stock threshold." />
         </div>
 
-        <AdminOrdersManager />
 
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.85fr)]">
           <AdminCatalogManager categories={categories} brands={brands} products={products} />
