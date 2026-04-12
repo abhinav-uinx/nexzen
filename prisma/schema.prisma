@@ -78,6 +78,7 @@ model Product {
   inventoryMovements InventoryMovement[]
   dependencies       ProductDependency[]   @relation("ProductDependencies")
   requiredBy         ProductDependency[]   @relation("RequiredByProducts")
+  reviews            Review[]
 }
 
 model ProductDependency {
@@ -110,6 +111,7 @@ model User {
   id                String         @id @default(cuid())
   authUserId        String?        @unique
   email             String         @unique
+  phone             String?
   name              String?
   avatarUrl         String?
   preferredProvider AuthProvider?
@@ -119,6 +121,7 @@ model User {
   orders            Order[]
   identities        UserIdentity[]
   sessions          UserSession[]
+  reviews           Review[]
 }
 
 model UserIdentity {
@@ -180,6 +183,7 @@ model AdminSession {
 model Order {
   id                 String      @id @default(cuid())
   userId             String
+  phone              String?
   status             String      @default("pending")
   total              Decimal     @db.Decimal(10, 2)
   trackingNumber     String?
@@ -202,4 +206,20 @@ model OrderItem {
   price     Decimal  @db.Decimal(10, 2)
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String
+  rating    Int      @default(5)
+  comment   String?
+  images    Json?    
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([userId])
 }

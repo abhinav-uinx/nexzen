@@ -1,4 +1,5 @@
 import AdminCatalogManager from '@/components/admin/AdminCatalogManager'
+import AdminOrdersManager from '@/components/admin/AdminOrdersManager'
 
 function StatCard({ label, value, note }) {
   return (
@@ -27,6 +28,8 @@ export default function AdminLanding({ categories, brands, stats, recentProducts
           <StatCard label="Categories" value={stats.categories} note="Available categories for organizing products." />
           <StatCard label="Low Stock" value={stats.lowStock} note="Items at or below their low-stock threshold." />
         </div>
+
+        <AdminOrdersManager />
 
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.85fr)]">
           <AdminCatalogManager categories={categories} brands={brands} products={products} />

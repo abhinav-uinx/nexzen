@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import ProductCard from '@/components/storefront/ProductCard'
 import ProductActions from '@/components/storefront/ProductActions'
+import ProductReviews from '@/components/storefront/ProductReviews'
 import { getAllProducts, getProductBySlug } from '@/lib/catalog/products'
 
 export async function generateMetadata({ params }) {
@@ -115,6 +116,8 @@ export default async function ProductDetailsPage({ params }) {
             </div>
           </div>
         </div>
+
+        <ProductReviews productId={product.id} />
 
         {relatedProducts.length > 0 && (
           <div>
