@@ -10,6 +10,7 @@ export default function ProductReviews({ productId }) {
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     fetchReviews()
@@ -45,12 +46,15 @@ export default function ProductReviews({ productId }) {
         setIsModalOpen(false)
         setComment('')
         setRating(5)
+        setError('')
         fetchReviews()
       } else {
-        alert("Make sure you are logged in!")
+        const body = await res.json().catch(() => ({}))
+        setError(body.error || "You must be logged in to post a review.")
       }
     } catch(e) {
       console.error(e)
+      setError("An unexpected error occurred.")
     } finally {
       setIsSubmitting(false)
     }
@@ -138,6 +142,12 @@ export default function ProductReviews({ productId }) {
                   onChange={(e) => setComment(e.target.value)}
                 />
               </div>
+
+              {error && (
+                <div className="rounded-xl bg-red-50 p-4 border border-red-100">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 mt-8">
                 <button
