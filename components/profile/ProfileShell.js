@@ -33,6 +33,8 @@ export default function ProfileShell({ tools = [], showProfileForm = false, show
   const [isSavingProfile, startProfileTransition] = useTransition()
   const [isSendingReset, startResetTransition] = useTransition()
 
+  const hasNameInitially = !!(user?.user_metadata?.full_name || user?.user_metadata?.name)
+
   useEffect(() => {
     if (user) {
       setProfileName(user.user_metadata?.full_name || user.user_metadata?.name || '')
@@ -101,6 +103,11 @@ export default function ProfileShell({ tools = [], showProfileForm = false, show
       setProfileError('Enter your full name before saving.')
       setProfileMessage('')
       return
+    }
+
+    if (!hasNameInitially) {
+      const confirmed = window.confirm("Warning: Your name cannot be changed once you save it. Are you sure you want to proceed?")
+      if (!confirmed) return
     }
 
     startProfileTransition(async () => {
@@ -226,15 +233,20 @@ export default function ProfileShell({ tools = [], showProfileForm = false, show
 
             <form onSubmit={handleProfileSave} className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.9fr]">
               <div className="grid gap-5">
-                <label className="grid gap-2 text-sm font-medium text-slate-700">
-                  Full name
+                <div className="grid gap-2 text-sm font-medium text-slate-700">
+                  <label htmlFor="fullName">Full name</label>
                   <input
+                    id="fullName"
                     value={profileName}
                     onChange={(event) => setProfileName(event.target.value)}
+                    disabled={hasNameInitially}
                     placeholder="Your full name"
-                    className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500"
                   />
-                </label>
+                  {hasNameInitially && (
+                    <p className="text-xs text-slate-500">Name cannot be changed once set.</p>
+                  )}
+                </div>
                 <label className="grid gap-2 text-sm font-medium text-slate-700">
                   Email
                   <input
@@ -245,13 +257,15 @@ export default function ProfileShell({ tools = [], showProfileForm = false, show
                 </label>
 
                 <div className="flex flex-wrap gap-3">
-                  <button
-                    type="submit"
-                    disabled={isSavingProfile || isSendingReset}
-                    className="interactive-button inline-flex min-w-[11.5rem] items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)] disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isSavingProfile ? 'Saving changes...' : 'Save changes'}
-                  </button>
+                  {!hasNameInitially && (
+                    <button
+                      type="submit"
+                      disabled={isSavingProfile || isSendingReset}
+                      className="interactive-button inline-flex min-w-[11.5rem] items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isSavingProfile ? 'Saving changes...' : 'Save changes'}
+                    </button>
+                  )}
                   <button
                     type="button"
                     disabled={isSavingProfile || isSendingReset}

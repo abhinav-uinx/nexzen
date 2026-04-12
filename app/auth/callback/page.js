@@ -46,15 +46,24 @@ function AuthCallbackContent() {
 
       try {
         if (errorCode || errorDescription || hashErrorCode || hashErrorDescription) {
-          throw new Error(
-            decodeURIComponent(
-              errorDescription ||
-                hashErrorDescription ||
-                errorCode ||
-                hashErrorCode ||
-                'Could not complete your login.'
-            )
+          const rawMessage = decodeURIComponent(
+            errorDescription ||
+              hashErrorDescription ||
+              errorCode ||
+              hashErrorCode ||
+              'Could not complete your login.'
           )
+          
+          let userMessage = rawMessage
+          if (
+            rawMessage.toLowerCase().includes('email') ||
+            rawMessage.toLowerCase().includes('already registered') ||
+            rawMessage.toLowerCase().includes('user already exists')
+          ) {
+            userMessage = 'Email is already registered. Please log on to the already registered email.'
+          }
+
+          throw new Error(userMessage)
         }
 
         if (code) {
@@ -112,9 +121,18 @@ function AuthCallbackContent() {
   return (
     <section className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
-        <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Auth Callback</p>
         <h1 className="mt-4 font-heading text-3xl font-semibold text-slate-950">Finishing your sign-in</h1>
         <p className="mt-4 text-sm leading-6 text-slate-600">{message}</p>
+        
+        {!hasError && (
+          <div className="mt-8 flex justify-center">
+            <svg className="h-8 w-8 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+        )}
+
         {hasError && (
           <div className="mt-6">
             <Link
@@ -135,9 +153,14 @@ export default function AuthCallbackPage() {
     <Suspense fallback={
       <section className="px-4 py-20 sm:px-6 lg:px-8 bg-slate-50 min-h-screen">
         <div className="mx-auto max-w-2xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
-           <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Auth Callback</p>
            <h1 className="mt-4 font-heading text-3xl font-semibold text-slate-950 border-none bg-transparent">Finishing your sign-in</h1>
            <p className="mt-4 text-sm leading-6 text-slate-600">Loading...</p>
+           <div className="mt-8 flex justify-center">
+             <svg className="h-8 w-8 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+             </svg>
+           </div>
         </div>
       </section>
     }>

@@ -36,11 +36,9 @@ const providerButtons = [
   },
 ]
 
-const authCallbackPath = '/auth/callback'
-const authCallbackUrl = 'http://localhost:3000/auth/callback'
-
 function getProviderSetupMessage(providerName) {
-  return `${providerName} login is disabled in Supabase right now. Enable the ${providerName} provider in Supabase Authentication > Providers and add ${authCallbackUrl} as an allowed redirect URL.`
+  const url = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : '/auth/callback'
+  return `${providerName} login is disabled in Supabase right now. Enable the ${providerName} provider in Supabase Authentication > Providers and add ${url} as an allowed redirect URL.`
 }
 
 function PasswordField({
@@ -151,6 +149,26 @@ export default function UserLoginForm() {
       }
 
       if (mode === 'signup') {
+        // Prevent sending OTP if account already exists
+        const checkResponse = await fetch('/api/auth/check-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        })
+        
+        if (checkResponse.ok) {
+          const { exists } = await checkResponse.json()
+          if (exists) {
+            setError('Email is already registered. Please log in to the already registered account.')
+            setLoading(false)
+            return
+          }
+        }
+
+        // Reverting to signInWithOtp because signUp only sends an email if 'Confirm email'
+        // is enabled in the Supabase Dashboard. signInWithOtp forces the email out.
+        // NOTE: Supabase uses the "Magic Link" template for signInWithOtp. 
+        // To make it an OTP, the Magic Link template in Supabase must be edited.
         const { error: otpError } = await supabase.auth.signInWithOtp({
           email,
           options: {
@@ -329,20 +347,6 @@ export default function UserLoginForm() {
             <span className="w-9" />
           </button>
         ))}
-      </div>
-
-      <p className="mt-6 text-sm leading-6 text-slate-500">
-        GitHub, Google, Facebook, and LinkedIn buttons now start real Supabase auth flows. Make sure each provider is enabled in your Supabase dashboard with this callback URL:
-        <br />
-        <span className="font-medium text-slate-700">{authCallbackPath}</span>
-      </p>
-
-      <div className="mt-5 rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
-        {isReset
-          ? 'We will send a password reset email to your inbox. If your email template is set to OTP mode in Supabase, enter that code on the next screen. If it is set to link mode, use the link from your inbox and then choose a new password.'
-          : isSignup
-            ? 'Nexzen signup is now email-first: email, OTP, password, then your name. For real OTP inbox delivery in production, configure custom SMTP in Supabase Auth.'
-            : 'Use your Nexzen email/password or a connected social provider to sign in and sync your account.'}
       </div>
 
       <div className="mt-5 text-sm text-slate-500">

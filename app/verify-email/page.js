@@ -76,6 +76,12 @@ function VerifyEmailContent() {
       return
     }
 
+    if (otp.length < 6 || otp.length > 8) {
+      setError('Please enter a valid verification code (6-8 characters).')
+      setMessage('')
+      return
+    }
+
     startVerifyTransition(async () => {
       try {
         const supabase = createSupabaseBrowserClient()
@@ -180,8 +186,9 @@ function VerifyEmailContent() {
               <input
                 suppressHydrationWarning
                 value={token}
-                onChange={(event) => setToken(event.target.value.replace(/\s+/g, ''))}
-                placeholder="Enter the code from your email"
+                onChange={(event) => setToken(event.target.value.replace(/\s+/g, '').slice(0, 8))}
+                placeholder="Enter verification code"
+                maxLength={10}
                 className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500"
               />
             </label>
