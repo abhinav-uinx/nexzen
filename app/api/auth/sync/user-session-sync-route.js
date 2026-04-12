@@ -30,7 +30,8 @@ export async function handleUserSessionSync(request) {
       return Response.json({ error: 'Could not verify signed-in user.' }, { status: 401 })
     }
 
-    const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const ipAddress = rawIp.split(',')[0].trim()
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
     const appUser = await syncAuthenticatedUser({

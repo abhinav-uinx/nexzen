@@ -21,7 +21,8 @@ async function getAppUserForRequest(request) {
   if (error || !user) return null
 
   // Ensure security: verify IP / UserAgent hasn't drifted via sync
-  const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+  const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+  const ipAddress = rawIp.split(',')[0].trim()
   const userAgent = request.headers.get('user-agent') || 'unknown'
 
   try {
