@@ -1,0 +1,123 @@
+@reference "../../app/globals.css";
+
+.card {
+  @apply flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_12px_40px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_18px_60px_rgba(15,23,42,0.12)];
+}
+
+.cardLink {
+  @apply block;
+}
+
+.surfaceWrapper {
+  @apply relative overflow-hidden p-5 transition-colors duration-300;
+}
+
+.gradientBox {
+  @apply relative h-44 overflow-hidden rounded-[1.4rem] bg-gradient-to-br p-5 text-white transition-transform duration-500 ease-out;
+}
+
+.card:hover .gradientBox {
+  @apply scale-[1.02];
+}
+
+.badgeContainer {
+  @apply relative z-10 flex items-start justify-between gap-4;
+}
+
+.badge {
+  @apply rounded-full px-3 py-1 text-xs font-semibold;
+}
+
+.badgeDefault {
+  @apply bg-white/90 text-slate-900;
+}
+
+.discountBadge {
+  @apply rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold;
+}
+
+.imageOuterWrapper {
+  @apply absolute inset-x-3 bottom-3 top-11 rounded-[1.1rem] border border-white/15 bg-white/90 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)];
+}
+
+.imageInnerWrapper {
+  @apply relative h-full w-full overflow-hidden rounded-[0.9rem];
+}
+
+.productImg {
+  @apply object-contain p-2 drop-shadow-[0_18px_30px_rgba(15,23,42,0.28)];
+}
+
+.noImageContainer {
+  @apply mt-10;
+}
+
+.noImageFamily {
+  @apply text-xs uppercase tracking-[0.24em] text-white/70;
+}
+
+.noImageSpec {
+  @apply mt-2 max-w-[14rem] text-2xl font-semibold leading-tight;
+  font-family: var(--font-heading);
+}
+
+.contentContainer {
+  @apply flex flex-1 flex-col p-5;
+}
+
+.textSection {
+  @apply min-h-[11.5rem] space-y-2;
+}
+
+.categoryTitle {
+  @apply text-xs uppercase tracking-[0.2em] text-slate-400;
+}
+
+.titleLink {
+  @apply block;
+}
+
+.productTitle {
+  @apply min-h-[3.75rem] text-xl font-semibold text-slate-950 transition;
+  font-family: var(--font-heading);
+}
+
+.card:hover .productTitle {
+  @apply text-blue-700;
+}
+
+.blurbText {
+  @apply min-h-[4.75rem] text-sm leading-6 text-slate-600;
+}
+
+.statsWrapper {
+  @apply mt-4 flex items-center justify-between text-sm text-slate-500;
+}
+
+.actionsContainer {
+  @apply mt-auto flex items-end justify-between gap-4 pt-6;
+}
+
+.priceDisplay {
+  @apply text-2xl font-semibold text-slate-950;
+}
+
+.originalPrice {
+  @apply text-sm text-slate-400 line-through;
+}
+
+.addBtn {
+  @apply rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300;
+}
+
+.btnDisabled {
+  @apply cursor-not-allowed bg-slate-100 text-slate-400;
+}
+
+.btnAdded {
+  @apply bg-emerald-500 text-white;
+}
+
+.btnReady {
+  @apply bg-slate-950 text-white hover:bg-blue-700 hover:shadow-[0_10px_24px_rgba(37,99,235,0.28)];
+}

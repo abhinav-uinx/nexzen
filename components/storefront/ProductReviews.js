@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 
+import styles from './ProductReviews.module.css'
+
 export default function ProductReviews({ productId }) {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
@@ -70,44 +72,44 @@ export default function ProductReviews({ productId }) {
   }
 
   return (
-    <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_16px_48px_rgba(15,23,42,0.05)] sm:p-8 mt-10">
-      <div className="flex justify-between items-center mb-8">
+    <div className={styles.container}>
+      <div className={styles.header}>
         <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Community Feedback</p>
-          <div className="mt-2 flex items-baseline gap-3">
-            <h2 className="font-heading text-3xl font-semibold text-slate-950">Customer Reviews</h2>
-            <span className="text-sm font-medium text-slate-500">({reviews.length})</span>
+          <p className={styles.subtitle}>Community Feedback</p>
+          <div className={styles.titleWrapper}>
+            <h2 className={styles.title}>Customer Reviews</h2>
+            <span className={styles.count}>({reviews.length})</span>
           </div>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+          className={styles.writeReviewBtn}
         >
           Write a Review
         </button>
       </div>
 
       {loading ? (
-        <p className="text-sm text-slate-500 animate-pulse">Loading reviews...</p>
+        <p className={styles.loading}>Loading reviews...</p>
       ) : reviews.length === 0 ? (
-        <p className="text-sm text-slate-500">No reviews yet. Be the first to review this product!</p>
+        <p className={styles.emptyState}>No reviews yet. Be the first to review this product!</p>
       ) : (
-        <div className="space-y-6">
+        <div className={styles.reviewsList}>
           {(isExpanded ? reviews : reviews.slice(0, 3)).map(review => (
-            <div key={review.id} className="border-b border-slate-100 pb-6 last:border-0 last:pb-0">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 overflow-hidden rounded-full bg-slate-200">
+            <div key={review.id} className={styles.reviewItem}>
+              <div className={styles.reviewHeader}>
+                <div className={styles.avatarWrapper}>
                   {review.user?.avatarUrl ? (
-                    <img src={review.user.avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+                    <img src={review.user.avatarUrl} alt="avatar" className={styles.avatarImg} />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-blue-100 text-blue-700 font-bold">
+                    <div className={styles.avatarPlaceholder}>
                       {(review.user?.name || 'G')[0].toUpperCase()}
                     </div>
                   )}
                 </div>
                 <div>
-                  <p className="font-medium text-slate-900">{review.user?.name || 'Guest User'}</p>
-                  <div className="flex text-amber-400 text-sm">
+                  <p className={styles.reviewerName}>{review.user?.name || 'Guest User'}</p>
+                  <div className={styles.ratingWrapper}>
                     {Array.from({ length: 5 }).map((_, i) => (
                       <span key={i}>{i < review.rating ? '★' : '☆'}</span>
                     ))}
@@ -115,7 +117,7 @@ export default function ProductReviews({ productId }) {
                 </div>
               </div>
               {review.comment && (
-                <p className="mt-3 text-slate-600 text-sm leading-relaxed">{review.comment}</p>
+                <p className={styles.comment}>{review.comment}</p>
               )}
             </div>
           ))}
@@ -123,7 +125,7 @@ export default function ProductReviews({ productId }) {
           {reviews.length > 3 && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4 transition"
+              className={styles.expandBtn}
             >
               {isExpanded ? 'Show less' : `Read all ${reviews.length} reviews`}
             </button>
@@ -132,19 +134,19 @@ export default function ProductReviews({ productId }) {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-[2rem] bg-white p-8 shadow-2xl">
-            <h3 className="font-heading text-2xl font-bold text-slate-900 mb-6">Write a Review</h3>
-            <form onSubmit={handleSubmit} className="space-y-5">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3 className={styles.modalTitle}>Write a Review</h3>
+            <form onSubmit={handleSubmit} className={styles.formSpace}>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Rating</label>
-                <div className="flex gap-2">
+                <label className={styles.label}>Rating</label>
+                <div className={styles.starRatingWrapper}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <button
                       key={star}
                       type="button"
                       onClick={() => setRating(star)}
-                      className={`text-2xl ${star <= rating ? 'text-amber-400' : 'text-slate-300'}`}
+                      className={`${styles.starBtn} ${star <= rating ? styles.starBtnActive : styles.starBtnInactive}`}
                     >
                       ★
                     </button>
@@ -153,11 +155,11 @@ export default function ProductReviews({ productId }) {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Comment</label>
+                <label className={styles.label}>Comment</label>
                 <textarea
                   required
                   rows={4}
-                  className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                  className={styles.textarea}
                   placeholder="What did you think of this product?"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -165,16 +167,16 @@ export default function ProductReviews({ productId }) {
               </div>
 
               {error && (
-                <div className="rounded-xl bg-red-50 p-4 border border-red-100">
-                  <p className="text-sm text-red-600">{error}</p>
+                <div className={styles.errorBox}>
+                  <p className={styles.errorText}>{error}</p>
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 mt-8">
+              <div className={styles.formActions}>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="rounded-full px-5 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 transition"
+                  className={styles.cancelBtn}
                   disabled={isSubmitting}
                 >
                   Cancel
@@ -182,7 +184,7 @@ export default function ProductReviews({ productId }) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-full bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 transition disabled:opacity-50"
+                  className={styles.submitBtn}
                 >
                   {isSubmitting ? 'Submitting...' : 'Post Review'}
                 </button>
