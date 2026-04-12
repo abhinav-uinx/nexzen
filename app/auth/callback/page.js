@@ -82,6 +82,11 @@ function AuthCallbackContent() {
         )
 
         if (mounted) {
+          // Fix URL hash lingering after client-side route replacement
+          if (typeof window !== 'undefined' && window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search)
+          }
+
           if ((provider === 'google' || provider === 'github' || provider === 'facebook' || provider === 'linkedin_oidc') && !hasProfileName) {
             router.replace(`/complete-profile?next=${encodeURIComponent(next)}`)
             return
