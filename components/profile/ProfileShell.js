@@ -270,7 +270,8 @@ export default function ProfileShell({ tools = [], showProfileForm = false, show
                           }
 
                           setProfileMessage('We sent a password reset email to your inbox. Enter the OTP on the next screen if your Supabase template is using code mode.')
-                          router.push(`/verify-email?type=recovery&email=${encodeURIComponent(user.email || '')}`)
+                          sessionStorage.setItem('verifyEmail', user.email || '')
+                          router.push('/verify-email?type=recovery')
                         } catch (resetError) {
                           setProfileError(
                             resetError instanceof Error ? resetError.message : 'Could not start password reset.'

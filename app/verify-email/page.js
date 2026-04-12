@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/auth/supabase-browser'
 
 function getVerificationConfig(type) {
@@ -52,10 +52,15 @@ import { Suspense } from 'react'
 function VerifyEmailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const email = searchParams.get('email') || ''
   const flowType = searchParams.get('type') === 'recovery' ? 'recovery' : 'signup'
   const config = useMemo(() => getVerificationConfig(flowType), [flowType])
+  const [email, setEmail] = useState('')
   const [token, setToken] = useState('')
+
+  useEffect(() => {
+    const memory = typeof window !== 'undefined' ? sessionStorage.getItem('verifyEmail') : null
+    setEmail(searchParams.get('email') || memory || '')
+  }, [searchParams])
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [isVerifying, startVerifyTransition] = useTransition()
@@ -164,8 +169,9 @@ function VerifyEmailContent() {
               <input
                 suppressHydrationWarning
                 value={email}
-                readOnly
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-500 outline-none"
+                onChange={(e) => setEmail(e.target.value.trim())}
+                placeholder="Enter your email address"
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500"
               />
             </label>
 

@@ -145,7 +145,8 @@ export default function UserLoginForm() {
           throw resetError
         }
 
-        router.push(`/verify-email?type=recovery&email=${encodeURIComponent(email)}`)
+        sessionStorage.setItem('verifyEmail', email)
+        router.push('/verify-email?type=recovery')
         return
       }
 
@@ -154,7 +155,7 @@ export default function UserLoginForm() {
           email,
           options: {
             shouldCreateUser: true,
-            emailRedirectTo: `${window.location.origin}/verify-email?type=signup&email=${encodeURIComponent(email)}`,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         })
 
@@ -162,7 +163,8 @@ export default function UserLoginForm() {
           throw otpError
         }
 
-        router.push(`/verify-email?type=signup&email=${encodeURIComponent(email)}`)
+        sessionStorage.setItem('verifyEmail', email)
+        router.push('/verify-email?type=signup')
         return
       }
 
