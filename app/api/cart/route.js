@@ -59,7 +59,11 @@ export async function GET(request) {
 
     if (!cart) {
       cart = await prisma.cart.create({
-        data: { userId: dbUser.id },
+        data: {
+          userId: dbUser.id,
+          userName: dbUser.name || '',
+          userEmail: dbUser.email,
+        },
         include: {
           items: {
             include: { product: true }
@@ -99,7 +103,11 @@ export async function POST(request) {
 
     if (!cart) {
       cart = await prisma.cart.create({
-        data: { userId: dbUser.id }
+        data: {
+          userId: dbUser.id,
+          userName: dbUser.name || '',
+          userEmail: dbUser.email,
+        },
       })
     }
 
@@ -113,7 +121,9 @@ export async function POST(request) {
         data: cartItems.map(item => ({
           cartId: cart.id,
           productId: item.id,
-          quantity: item.quantity || 1
+          quantity: item.quantity || 1,
+          userName: dbUser.name || '',
+          userEmail: dbUser.email,
         }))
       })
     }

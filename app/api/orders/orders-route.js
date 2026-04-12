@@ -153,6 +153,8 @@ export async function handleCreateOrder(request) {
     const order = await prisma.order.create({
       data: {
         userId: appUser.id,
+        customerName: appUser.name || '',
+        customerEmail: appUser.email,
         status: 'processing',
         total,
         trackingNumber: buildTrackingNumber(),
@@ -163,6 +165,8 @@ export async function handleCreateOrder(request) {
         items: {
           create: items.map((item) => ({
             productId: item.id,
+            customerName: appUser.name || '',
+            customerEmail: appUser.email,
             quantity: Number(item.quantity || 1),
             price: priceMap.get(item.id) ?? Number(item.price || 0),
           })),

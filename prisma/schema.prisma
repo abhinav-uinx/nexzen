@@ -187,6 +187,8 @@ model AdminSession {
 model Order {
   id                 String      @id @default(cuid())
   userId             String
+  customerName       String?
+  customerEmail      String?
   phone              String?
   status             String      @default("pending")
   total              Decimal     @db.Decimal(10, 2)
@@ -203,9 +205,11 @@ model Order {
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
-  orderId   String
-  productId String
+  id              String   @id @default(cuid())
+  orderId         String
+  productId       String
+  customerName    String?
+  customerEmail   String?
   quantity  Int      @default(1)
   price     Decimal  @db.Decimal(10, 2)
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -231,6 +235,8 @@ model Review {
 model Cart {
   id        String     @id @default(cuid())
   userId    String?    @unique
+  userName  String?
+  userEmail String?
   user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   items     CartItem[]
   createdAt DateTime   @default(now())
@@ -241,6 +247,8 @@ model CartItem {
   id        String   @id @default(cuid())
   cartId    String
   productId String
+  userName  String?
+  userEmail String?
   quantity  Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
