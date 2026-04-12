@@ -1,5 +1,6 @@
 import AdminCatalogManager from '@/components/admin/AdminCatalogManager'
 import AdminOrdersManager from '@/components/admin/AdminOrdersManager'
+import Link from 'next/link'
 
 function StatCard({ label, value, note }) {
   return (
@@ -21,6 +22,14 @@ export default function AdminLanding({ categories, brands, stats, recentProducts
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
             Add products, upload images, set pricing, stock, category, shipping flags, barcode, and dependency details exactly where your Supabase-backed catalog expects them.
           </p>
+          <div className="mt-6 flex flex-wrap gap-4">
+            <Link 
+              href="/admin/crm"
+              className="inline-flex justify-center rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)]"
+            >
+              Launch CRM Engine
+            </Link>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
