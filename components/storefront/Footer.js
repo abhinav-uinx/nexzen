@@ -86,6 +86,10 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10 px-4 py-5 text-center text-xs text-slate-500 sm:px-6 lg:px-8">
+        <div className="mb-3 flex justify-center gap-4">
+          <Link href="/privacy" className="transition hover:text-slate-300">Privacy Policy</Link>
+          <Link href="/terms" className="transition hover:text-slate-300">Terms of Service</Link>
+        </div>
         Copyright 2026 Nexzen. Designed as a modern electronics storefront concept.
       </div>
     </footer>
