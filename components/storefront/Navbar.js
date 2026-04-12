@@ -81,20 +81,20 @@ export default function Navbar() {
 
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6">
         <Link href="/" className="shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.28)]">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.28)] sm:h-16 sm:w-16 sm:rounded-2xl">
               <Image
                 src="/nexzen-logo.png"
                 alt="Nexzen logo"
                 fill
-                sizes="64px"
-                className="object-cover scale-125"
+                sizes="(max-width: 640px) 48px, 64px"
+                className="scale-125 object-cover"
                 priority
               />
             </div>
             <div>
-              <p className="font-heading text-xl font-semibold tracking-tight text-white">Nexzen</p>
-              <p className="text-xs text-slate-400">Electronics for modern builders</p>
+              <p className="font-heading text-lg font-semibold tracking-tight text-white sm:text-xl">Nexzen</p>
+              <p className="hidden text-xs text-slate-400 sm:block">Electronics for modern builders</p>
             </div>
           </div>
         </Link>
