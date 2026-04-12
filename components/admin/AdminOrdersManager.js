@@ -36,8 +36,7 @@ export default function AdminOrdersManager() {
     <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_16px_48px_rgba(15,23,42,0.05)] sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-blue-700">CRM Engine</p>
-          <h2 className="mt-2 font-heading text-2xl font-semibold text-slate-950">Active Orders</h2>
+          <h2 className="font-heading text-2xl font-semibold text-slate-950">Active Orders</h2>
         </div>
         
         <form onSubmit={handleSearch} className="flex gap-2">
