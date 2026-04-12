@@ -72,8 +72,8 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[rgba(5,10,20,0.78)] backdrop-blur-xl">
       {!isAdminRoute && (
         <div className="border-b border-white/10 bg-[linear-gradient(90deg,rgba(38,92,255,0.2),rgba(17,24,39,0))]">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 text-xs text-slate-200 sm:px-6">
-            <p>Launch offer: 5% off on your first build with code `NEXZEN5`.</p>
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2 px-4 py-2 text-center text-xs text-slate-200 sm:justify-between sm:gap-4 sm:px-6 md:text-left">
+            <p className="w-full sm:w-auto">Launch offer: 5% off on your first build with code `NEXZEN5`.</p>
             <p className="hidden md:block">Trusted by student teams, labs, and hardware makers across India.</p>
           </div>
         </div>

@@ -10,15 +10,22 @@ export const metadata = {
     'Nexzen is a modern electronics shopping experience for maker kits, development boards, sensors, and rapid prototyping gear.',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body suppressHydrationWarning>
         <AuthProvider>
           <CartProvider>
-            <div className="min-h-screen bg-[radial-gradient(circle_at_top,#dbeafe_0%,#f8fafc_25%,#f8fafc_100%)]">
+            <div className="flex min-h-screen flex-col overflow-x-hidden bg-[radial-gradient(circle_at_top,#dbeafe_0%,#f8fafc_25%,#f8fafc_100%)]">
               <Navbar />
-              <main>{children}</main>
+              <main className="flex-1">{children}</main>
               <Footer />
             </div>
           </CartProvider>
