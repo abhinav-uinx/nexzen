@@ -34,6 +34,7 @@ function buildInitialValues(product) {
 
 export default function AdminCatalogManager({ categories, brands, products }) {
   const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState('')
   const [selectedProductId, setSelectedProductId] = useState(null)
   const [actionError, setActionError] = useState('')
   const [deletePending, startDeleteTransition] = useTransition()
@@ -43,64 +44,74 @@ export default function AdminCatalogManager({ categories, brands, products }) {
     [products, selectedProductId]
   )
 
+  const filteredProducts = useMemo(() => {
+    const term = searchTerm.toLowerCase().trim()
+    if (!term) return products
+    return products.filter(p => 
+      p.name.toLowerCase().includes(term) ||
+      p.sku.toLowerCase().includes(term) ||
+      p.brand.toLowerCase().includes(term) ||
+      p.barcode.toLowerCase().includes(term) ||
+      p.categoryName.toLowerCase().includes(term)
+    )
+  }, [products, searchTerm])
+
   async function handleDelete(product) {
     const confirmed = window.confirm(`Delete ${product.name}? This cannot be undone.`)
-
-    if (!confirmed) {
-      return
-    }
-
+    if (!confirmed) return
     setActionError('')
-
     startDeleteTransition(async () => {
       const response = await fetch('/api/admin/products', {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: product.id,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: product.id }),
       })
-
       const result = await response.json()
-
       if (!response.ok) {
         setActionError(result.error || 'Unable to delete product.')
         return
       }
-
-      if (selectedProductId === product.id) {
-        setSelectedProductId(null)
-      }
-
+      if (selectedProductId === product.id) setSelectedProductId(null)
       router.refresh()
     })
   }
 
   return (
     <div className="space-y-8">
-      <ProductForm
-        key={selectedProduct ? selectedProduct.id : 'create-product'}
-        categories={categories}
-        brands={brands}
-        mode={selectedProduct ? 'edit' : 'create'}
-        initialValues={selectedProduct ? buildInitialValues(selectedProduct) : null}
-        onCancelEdit={() => setSelectedProductId(null)}
-        onSaved={() => {
-          setSelectedProductId(null)
-          setActionError('')
-          router.refresh()
-        }}
-      />
+      {selectedProduct && (
+        <ProductForm
+          key={selectedProduct.id}
+          categories={categories}
+          brands={brands}
+          mode="edit"
+          initialValues={buildInitialValues(selectedProduct)}
+          onCancelEdit={() => setSelectedProductId(null)}
+          onSaved={() => {
+            setSelectedProductId(null)
+            setActionError('')
+            router.refresh()
+          }}
+        />
+      )}
 
       <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_16px_48px_rgba(15,23,42,0.05)] sm:p-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Catalog Manager</p>
             <h2 className="mt-3 font-heading text-3xl font-semibold text-slate-950">Added products</h2>
             <p className="mt-2 text-sm text-slate-600">Edit or delete products already stored in your live catalog.</p>
           </div>
+          
+          <div className="flex flex-1 max-w-md gap-3">
+             <input
+              type="text"
+              placeholder="Search by name, SKU, brand..."
+              className="w-full rounded-full border border-slate-300 px-5 py-2.5 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
           {selectedProduct && (
             <button
               type="button"
@@ -118,18 +129,18 @@ export default function AdminCatalogManager({ categories, brands, products }) {
           </p>
         )}
 
-        <div className="mt-6 grid gap-4">
-          {products.length === 0 ? (
+        <div className="mt-8 grid gap-4">
+          {filteredProducts.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500">
-              No products yet. Add your first product above.
+              {searchTerm ? 'No products match your search.' : 'No products yet. Add your first product above.'}
             </p>
           ) : (
-            products.map((product) => (
+            filteredProducts.map((product) => (
               <div key={product.id} className="rounded-[1.5rem] border border-slate-200 px-5 py-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="space-y-2">
                     <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                      {product.sku || 'No SKU'} • {product.categoryName} • {product.status}
+                      {product.sku || 'No SKU'} • {product.categoryName} • {product.barcode || 'No Barcode'} • {product.status}
                     </p>
                     <h3 className="font-heading text-2xl font-semibold text-slate-950">{product.name}</h3>
                     <p className="text-sm text-slate-600">

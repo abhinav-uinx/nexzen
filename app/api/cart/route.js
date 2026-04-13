@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/database/prisma'
+import { prisma } from '@/lib/database/nexus-db'
 import { createSupabaseServerClient } from '@/lib/auth/supabase-server'
 import { syncAuthenticatedUser } from '@/lib/auth/user-auth'
 

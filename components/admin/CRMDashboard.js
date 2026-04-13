@@ -54,6 +54,7 @@ export default function CRMDashboard({ users }) {
           {/* Master Search Input */}
           <div className="mt-6">
             <input
+              suppressHydrationWarning
               type="text"
               placeholder="Search by name, email, product ID, product name, or Order ID..."
               value={searchTerm}
@@ -99,19 +100,35 @@ export default function CRMDashboard({ users }) {
                     {user.orderItems.length === 0 ? (
                       <p className="text-sm text-slate-400">No resolved purchases tracked.</p>
                     ) : (
-                      <ul className="space-y-2">
-                        {user.orderItems.slice(0, 5).map((item, idx) => (
-                          <li key={idx} className="flex flex-col gap-1 rounded bg-white px-3 py-2 text-sm shadow-sm border border-slate-100">
-                            <span className="font-medium text-slate-800 line-clamp-1">{item.productName}</span>
-                            <span className="text-xs text-slate-500 font-mono flex items-center justify-between">
-                              <span>Qty: {item.quantity} | Total: Rs. {item.price * item.quantity}</span>
-                              <span className="uppercase text-[0.65rem] tracking-wider bg-slate-100 px-1.5 py-0.5 rounded">{item.orderStatus}</span>
-                            </span>
-                            <span className="text-[0.65rem] text-slate-400 truncate">PRD: {item.productId}</span>
+                      <ul className="space-y-3">
+                        {user.orders.slice(0, 8).map((order) => (
+                          <li key={order.id} className="flex flex-col gap-2 rounded-xl bg-white px-4 py-3 text-sm shadow-sm border border-slate-100">
+                             <div className="flex items-center gap-2">
+                               <span className="font-bold text-slate-800 font-mono text-[10px]">ID: {order.id.slice(-8)}</span>
+                               <span className={`uppercase text-[0.65rem] font-bold tracking-widest px-2 py-0.5 rounded ${order.paymentStatus === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                 {order.paymentStatus || 'PENDING'}
+                               </span>
+                               <span className="uppercase text-[0.65rem] font-bold tracking-widest bg-slate-100 px-2 py-0.5 rounded text-slate-600">{order.status}</span>
+                             </div>
+                            
+                            <div className="flex items-end justify-between">
+                              <div>
+                                {order.discountPercentage > 0 && (
+                                  <p className="text-[10px] font-bold text-emerald-600 mb-1">
+                                    Saved {order.discountPercentage}% {order.couponCode ? `with ${order.couponCode}` : ''}
+                                  </p>
+                                )}
+                                <p className="text-slate-900 font-bold text-lg">₹{order.total.toFixed(2)}</p>
+                                {order.discountAmount > 0 && (
+                                  <p className="text-[10px] text-slate-400 line-through">₹{(order.total + order.discountAmount).toFixed(2)}</p>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-slate-400">{new Date(order.createdAt).toLocaleDateString()}</p>
+                            </div>
                           </li>
                         ))}
-                        {user.orderItems.length > 5 && (
-                          <p className="text-xs text-slate-400 text-center pt-1">+ {user.orderItems.length - 5} more items</p>
+                        {user.orders.length > 8 && (
+                          <p className="text-xs text-slate-400 text-center pt-1">+ {user.orders.length - 8} more orders</p>
                         )}
                       </ul>
                     )}

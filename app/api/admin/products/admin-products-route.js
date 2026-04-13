@@ -5,7 +5,7 @@ import { cookies } from 'next/headers'
 import { getAllowedAdminIps } from '@/lib/admin/config'
 import { getAdminCookieName, getAdminSession } from '@/lib/admin/auth'
 import { getClientIpFromHeaders, isIpAllowed } from '@/lib/admin/security'
-import { prisma } from '@/lib/database/prisma'
+import { prisma } from '@/lib/database/nexus-db'
 
 function slugify(value) {
   return value
@@ -354,3 +354,4 @@ export async function handleDeleteAdminProduct(request) {
     return Response.json({ error: message }, { status: 500 })
   }
 }
+

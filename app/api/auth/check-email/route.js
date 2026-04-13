@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/database/prisma'
+import { prisma } from '@/lib/database/nexus-db'
 
 export async function POST(request) {
   try {
@@ -17,3 +17,4 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Failed to check email' }, { status: 500 })
   }
 }
+

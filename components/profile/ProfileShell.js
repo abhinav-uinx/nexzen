@@ -28,6 +28,12 @@ export default function ProfileShell({ tools = [], showProfileForm = false, show
   const [ordersLoading, setOrdersLoading] = useState(true)
   const [ordersError, setOrdersError] = useState('')
   const [profileName, setProfileName] = useState('')
+  const [profilePhone, setProfilePhone] = useState('')
+  const [profileAddress, setProfileAddress] = useState('')
+  const [profileCity, setProfileCity] = useState('')
+  const [profilePincode, setProfilePincode] = useState('')
+  const [profileUpi, setProfileUpi] = useState('')
+  
   const [profileMessage, setProfileMessage] = useState('')
   const [profileError, setProfileError] = useState('')
   const [isSavingProfile, startProfileTransition] = useTransition()
@@ -38,8 +44,30 @@ export default function ProfileShell({ tools = [], showProfileForm = false, show
   useEffect(() => {
     if (user) {
       setProfileName(user.user_metadata?.full_name || user.user_metadata?.name || '')
+      
+      // Fetch Prisma-resident profile data
+      async function fetchPrismaProfile() {
+        try {
+          const response = await fetch('/api/profile', {
+            headers: { Authorization: `Bearer ${session?.access_token}` }
+          })
+          const { profile } = await response.json()
+          if (profile) {
+            setProfilePhone(profile.phone || '')
+            setProfileAddress(profile.addressLine1 || '')
+            setProfileCity(profile.city || '')
+            setProfilePincode(profile.pincode || '')
+            setProfileUpi(profile.savedUpiId || '')
+            if (profile.name) setProfileName(profile.name)
+          }
+        } catch (e) {
+          console.warn('Could not load extended profile details')
+        }
+      }
+      
+      if (session?.access_token) fetchPrismaProfile()
     }
-  }, [user])
+  }, [user, session?.access_token])
 
   useEffect(() => {
     let cancelled = false
@@ -114,20 +142,38 @@ export default function ProfileShell({ tools = [], showProfileForm = false, show
       try {
         setProfileError('')
         setProfileMessage('')
+        
+        // 1. Update Supabase Metadata (Name)
         const supabase = createSupabaseBrowserClient()
-        const { error } = await supabase.auth.updateUser({
+        const { error: authError } = await supabase.auth.updateUser({
           data: {
             full_name: nextName,
             name: nextName,
           },
         })
 
-        if (error) {
-          throw error
-        }
+        if (authError) throw authError
+
+        // 2. Update Prisma Extended Profile (Phone, Address, UPI)
+        const profileRes = await fetch('/api/profile', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({
+            phone: profilePhone,
+            addressLine1: profileAddress,
+            city: profileCity,
+            pincode: profilePincode,
+            savedUpiId: profileUpi,
+          })
+        })
+
+        if (!profileRes.ok) throw new Error('Prisma profile update failed')
 
         await refreshUser()
-        setProfileMessage('Your profile has been updated.')
+        setProfileMessage('Your account and shipping profile have been updated.')
         setProfileError('')
       } catch (error) {
         setProfileError(error instanceof Error ? error.message : 'Could not update your profile.')
@@ -256,16 +302,71 @@ export default function ProfileShell({ tools = [], showProfileForm = false, show
                   />
                 </label>
 
-                <div className="flex flex-wrap gap-3">
-                  {!hasNameInitially && (
-                    <button
-                      type="submit"
-                      disabled={isSavingProfile || isSendingReset}
-                      className="interactive-button inline-flex min-w-[11.5rem] items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {isSavingProfile ? 'Saving changes...' : 'Save changes'}
-                    </button>
-                  )}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2 text-sm font-medium text-slate-700">
+                    <label htmlFor="phone">Phone Number</label>
+                    <input
+                      id="phone"
+                      value={profilePhone}
+                      onChange={(e) => setProfilePhone(e.target.value)}
+                      placeholder="+91 00000 00000"
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                  </div>
+                  <div className="grid gap-2 text-sm font-medium text-slate-700">
+                    <label htmlFor="upi">Saved UPI ID (Default)</label>
+                    <input
+                      id="upi"
+                      value={profileUpi}
+                      onChange={(e) => setProfileUpi(e.target.value)}
+                      placeholder="user@upi"
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-2 text-sm font-medium text-slate-700">
+                  <label htmlFor="address">Shipping Address</label>
+                  <input
+                    id="address"
+                    value={profileAddress}
+                    onChange={(e) => setProfileAddress(e.target.value)}
+                    placeholder="House No, Building, Street"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2 text-sm font-medium text-slate-700">
+                    <label htmlFor="city">City / District</label>
+                    <input
+                      id="city"
+                      value={profileCity}
+                      onChange={(e) => setProfileCity(e.target.value)}
+                      placeholder="City Name"
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                  </div>
+                  <div className="grid gap-2 text-sm font-medium text-slate-700">
+                    <label htmlFor="pincode">Pincode</label>
+                    <input
+                      id="pincode"
+                      value={profilePincode}
+                      onChange={(e) => setProfilePincode(e.target.value)}
+                      placeholder="000000"
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3 mt-4">
+                  <button
+                    type="submit"
+                    disabled={isSavingProfile || isSendingReset}
+                    className="interactive-button inline-flex min-w-[11.5rem] items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isSavingProfile ? 'Saving profile...' : 'Save Account & Profile'}
+                  </button>
                   <button
                     type="button"
                     disabled={isSavingProfile || isSendingReset}

@@ -2,7 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getAdminCookieName, getAdminSession } from '@/lib/admin/auth'
 import { getAdminBasePath } from '@/lib/admin/config'
-import { prisma } from '@/lib/database/prisma'
+import { prisma } from '@/lib/database/nexus-db'
 import CRMDashboard from '@/components/admin/CRMDashboard'
 
 export const metadata = {
@@ -25,6 +25,11 @@ export default async function AdminCRMPage() {
 
   // Fetch all users with their orders and active cart details
   const rawUsers = await prisma.user.findMany({
+    where: {
+      orders: {
+        some: {}
+      }
+    },
     orderBy: {
       createdAt: 'desc',
     },
@@ -92,6 +97,15 @@ export default async function AdminCRMPage() {
       joinedAt: user.createdAt,
       totalOrders: user.orders.length,
       orderItems,
+      orders: user.orders.map(o => ({
+        id: o.id,
+        status: o.status,
+        total: Number(o.total),
+        discountAmount: Number(o.discountAmount || 0),
+        discountPercentage: o.discountPercentage || 0,
+        couponCode: o.appliedCouponCode,
+        createdAt: o.createdAt
+      })),
       cartItems,
       activeCartCount: cartItems.length,
     }
@@ -99,3 +113,4 @@ export default async function AdminCRMPage() {
 
   return <CRMDashboard users={users} />
 }
+

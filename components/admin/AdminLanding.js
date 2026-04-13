@@ -11,7 +11,7 @@ function StatCard({ label, value, note }) {
   )
 }
 
-export default function AdminLanding({ adminBasePath = '/nexzen-control-room', categories, brands, stats, recentProducts, products }) {
+export default function AdminLanding({ adminBasePath = '/nexzen-control-room', categories, brands, stats, recentProducts }) {
   return (
     <section className="px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
@@ -23,16 +23,39 @@ export default function AdminLanding({ adminBasePath = '/nexzen-control-room', c
           </p>
           <div className="mt-6 flex flex-wrap gap-4">
             <Link 
-              href={`${adminBasePath}/crm`}
-              className="inline-flex justify-center rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)]"
+              href={`${adminBasePath}/products/upload`}
+              className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-blue-600 hover:border-[3px] hover:shadow-lg active:scale-95"
             >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Upload New Product
+            </Link>
+            <Link 
+              href={`${adminBasePath}/products`}
+              className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-slate-900 hover:border-[3px] hover:shadow-lg active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
+              Manage Catalog
+            </Link>
+            <Link 
+              href={`${adminBasePath}/crm`}
+              className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-slate-900 hover:border-[3px] hover:shadow-lg active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
               Launch CRM Engine
             </Link>
             <Link 
               href={`${adminBasePath}/orders`}
-              className="inline-flex justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-blue-600 hover:border-[3px] hover:shadow-lg active:scale-95"
             >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M15 18H9"></path><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-2.235-2.794A2 2 0 0 0 17.006 9H15"></path><circle cx="7" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle></svg>
               Manage Active Orders
+            </Link>
+            <Link 
+              href={`${adminBasePath}/coupons`}
+              className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-emerald-600 hover:border-[3px] hover:shadow-lg active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>
+              Manage Coupons & Discounts
             </Link>
           </div>
         </div>
@@ -44,10 +67,8 @@ export default function AdminLanding({ adminBasePath = '/nexzen-control-room', c
         </div>
 
 
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(280px,0.85fr)]">
-          <AdminCatalogManager categories={categories} brands={brands} products={products} />
-
-          <aside>
+        <div>
+          <aside className="max-w-xl">
             <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_16px_48px_rgba(15,23,42,0.05)]">
               <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Recent Products</p>
               <div className="mt-4 space-y-3">

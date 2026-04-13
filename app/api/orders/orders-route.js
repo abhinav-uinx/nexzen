@@ -1,44 +1,8 @@
 import { createSupabaseServerClient } from '@/lib/auth/supabase-server'
 import { getDisplayOrderId } from '@/lib/commerce/orders'
-import { getPrismaClient } from '@/lib/database/prisma'
+import { getPrismaClient } from '@/lib/database/nexus-db'
+import { getAppUserForRequest } from '@/lib/auth/user-session'
 import { syncAuthenticatedUser } from '@/lib/auth/user-auth'
-
-function getBearerToken(request) {
-  const authorization = request.headers.get('authorization') || ''
-
-  if (!authorization.toLowerCase().startsWith('bearer ')) {
-    return null
-  }
-
-  return authorization.slice(7).trim()
-}
-
-async function getAppUserForRequest(request) {
-  const accessToken = getBearerToken(request)
-
-  if (!accessToken) {
-    return { accessToken: null, appUser: null }
-  }
-
-  const supabase = createSupabaseServerClient()
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(accessToken)
-
-  if (error || !user) {
-    return { accessToken, appUser: null }
-  }
-
-  const appUser = await syncAuthenticatedUser({
-    user,
-    accessToken,
-    provider: user.app_metadata?.provider,
-    expiresAt: null,
-  })
-
-  return { accessToken, appUser }
-}
 
 function buildOrderSupportTicket() {
   return `TKT-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
@@ -118,6 +82,8 @@ export async function handleGetOrders(request) {
   }
 }
 
+import { sendOrderPendingEmail, sendAdminNewOrderEmail } from '@/lib/mail/mailer'
+
 export async function handleCreateOrder(request) {
   try {
     const { appUser } = await getAppUserForRequest(request)
@@ -127,14 +93,47 @@ export async function handleCreateOrder(request) {
     }
 
     const body = await request.json()
-    const items = Array.isArray(body?.items) ? body.items : []
-    const total = Number(body?.total || 0)
+    const { 
+      items, 
+      total, 
+      discountAmount, 
+      discountPercentage, 
+      couponCode,
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      pincode,
+      paymentMethod = 'cod'
+    } = body
 
-    if (!items.length) {
+    const appliedCouponCode = couponCode || null
+
+    if (!items?.length) {
       return Response.json({ error: 'Add at least one item before placing an order.' }, { status: 400 })
     }
 
     const prisma = getPrismaClient()
+
+    // Enforcement: Check if coupon has been used by this email already
+    if (appliedCouponCode) {
+      const existingOrderWithCoupon = await prisma.order.findFirst({
+        where: {
+          customerEmail: appUser.email,
+          appliedCouponCode: {
+            equals: appliedCouponCode,
+            mode: 'insensitive'
+          }
+        }
+      })
+
+      if (existingOrderWithCoupon) {
+        return Response.json({ 
+          error: `You have already used the coupon code "${appliedCouponCode}" on a previous order. Coupons are limited to one use per email.` 
+        }, { status: 400 })
+      }
+    }
+
     const productIds = items.map((item) => item.id).filter(Boolean)
     const products = await prisma.product.findMany({
       where: {
@@ -155,8 +154,23 @@ export async function handleCreateOrder(request) {
         userId: appUser.id,
         customerName: appUser.name || '',
         customerEmail: appUser.email,
-        status: 'processing',
+        status: 'pending',
         total,
+        discountAmount,
+        discountPercentage,
+        appliedCouponCode,
+        
+        // Shipping Details
+        addressLine1,
+        addressLine2,
+        city,
+        state,
+        pincode,
+        
+        // Payment Info
+        paymentMethod,
+        paymentStatus: paymentMethod === 'cod' ? 'PENDING' : 'AWAITING_PAYMENT',
+        
         trackingNumber: buildTrackingNumber(),
         courierName: 'Nexzen Express',
         supportTicketId: buildOrderSupportTicket(),
@@ -168,7 +182,8 @@ export async function handleCreateOrder(request) {
             customerName: appUser.name || '',
             customerEmail: appUser.email,
             quantity: Number(item.quantity || 1),
-            price: priceMap.get(item.id) ?? Number(item.price || 0),
+            price: Number(item.price || 0),
+            originalPrice: Number(item.price || 0),
           })),
         },
       },
@@ -176,6 +191,13 @@ export async function handleCreateOrder(request) {
         items: true,
       },
     })
+
+    // Dispatch emails immediately ONLY for COD. 
+    // Online payments (Razorpay/UPI) will send emails AFTER verification in verify/route.js.
+    if (paymentMethod === 'cod') {
+      sendOrderPendingEmail(appUser.email, order.id, total).catch(console.error)
+      sendAdminNewOrderEmail(order.id, appUser.email, total).catch(console.error)
+    }
 
     return Response.json({
       ok: true,
@@ -197,5 +219,37 @@ export async function handleCreateOrder(request) {
       },
       { status: 500 }
     )
+  }
+}
+
+export async function handleGetOrderById(request, { params }) {
+  try {
+    const { id } = await params
+    const prisma = getPrismaClient()
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: true,
+      },
+    })
+
+    if (!order) {
+      return Response.json({ error: 'Order not found' }, { status: 404 })
+    }
+
+    return Response.json({
+      ok: true,
+      order: {
+        id: order.id,
+        total: Number(order.total),
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        phone: order.phone,
+        status: order.status,
+      },
+    })
+  } catch (error) {
+    return Response.json({ error: 'Failed to fetch order' }, { status: 500 })
   }
 }

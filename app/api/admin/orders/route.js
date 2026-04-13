@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/database/prisma'
+import { prisma } from '@/lib/database/nexus-db'
 import { getAdminSession, getAdminCookieName } from '@/lib/admin/auth'
 import { cookies } from 'next/headers'
 
@@ -48,7 +48,14 @@ export async function GET(request) {
               select: {
                 name: true,
                 sku: true,
-                imageUrl: true
+                brand: true,
+                barcode: true,
+                imageUrl: true,
+                category: {
+                  select: {
+                    name: true
+                  }
+                }
               }
             }
           }
@@ -62,3 +69,4 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
+

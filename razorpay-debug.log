@@ -1,0 +1,51 @@
+
+--- RAZORPAY ERROR LOG ---
+Time: 2026-04-13T09:50:16.909Z
+Key Used: rzp_live_ScvMPNpe2zZxob
+Options: {"amount":99,"currency":"INR","receipt":"receipt_cmnx0efar00qvvskkuhn416gt"}
+Error: {
+  "statusCode": 400,
+  "error": {
+    "code": "BAD_REQUEST_ERROR",
+    "description": "Order amount less than minimum amount allowed",
+    "metadata": {},
+    "reason": "NA",
+    "source": "order",
+    "step": "NA"
+  }
+}
+------------------------
+
+--- RAZORPAY ERROR LOG ---
+Time: 2026-04-13T09:50:31.343Z
+Key Used: rzp_live_ScvMPNpe2zZxob
+Options: {"amount":99,"currency":"INR","receipt":"receipt_cmnx0efar00qvvskkuhn416gt"}
+Error: {
+  "statusCode": 400,
+  "error": {
+    "code": "BAD_REQUEST_ERROR",
+    "description": "Order amount less than minimum amount allowed",
+    "metadata": {},
+    "reason": "NA",
+    "source": "order",
+    "step": "NA"
+  }
+}
+------------------------
+
+--- RAZORPAY ERROR LOG ---
+Time: 2026-04-13T09:51:11.281Z
+Key Used: rzp_live_ScvMPNpe2zZxob
+Options: {"amount":99,"currency":"INR","receipt":"receipt_cmnx0efar00qvvskkuhn416gt"}
+Error: {
+  "statusCode": 400,
+  "error": {
+    "code": "BAD_REQUEST_ERROR",
+    "description": "Order amount less than minimum amount allowed",
+    "metadata": {},
+    "reason": "NA",
+    "source": "order",
+    "step": "NA"
+  }
+}
+------------------------

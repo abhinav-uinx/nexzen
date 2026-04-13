@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/database/prisma'
+import { prisma } from '@/lib/database/nexus-db'
 
 export async function handleHealthCheck() {
   const productCount = await prisma.product.count()
@@ -8,3 +8,4 @@ export async function handleHealthCheck() {
     productCount,
   })
 }
+
