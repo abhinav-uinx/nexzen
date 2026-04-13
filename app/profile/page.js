@@ -16,9 +16,5 @@ export default async function ProfilePage() {
     { href: '/ordered-items', label: 'Ordered items' },
   ]
 
-  if (isAdmin) {
-    tools.push({ href: `${adminBasePath}/products/upload`, label: 'Upload Products' })
-  }
-
   return <ProfileShell tools={tools} showProfileForm />
 }

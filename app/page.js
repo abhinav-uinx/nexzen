@@ -4,11 +4,38 @@ import HeroBanner from '@/components/storefront/HeroBanner'
 import ProductCard from '@/components/storefront/ProductCard'
 import { collections, highlights } from '@/data/products'
 import { getAllProducts } from '@/lib/catalog/products'
+import { createSupabaseServerClient } from '@/lib/auth/supabase-server'
+import { getPrismaClient } from '@/lib/database/nexus-db'
 
 export default async function HomePage() {
   const products = await getAllProducts()
   const featuredProducts = products.slice(0, 4)
   const trendingProducts = [...products].sort((a, b) => b.rating - a.rating).slice(0, 4)
+
+  // Fetch wishlist for current user
+  let wishlistedIds = []
+  try {
+    const supabase = createSupabaseServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (user?.id) {
+      const prisma = getPrismaClient()
+      const dbUser = await prisma.user.findUnique({
+        where: { authUserId: user.id },
+        select: { id: true }
+      })
+      
+      if (dbUser) {
+        const items = await prisma.wishlistItem.findMany({
+          where: { userId: dbUser.id },
+          select: { productId: true }
+        })
+        wishlistedIds = items.map(i => i.productId)
+      }
+    }
+  } catch (e) {
+    console.warn('Could not fetch wishlist for SSR')
+  }
 
   return (
     <div className="pb-8">
@@ -41,7 +68,11 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                initiallyWishlisted={wishlistedIds.includes(product.id)}
+              />
             ))}
           </div>
         </div>
@@ -85,7 +116,11 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {trendingProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                initiallyWishlisted={wishlistedIds.includes(product.id)}
+              />
             ))}
           </div>
         </div>

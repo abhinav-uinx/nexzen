@@ -70,14 +70,6 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[rgba(5,10,20,0.78)] backdrop-blur-xl">
-      {!isAdminRoute && (
-        <div className="border-b border-white/10 bg-[linear-gradient(90deg,rgba(38,92,255,0.2),rgba(17,24,39,0))]">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2 px-4 py-2 text-center text-xs text-slate-200 sm:justify-between sm:gap-4 sm:px-6 md:text-left">
-            <p className="w-full sm:w-auto">Launch offer: 5% off on your first build with code `NEXZEN5`.</p>
-            <p className="hidden md:block">Trusted by student teams, labs, and hardware makers across India.</p>
-          </div>
-        </div>
-      )}
 
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6">
         <Link href="/" className="shrink-0">
@@ -198,6 +190,14 @@ export default function Navbar() {
                         <span aria-hidden="true">-&gt;</span>
                       </Link>
                       <Link
+                        href="/profile?tab=wishlist"
+                        onClick={() => setProfileOpen(false)}
+                        className="interactive-button flex items-center justify-between rounded-2xl px-4 py-3 text-sm text-slate-200 hover:bg-white/10 hover:text-white"
+                      >
+                        <span>My Wishlist</span>
+                        <span aria-hidden="true">-&gt;</span>
+                      </Link>
+                      <Link
                         href="/active-orders"
                         onClick={() => setProfileOpen(false)}
                         className="interactive-button flex items-center justify-between rounded-2xl px-4 py-3 text-sm text-slate-200 hover:bg-white/10 hover:text-white"
@@ -272,6 +272,14 @@ export default function Navbar() {
                   style={{ color: '#ffffff' }}
                 >
                   {userLabel}
+                </Link>
+                <Link
+                  href="/profile?tab=wishlist"
+                  onClick={() => setMobileOpen(false)}
+                  className="interactive-button rounded-2xl border border-white/10 px-4 py-3 text-sm hover:bg-white/10"
+                  style={{ color: '#ffffff' }}
+                >
+                  My Wishlist
                 </Link>
                 <Link
                   href="/active-orders"

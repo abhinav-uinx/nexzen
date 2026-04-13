@@ -59,6 +59,7 @@ model Product {
   requiredBy         ProductDependency[] @relation("RequiredByProducts")
   dependencies       ProductDependency[] @relation("ProductDependencies")
   reviews            Review[]
+  wishlist           WishlistItem[]
 }
 
 model ProductDependency {
@@ -104,11 +105,25 @@ model User {
   state             String?
   pincode           String?
   savedUpiId        String?
+  password          String?
   cart              Cart?
   orders            Order[]
   reviews           Review[]
   identities        UserIdentity[]
   sessions          UserSession[]
+  wishlist          WishlistItem[]
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  userEmail String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
 }
 
 model UserIdentity {

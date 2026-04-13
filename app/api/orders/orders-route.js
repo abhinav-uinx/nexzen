@@ -192,6 +192,19 @@ export async function handleCreateOrder(request) {
       },
     })
 
+    // Sync shipping details back to User profile if they are more complete than what we have.
+    // This fulfills the "Save to database if forget to add on profile" requirement.
+    await prisma.user.update({
+      where: { id: appUser.id },
+      data: {
+        addressLine1: addressLine1 || undefined,
+        addressLine2: addressLine2 || undefined,
+        city: city || undefined,
+        state: state || undefined,
+        pincode: pincode || undefined,
+      }
+    }).catch(err => console.error('Failed to sync profile during checkout:', err))
+
     // Dispatch emails immediately ONLY for COD. 
     // Online payments (Razorpay/UPI) will send emails AFTER verification in verify/route.js.
     if (paymentMethod === 'cod') {

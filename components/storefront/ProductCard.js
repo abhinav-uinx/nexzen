@@ -2,8 +2,10 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useCart } from '@/providers/CartProvider'
+import { useAuth } from '@/providers/AuthProvider'
 
 import styles from './ProductCard.module.css'
 
@@ -17,9 +19,13 @@ const badgeTones = {
   orange: 'bg-orange-100 text-orange-900',
 }
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, initiallyWishlisted = false }) {
+  const router = useRouter()
   const { addToCart } = useCart()
+  const { session } = useAuth()
   const [added, setAdded] = useState(false)
+  const [isWishlisted, setIsWishlisted] = useState(initiallyWishlisted)
+  const [isSyncing, setIsSyncing] = useState(false)
 
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -30,6 +36,40 @@ export default function ProductCard({ product }) {
     addToCart(product)
     setAdded(true)
     setTimeout(() => setAdded(false), 1200)
+  }
+
+  async function handleToggleWishlist(e) {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (!session) {
+      router.push('/login')
+      return
+    }
+
+    if (isSyncing) return
+
+    const nextState = !isWishlisted
+    setIsWishlisted(nextState)
+    setIsSyncing(true)
+
+    try {
+      const res = await fetch('/api/wishlist', {
+        method: nextState ? 'POST' : 'DELETE',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`
+        },
+        body: JSON.stringify({ productId: product.id })
+      })
+      
+      if (!res.ok) throw new Error()
+    } catch (err) {
+      // Revert on failure
+      setIsWishlisted(!nextState)
+    } finally {
+      setIsSyncing(false)
+    }
   }
 
   return (
@@ -71,7 +111,11 @@ export default function ProductCard({ product }) {
 
       <div className={styles.contentContainer}>
         <div className={styles.textSection}>
-          <p className={styles.categoryTitle}>{product.categoryName || product.category.replace('-', ' ')}</p>
+          <p className={styles.categoryTitle}>
+            {product.categoryName || 
+             (typeof product.category === 'object' ? product.category.name : product.category?.replace('-', ' ')) || 
+             'Product'}
+          </p>
           <Link href={`/products/${product.slug || product.id}`} className={styles.titleLink}>
             <h3 className={styles.productTitle}>
               {product.name}
@@ -92,21 +136,32 @@ export default function ProductCard({ product }) {
               <p className={styles.originalPrice}>Rs. {product.originalPrice.toLocaleString()}</p>
             )}
           </div>
-          <button
-            suppressHydrationWarning
-            type="button"
-            disabled={!product.inStock}
-            onClick={handleAdd}
-            className={`interactive-button ${styles.addBtn} ${
-              !product.inStock
-                ? styles.btnDisabled
-                : added
-                  ? styles.btnAdded
-                  : styles.btnReady
-            }`}
-          >
-            {!product.inStock ? 'Out of stock' : added ? 'Added' : 'Add to cart'}
-          </button>
+          <div className={styles.actionButtonGroup}>
+            <button
+              suppressHydrationWarning
+              type="button"
+              disabled={!product.inStock}
+              onClick={handleAdd}
+              className={`interactive-button ${styles.addBtn} ${
+                !product.inStock
+                  ? styles.btnDisabled
+                  : added
+                    ? styles.btnAdded
+                    : styles.btnReady
+              }`}
+            >
+              {!product.inStock ? 'Out of stock' : added ? 'Added' : 'Add to cart'}
+            </button>
+            <button 
+              onClick={handleToggleWishlist}
+              className={`${styles.wishlistActionBtn} ${isWishlisted ? styles.wishlistActive : ''}`}
+              title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+            >
+              <svg viewBox="0 0 24 24" className={styles.heartIcon}>
+                <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </article>

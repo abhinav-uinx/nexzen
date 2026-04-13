@@ -1,6 +1,7 @@
-import Link from 'next/link'
 import ProductCard from '@/components/storefront/ProductCard'
 import { getAllCategories, getAllProducts } from '@/lib/catalog/products'
+import { createSupabaseServerClient } from '@/lib/auth/supabase-server'
+import { getPrismaClient } from '@/lib/database/nexus-db'
 
 function sortProducts(items, sort) {
   switch (sort) {
@@ -40,6 +41,31 @@ export default async function ProductsPage({ searchParams }) {
   const sortedProducts = sortProducts(filtered, sort)
   const categoryName = categories.find((item) => item.slug === category)?.name
 
+  // Fetch wishlist for current user
+  let wishlistedIds = []
+  try {
+    const supabase = createSupabaseServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (user?.id) {
+      const prisma = getPrismaClient()
+      const dbUser = await prisma.user.findUnique({
+        where: { authUserId: user.id },
+        select: { id: true }
+      })
+      
+      if (dbUser) {
+        const items = await prisma.wishlistItem.findMany({
+          where: { userId: dbUser.id },
+          select: { productId: true }
+        })
+        wishlistedIds = items.map(i => i.productId)
+      }
+    }
+  } catch (e) {
+    console.warn('Could not fetch wishlist for SSR')
+  }
+
   return (
     <section className="px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -76,7 +102,11 @@ export default async function ProductsPage({ searchParams }) {
 
         <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {sortedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              initiallyWishlisted={wishlistedIds.includes(product.id)}
+            />
           ))}
         </div>
 
