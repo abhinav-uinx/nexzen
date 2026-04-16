@@ -82,7 +82,7 @@ export default function HeroSlider() {
       onMouseLeave={() => setIsPaused(false)}
       onWheel={handleWheel}
     >
-      <div className="mx-auto max-w-[1440px] relative aspect-[21/9] sm:aspect-[16/7] md:aspect-[21/8] overflow-hidden rounded-[2.5rem] bg-black">
+      <div className="mx-auto max-w-[1440px] relative aspect-[3/4] sm:aspect-[16/7] md:aspect-[21/8] overflow-hidden rounded-[2.5rem] bg-black">
         
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
@@ -107,7 +107,7 @@ export default function HeroSlider() {
             </div>
 
             {/* Content Overlay */}
-            <div className="relative h-full flex flex-col items-center justify-center p-8 text-center sm:p-16 lg:p-24">
+            <div className="relative h-full flex flex-col items-center justify-center p-8 text-center sm:p-16 lg:p-24 bg-gradient-to-t from-black/80 via-black/20 to-transparent">
               <div className="max-w-3xl">
                 {slide.eyebrow && (
                   <motion.p 
@@ -124,7 +124,7 @@ export default function HeroSlider() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.8 }}
-                  className="font-heading text-4xl font-bold text-white sm:text-6xl lg:text-8xl leading-[1.05] tracking-tight text-balance"
+                  className="font-heading text-2xl font-bold text-white sm:text-6xl lg:text-8xl leading-[1.1] tracking-tight text-balance uppercase"
                 >
                   {slide.title}
                 </motion.h2>
@@ -133,7 +133,7 @@ export default function HeroSlider() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.8 }}
-                  className="mt-6 text-base sm:text-xl text-white/90 font-medium max-w-xl mx-auto line-clamp-2"
+                  className="mt-6 text-sm sm:text-xl text-white/90 font-medium max-w-xl mx-auto line-clamp-3"
                 >
                   {slide.subtitle}
                 </motion.p>
@@ -142,12 +142,12 @@ export default function HeroSlider() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6, duration: 0.8 }}
-                  className="mt-10 flex items-center justify-center gap-6"
+                  className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
                 >
                   {slide.link && (
                     <Link 
                       href={slide.link}
-                      className="rounded-full bg-white px-8 py-3.5 text-sm sm:text-base font-semibold text-black hover:bg-white/90 transition-all active:scale-[0.98]"
+                      className="w-full sm:w-auto rounded-xl bg-white px-8 py-4 text-sm sm:text-base font-bold text-black hover:bg-white/90 transition-all active:scale-[0.98] uppercase tracking-widest"
                     >
                       {slide.ctaText || 'Learn more'}
                     </Link>

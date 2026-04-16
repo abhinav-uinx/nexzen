@@ -44,13 +44,13 @@ export default async function HomePage() {
       <HeroSlider />
 
       <ScrollReveal delay={0.2}>
-        <section className="px-6 py-20 sm:px-8 lg:px-12">
-          <div className="mx-auto grid max-w-[1200px] gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="px-6 py-10 sm:px-8 lg:px-12">
+          <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {highlights.map((item) => (
-              <div key={item.label} className="group rounded-[2.5rem] bg-white p-10 shadow-[0_22px_60px_rgba(0,0,0,0.03)] transition-all duration-500 hover:shadow-[0_40px_100px_rgba(0,0,0,0.08)]">
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0066cc] mb-4">{item.label}</p>
-                <h3 className="font-heading text-4xl font-bold text-black tracking-tight mb-4 group-hover:scale-105 transition-transform origin-left duration-700">{item.value}</h3>
-                <p className="text-[15px] leading-relaxed text-black/50 font-medium">{item.detail}</p>
+              <div key={item.label} className="group rounded-[2rem] bg-white p-5 shadow-[0_16px_40px_rgba(0,0,0,0.03)] border border-slate-50 transition-all duration-500 hover:shadow-[0_30px_80px_rgba(0,0,0,0.08)] sm:p-10">
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-[#0066cc] mb-2 sm:mb-4">{item.label}</p>
+                <h3 className="font-heading text-2xl font-black text-black tracking-tight mb-2 group-hover:scale-105 transition-transform origin-left duration-700 sm:text-4xl sm:mb-4">{item.value}</h3>
+                <p className="text-[11px] leading-relaxed text-black/50 font-semibold line-clamp-2 sm:text-[15px]">{item.detail}</p>
               </div>
             ))}
           </div>
@@ -63,20 +63,20 @@ export default async function HomePage() {
 
       {collections.length > 0 && (
         <ScrollReveal>
-          <section className="px-6 py-12 sm:px-8 lg:px-12">
-            <div className="mx-auto grid max-w-[1200px] gap-8 lg:grid-cols-3">
+          <section className="px-6 py-6 sm:px-8 lg:px-12">
+            <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {collections.map((collection) => (
                 <Link
                   key={collection.id}
                   href={`/products?category=${collection.slug}`}
-                  className="group relative h-[400px] overflow-hidden rounded-[2.5rem] bg-black p-10 text-white transition-all duration-700 hover:shadow-[0_40px_100px_rgba(0,0,0,0.2)]"
+                  className="group relative aspect-[3/4] sm:h-[400px] overflow-hidden rounded-[2.5rem] bg-black p-8 text-white transition-all duration-700 hover:shadow-[0_40px_100px_rgba(0,0,0,0.2)] sm:p-10"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-50" />
-                  <p className="relative z-10 text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 mb-3">{collection.name}</p>
-                  <p className="relative z-10 font-heading text-3xl font-bold tracking-tight mb-6">{collection.description}</p>
+                  <p className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em] text-white/60 mb-3">{collection.name}</p>
+                  <p className="relative z-10 font-heading text-2xl font-black tracking-tight mb-6 sm:text-3xl uppercase leading-tight">{collection.description}</p>
                   <div className="relative z-10 mt-auto">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-black transition-all duration-300 group-hover:bg-[#f5f5f7]">
-                      Explore <ChevronRight size={16} />
+                    <span className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-xs font-black uppercase tracking-widest text-black transition-all duration-300 group-hover:bg-[#f5f5f7]">
+                      Explore <ChevronRight size={14} />
                     </span>
                   </div>
                 </Link>
