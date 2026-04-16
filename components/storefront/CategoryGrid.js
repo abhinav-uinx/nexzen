@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { categories } from '@/data/products'
 
-export default function CategoryGrid() {
+export default function CategoryGrid({ categories }) {
+  if (!categories || categories.length === 0) return null
   return (
     <section className="px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">

@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../lib/database/generated/client"
 }
 
 datasource db {
@@ -10,10 +11,57 @@ model Category {
   id          String    @id @default(cuid())
   name        String
   slug        String    @unique
+  icon        String?   @default("CPU")
+  description String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  description String?
   products    Product[]
+}
+
+model SiteHighlight {
+  id        String   @id @default(cuid())
+  label     String
+  value     String
+  detail    String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("site_highlights")
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("collections")
+}
+
+model Banner {
+  id                String   @id @default(cuid())
+  title             String
+  subtitle          String?
+  eyebrow           String?
+  metric            String?
+  ctaText           String?  @default("Explore Now")
+  secondaryCtaText  String?
+  secondaryHref     String?
+  accent            String?  @default("from-[#07111f] via-[#0f2a51] to-[#1d4ed8]")
+  imageUrl          String
+  link              String?
+  order             Int      @default(0)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("banners")
 }
 
 model Coupon {

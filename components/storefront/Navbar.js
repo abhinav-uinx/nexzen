@@ -6,9 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 import { useCart } from '@/providers/CartProvider'
-
-const navLinkClass =
-  'interactive-button rounded-full px-2 py-1 text-sm text-slate-300 transition-all duration-300 hover:bg-white/8 hover:text-white hover:shadow-[0_10px_24px_rgba(15,23,42,0.18)]'
+import { Search, ShoppingBag, User, Menu, X, ChevronRight } from 'lucide-react'
 
 export default function Navbar() {
   const router = useRouter()
@@ -18,15 +16,17 @@ export default function Navbar() {
   const [query, setQuery] = useState('')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  
   const profileRef = useRef(null)
   const hiddenAdminBasePath = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '/nexzen-control-room'
   const isAdminRoute = pathname.startsWith('/admin') || pathname.startsWith(hiddenAdminBasePath)
+  
   const userLabel =
     user?.user_metadata?.full_name ||
     user?.user_metadata?.name ||
     user?.email?.split('@')?.[0] ||
     'Account'
-  const userEmail = user?.email || ''
+  
   const profileImageSrc =
     user?.user_metadata?.avatar_url ||
     process.env.NEXT_PUBLIC_SUPABASE_BRAND_LOGO_URL ||
@@ -38,26 +38,14 @@ export default function Navbar() {
         setProfileOpen(false)
       }
     }
-
-    function handleEscape(event) {
-      if (event.key === 'Escape') {
-        setProfileOpen(false)
-      }
-    }
-
     document.addEventListener('mousedown', handleOutsideClick)
-    document.addEventListener('keydown', handleEscape)
-
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick)
-      document.removeEventListener('keydown', handleEscape)
-    }
+    return () => document.addEventListener('mousedown', handleOutsideClick)
   }, [])
 
   function submitSearch(event) {
     event.preventDefault()
     const value = query.trim()
-    router.push(value ? `/products?query=${encodeURIComponent(value)}` : '/products')
+    router.push(value ? `/p?query=${encodeURIComponent(value)}` : '/p')
     setMobileOpen(false)
   }
 
@@ -69,270 +57,170 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[rgba(5,10,20,0.78)] backdrop-blur-xl">
-
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6">
-        <Link href="/" className="shrink-0">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-slate-950 shadow-[0_10px_24px_rgba(15,23,42,0.28)] sm:h-16 sm:w-16 sm:rounded-2xl">
+    <header 
+      className={`sticky top-0 z-50 w-full bg-[#000000] text-white transition-all border-b border-white/5 ${
+        mobileOpen ? 'h-screen' : 'h-[80px] sm:h-[90px]'
+      }`}
+    >
+      <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-6 lg:px-10 gap-8">
+        {/* Brand Area */}
+        <div className="flex items-center gap-4 shrink-0">
+          <button 
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden"
+            suppressHydrationWarning={true}
+          >
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+          
+          <Link href="/" className="flex items-center gap-4 group">
+            <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-110">
               <Image
-                src="/nexzen-logo.png"
-                alt="Nexzen logo"
+                src="https://wqnjxafgzldzqpazzxaw.supabase.co/storage/v1/object/public/brand-assets/smiplelogo.png"
+                alt="NZ"
                 fill
-                sizes="(max-width: 640px) 48px, 64px"
-                className="scale-125 object-cover"
+                className="object-contain p-1"
                 priority
               />
             </div>
-            <div>
-              <p className="font-heading text-lg font-semibold tracking-tight text-white sm:text-xl">Nexzen</p>
-              <p className="hidden text-xs text-slate-400 sm:block">Electronics for modern builders</p>
+            <div className="hidden lg:block">
+              <h1 className="text-xl font-bold leading-none tracking-tight">Nexzen</h1>
+              <p className="mt-1 text-[11px] font-medium text-white/40">Electronics for modern builders</p>
             </div>
-          </div>
-        </Link>
+          </Link>
+        </div>
 
+        {/* Central Search Bar */}
         {!isAdminRoute && (
-          <>
-            <form
-              onSubmit={submitSearch}
-              className="hidden flex-1 items-center rounded-full border border-white/10 bg-white/5 px-2 md:flex"
-            >
-              <input
-                suppressHydrationWarning
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search boards, kits, sensors, or power modules"
-                className="w-full bg-transparent px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
-              />
-              <button
-                suppressHydrationWarning
-                type="submit"
-                className="interactive-button rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-slate-200 hover:shadow-[0_12px_30px_rgba(255,255,255,0.18)]"
-              >
-                Search
-              </button>
+          <div className="hidden flex-1 max-w-xl md:block">
+            <form onSubmit={submitSearch} className="relative group">
+              <div className="flex items-center rounded-full bg-black border border-white/20 p-1.5 pl-6 transition-all focus-within:border-white/40 focus-within:ring-2 focus-within:ring-white/5">
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search products, kits, or components..."
+                  className="flex-1 bg-transparent py-2 text-sm text-white placeholder:text-white/30 outline-none"
+                  suppressHydrationWarning={true}
+                />
+                <button 
+                  type="submit"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105 active:scale-95"
+                  suppressHydrationWarning={true}
+                >
+                  <ChevronRight size={20} strokeWidth={3} />
+                </button>
+              </div>
             </form>
-
-            <nav className="hidden items-center gap-5 text-sm text-slate-300 lg:flex">
-              <Link href="/products" className={navLinkClass}>
-                Catalog
-              </Link>
-              <Link href="/products?category=stem-kits" className={navLinkClass}>
-                Kits
-              </Link>
-              <Link href="/products?sort=newest" className={navLinkClass}>
-                New arrivals
-              </Link>
-            </nav>
-          </>
+          </div>
         )}
 
-        <div className="ml-auto flex items-center gap-3">
+        {/* Desktop Nav Links & Actions */}
+        <div className="flex items-center gap-10">
           {!isAdminRoute && (
-            <Link href="/cart" className={`relative inline-flex items-center gap-2 ${navLinkClass}`}>
-              <span className="inline-flex h-5 w-5 items-center justify-center">
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3.75h1.386c.51 0 .955.343 1.084.837l.383 1.473m0 0 1.5 5.772A1.125 1.125 0 0 0 7.69 12.75h8.74a1.125 1.125 0 0 0 1.087-.838l1.823-6.838H5.103Zm3.147 11.94a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm9 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                </svg>
-              </span>
-              <span>Cart</span>
-              {cartCount > 0 && (
-                <span className="inline-flex min-w-6 justify-center rounded-full bg-cyan-300 px-2 py-0.5 text-xs font-semibold text-slate-950">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
+            <nav className="hidden items-center gap-8 md:flex">
+              <Link href="/p" className="text-[14px] font-medium text-white/70 transition-colors hover:text-white">Catalog</Link>
+              <Link href="/p?category=stem-kits" className="text-[14px] font-medium text-white/70 transition-colors hover:text-white">Kits</Link>
+              <Link href="/p?sort=newest" className="text-[14px] font-medium text-white/70 transition-colors hover:text-white">New arrivals</Link>
+            </nav>
           )}
 
-          {!isAdminRoute &&
-            (user ? (
-              <div ref={profileRef} className="relative order-last">
-                <button
-                  type="button"
-                  onClick={() => setProfileOpen((open) => !open)}
-                  className={`inline-flex items-center gap-2 ${navLinkClass}`}
+          <div className="flex items-center gap-6">
+            {!isAdminRoute && (
+              <Link href="/cart" className="flex items-center gap-2 text-white/70 transition-colors hover:text-white">
+                <div className="relative">
+                  <ShoppingBag size={20} />
+                  {cartCount > 0 && (
+                    <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-black border border-[#111]">
+                      {cartCount}
+                    </span>
+                  )}
+                </div>
+                <span className="hidden lg:inline text-sm font-medium">Cart</span>
+              </Link>
+            )}
+
+            {!isAdminRoute && (
+              <div ref={profileRef} className="relative">
+                <button 
+                  onClick={() => user ? setProfileOpen(!profileOpen) : router.push('/login')} 
+                  className="flex items-center gap-2 text-white/70 transition-colors hover:text-white"
+                  suppressHydrationWarning={true}
                 >
-                  <span className="relative sm:hidden inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-950 text-[11px] font-semibold text-white">
-                    <Image
-                      src={profileImageSrc}
-                      alt="Profile logo"
-                      fill
-                      sizes="32px"
-                      className="object-cover scale-110"
-                    />
+                  <User size={20} />
+                  <span className="hidden lg:inline text-sm font-medium">
+                    { (typeof window !== 'undefined' && user) ? userLabel : 'Sign In' }
                   </span>
-                  <span className="hidden sm:inline-block font-medium">{userLabel}</span>
                 </button>
-
-                {profileOpen && (
-                  <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[280px] sm:w-[320px] rounded-[1.75rem] border border-white/10 bg-[rgba(12,18,32,0.96)] p-4 text-white shadow-[0_24px_70px_rgba(2,6,23,0.45)] backdrop-blur-xl">
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5 text-center">
-                      <div className="relative mx-auto inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-950 text-2xl font-semibold">
-                        <Image
-                          src={profileImageSrc}
-                          alt="Profile logo"
-                          fill
-                          sizes="80px"
-                          className="object-cover scale-110"
-                        />
+                
+                {profileOpen && user && (
+                  <div className="absolute right-0 top-[calc(100%+20px)] w-64 animate-apple-fade overflow-hidden rounded-2xl border border-white/5 bg-[#1a1a1a] p-2 shadow-2xl ring-1 ring-white/10">
+                    <div className="mb-2 flex items-center gap-3 border-b border-white/5 px-3 py-3">
+                      <div className="relative h-10 w-10 overflow-hidden rounded-full bg-white/5">
+                        <Image src={profileImageSrc} alt="Profile" fill className="object-cover" />
                       </div>
-                      <p className="mt-4 text-2xl font-semibold">{userLabel}</p>
-                      <p className="mt-1 text-sm text-slate-300">{userEmail}</p>
+                      <div className="overflow-hidden">
+                        <p className="truncate text-xs font-semibold text-white">{userLabel}</p>
+                        <p className="truncate text-[10px] text-white/40">{user?.email}</p>
+                      </div>
                     </div>
-
-                    <div className="mt-4 space-y-2">
-                      <Link
-                        href="/profile"
-                        onClick={() => setProfileOpen(false)}
-                        className="interactive-button flex items-center justify-between rounded-2xl px-4 py-3 text-sm text-slate-200 hover:bg-white/10 hover:text-white"
-                      >
-                        <span>View profile</span>
-                        <span aria-hidden="true">-&gt;</span>
-                      </Link>
-                      <Link
-                        href="/profile?tab=wishlist"
-                        onClick={() => setProfileOpen(false)}
-                        className="interactive-button flex items-center justify-between rounded-2xl px-4 py-3 text-sm text-slate-200 hover:bg-white/10 hover:text-white"
-                      >
-                        <span>My Wishlist</span>
-                        <span aria-hidden="true">-&gt;</span>
-                      </Link>
-                      <Link
-                        href="/active-orders"
-                        onClick={() => setProfileOpen(false)}
-                        className="interactive-button flex items-center justify-between rounded-2xl px-4 py-3 text-sm text-slate-200 hover:bg-white/10 hover:text-white"
-                      >
-                        <span>Active orders</span>
-                        <span aria-hidden="true">-&gt;</span>
-                      </Link>
-                      <Link
-                        href="/ordered-items"
-                        onClick={() => setProfileOpen(false)}
-                        className="interactive-button flex items-center justify-between rounded-2xl px-4 py-3 text-sm text-slate-200 hover:bg-white/10 hover:text-white"
-                      >
-                        <span>Ordered items</span>
-                        <span aria-hidden="true">-&gt;</span>
-                      </Link>
+                    
+                    <div className="space-y-1">
+                      {[
+                        { label: 'Profile', href: '/u' },
+                        { label: 'Wishlist', href: '/u?tab=wishlist' },
+                        { label: 'Orders', href: '/o' }
+                      ].map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white"
+                        >
+                          {item.label}
+                          <ChevronRight size={14} className="opacity-40" />
+                        </Link>
+                      ))}
                       <button
-                        type="button"
                         onClick={handleLogout}
-                        className="interactive-button flex w-full items-center justify-between rounded-2xl px-4 py-3 text-sm text-rose-200 hover:bg-rose-500/15 hover:text-white"
+                        className="mt-2 w-full rounded-lg bg-rose-500/10 px-3 py-2 text-left text-xs font-semibold text-rose-500 transition-colors hover:bg-rose-500/20"
                       >
-                        <span>Logout</span>
-                        <span aria-hidden="true">-&gt;</span>
+                        Sign Out
                       </button>
                     </div>
                   </div>
                 )}
               </div>
-            ) : (
-              <Link href="/login" className={`hidden items-center gap-2 sm:inline-flex ${navLinkClass}`}>
-                <span className="inline-flex h-5 w-5 items-center justify-center">
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.125a7.5 7.5 0 0 1 15 0" />
-                  </svg>
-                </span>
-                <span>{loading ? '...' : 'Login'}</span>
-              </Link>
-            ))}
-
-          <button
-            suppressHydrationWarning
-            type="button"
-            onClick={() => setMobileOpen((open) => !open)}
-            className={`interactive-button rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 md:hidden${isAdminRoute ? ' hidden' : ''}`}
-          >
-            Menu
-          </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {mobileOpen && !isAdminRoute && (
-        <div className="border-t border-white/10 bg-slate-950/95 px-4 py-4 md:hidden">
-          <form onSubmit={submitSearch} className="mb-4 flex items-center rounded-2xl border border-white/10 bg-white/5 px-2">
-            <input
-              suppressHydrationWarning
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search catalog"
-              className="w-full bg-transparent px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400"
-            />
-            <button suppressHydrationWarning type="submit" className="interactive-button rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-950 hover:bg-slate-200">
-              Go
-            </button>
-          </form>
-          <div className="flex flex-col gap-2">
-            {user ? (
-              <>
-                <Link
-                  href="/profile"
-                  onClick={() => setMobileOpen(false)}
-                  className="interactive-button rounded-2xl border border-white/10 px-4 py-3 text-sm hover:bg-white/10"
-                  style={{ color: '#ffffff' }}
-                >
-                  {userLabel}
-                </Link>
-                <Link
-                  href="/profile?tab=wishlist"
-                  onClick={() => setMobileOpen(false)}
-                  className="interactive-button rounded-2xl border border-white/10 px-4 py-3 text-sm hover:bg-white/10"
-                  style={{ color: '#ffffff' }}
-                >
-                  My Wishlist
-                </Link>
-                <Link
-                  href="/active-orders"
-                  onClick={() => setMobileOpen(false)}
-                  className="interactive-button rounded-2xl border border-white/10 px-4 py-3 text-sm hover:bg-white/10"
-                  style={{ color: '#ffffff' }}
-                >
-                  Active orders
-                </Link>
-                <Link
-                  href="/ordered-items"
-                  onClick={() => setMobileOpen(false)}
-                  className="interactive-button rounded-2xl border border-white/10 px-4 py-3 text-sm hover:bg-white/10"
-                  style={{ color: '#ffffff' }}
-                >
-                  Ordered items
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="interactive-button rounded-2xl border border-white/10 px-4 py-3 text-left text-sm hover:bg-white/10"
-                  style={{ color: '#ffffff' }}
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                onClick={() => setMobileOpen(false)}
-                className="interactive-button rounded-2xl border border-white/10 px-4 py-3 text-sm hover:bg-white/10"
-                style={{ color: '#ffffff' }}
+      {/* Mobile Menu Overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 top-[80px] z-40 bg-[#000] px-10 pt-10 text-white animate-apple-fade">
+          <nav className="flex flex-col gap-6 text-3xl font-bold tracking-tight">
+            <Link href="/p" onClick={() => setMobileOpen(false)}>Catalog</Link>
+            <Link href="/p?category=stem-kits" onClick={() => setMobileOpen(false)}>STEM Kits</Link>
+            <Link href="/p?sort=newest" onClick={() => setMobileOpen(false)}>New Arrivals</Link>
+            <Link href="/h" onClick={() => setMobileOpen(false)}>Support</Link>
+          </nav>
+
+          <form onSubmit={submitSearch} className="mt-12">
+            <div className="flex items-center rounded-full bg-white/5 border border-white/10 p-2 pl-6">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search Nexzen..."
+                className="flex-1 bg-transparent py-2 text-lg text-white placeholder:text-white/20 outline-none"
+              />
+              <button 
+                type="submit"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-black"
               >
-                Login
-              </Link>
-            )}
-            <Link
-              href="/cart"
-              onClick={() => setMobileOpen(false)}
-              className="interactive-button rounded-2xl border border-white/10 px-4 py-3 text-sm hover:bg-white/10"
-              style={{ color: '#ffffff' }}
-            >
-              Cart
-            </Link>
-            <Link
-              href="/products"
-              onClick={() => setMobileOpen(false)}
-              className="interactive-button rounded-2xl border border-white/10 px-4 py-3 text-sm hover:bg-white/10"
-              style={{ color: '#ffffff' }}
-            >
-              Full catalog
-            </Link>
-          </div>
+                <ChevronRight size={24} strokeWidth={3} />
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </header>

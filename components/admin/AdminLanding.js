@@ -51,11 +51,39 @@ export default function AdminLanding({ adminBasePath = '/nexzen-control-room', c
               Manage Active Orders
             </Link>
             <Link 
+              href={`${adminBasePath}/categories`}
+              className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-blue-600 hover:border-[3px] hover:shadow-lg active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9h16M4 15h16M10 3L8 21M16 3l-2 18"></path></svg>
+              Manage Categories
+            </Link>
+            <Link 
               href={`${adminBasePath}/coupons`}
               className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-emerald-600 hover:border-[3px] hover:shadow-lg active:scale-95"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>
               Manage Coupons & Discounts
+            </Link>
+            <Link 
+              href={`${adminBasePath}/banners`}
+              className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-slate-950 hover:border-[3px] hover:shadow-lg active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              Manage Banner Slider
+            </Link>
+            <Link 
+              href={`${adminBasePath}/highlights`}
+              className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-blue-600 hover:border-[3px] hover:shadow-lg active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M2 12h20M7 7l10 10M17 7L7 10"></path></svg>
+              Manage Highlights
+            </Link>
+            <Link 
+              href={`${adminBasePath}/collections`}
+              className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-slate-950 hover:border-[3px] hover:shadow-lg active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"></path></svg>
+              Manage Collections
             </Link>
           </div>
         </div>

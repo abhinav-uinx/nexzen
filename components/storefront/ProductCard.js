@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useCart } from '@/providers/CartProvider'
 import { useAuth } from '@/providers/AuthProvider'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Heart, ShoppingBag } from 'lucide-react'
 
 import styles from './ProductCard.module.css'
 
@@ -19,7 +21,8 @@ const badgeTones = {
   orange: 'bg-orange-100 text-orange-900',
 }
 
-export default function ProductCard({ product, initiallyWishlisted = false }) {
+export default function ProductCard({ product, initiallyWishlisted = false, variant = 'grid' }) {
+  const isList = variant === 'list'
   const router = useRouter()
   const { addToCart } = useCart()
   const { session } = useAuth()
@@ -35,7 +38,7 @@ export default function ProductCard({ product, initiallyWishlisted = false }) {
     e.preventDefault()
     addToCart(product)
     setAdded(true)
-    setTimeout(() => setAdded(false), 1200)
+    setTimeout(() => setAdded(false), 1500)
   }
 
   async function handleToggleWishlist(e) {
@@ -65,7 +68,6 @@ export default function ProductCard({ product, initiallyWishlisted = false }) {
       
       if (!res.ok) throw new Error()
     } catch (err) {
-      // Revert on failure
       setIsWishlisted(!nextState)
     } finally {
       setIsSyncing(false)
@@ -73,28 +75,36 @@ export default function ProductCard({ product, initiallyWishlisted = false }) {
   }
 
   return (
-    <article className={styles.card}>
-      <Link href={`/products/${product.slug || product.id}`} className={styles.cardLink}>
-        <div className={`${product.surface || ''} ${styles.surfaceWrapper}`}>
-          <div className={`${styles.gradientBox} ${product.accent || ''}`}>
+    <motion.article 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+      className={`${styles.card} ${isList ? styles.listVariant : ''}`}
+    >
+      <Link href={`/p/${product.id}`} className={isList ? styles.listCardLink : styles.cardLink}>
+        <div className={`${product.surface || ''} ${isList ? styles.listSurfaceWrapper : styles.surfaceWrapper}`}>
+          <div className={`${isList ? styles.listGradientBox : styles.gradientBox}`}>
             <div className={styles.badgeContainer}>
-              <span className={`${styles.badge} ${badgeTones[product.badgeTone] || styles.badgeDefault}`}>
-                {product.badge}
-              </span>
+              {product.badge && (
+                <span className={`${styles.badge} ${badgeTones[product.badgeTone] || styles.badgeDefault}`}>
+                  {product.badge}
+                </span>
+              )}
               {discount > 0 && (
                 <span className={styles.discountBadge}>
-                  Save {discount}%
+                  -{discount}%
                 </span>
               )}
             </div>
             {product.imageUrl ? (
-              <div className={styles.imageOuterWrapper}>
-                <div className={styles.imageInnerWrapper}>
+              <div className={isList ? styles.listImageOuterWrapper : styles.imageOuterWrapper}>
+                <div className={isList ? styles.listImageInnerWrapper : styles.imageInnerWrapper}>
                   <Image
                     src={product.imageUrl}
                     alt={product.name}
                     fill
-                    sizes="(max-width: 768px) 50vw, 25vw"
+                    sizes={isList ? "200px" : "(max-width: 768px) 50vw, 25vw"}
                     className={styles.productImg}
                   />
                 </div>
@@ -109,39 +119,40 @@ export default function ProductCard({ product, initiallyWishlisted = false }) {
         </div>
       </Link>
 
-      <div className={styles.contentContainer}>
-        <div className={styles.textSection}>
-          <p className={styles.categoryTitle}>
-            {product.categoryName || 
-             (typeof product.category === 'object' ? product.category.name : product.category?.replace('-', ' ')) || 
-             'Product'}
-          </p>
-          <Link href={`/products/${product.slug || product.id}`} className={styles.titleLink}>
-            <h3 className={styles.productTitle}>
-              {product.name}
-            </h3>
-          </Link>
-          <p className={styles.blurbText}>{product.blurb}</p>
-        </div>
-
-        <div className={styles.statsWrapper}>
-          <span>{product.rating} rating</span>
-          <span>{product.reviews} reviews</span>
-        </div>
-
-        <div className={styles.actionsContainer}>
+      <div className={isList ? styles.listContentContainer : styles.contentContainer}>
+        <div className={isList ? styles.listTextSection : styles.textSection}>
           <div>
-            <p className={styles.priceDisplay}>Rs. {product.price.toLocaleString()}</p>
+            <p className={styles.categoryTitle}>
+              {product.categoryName || 
+               (typeof product.category === 'object' ? product.category.name : product.category?.replace('-', ' ')) || 
+               'Product'}
+            </p>
+            <Link href={`/p/${product.id}`} className={styles.titleLink}>
+              <h3 className={isList ? styles.listProductTitle : styles.productTitle}>
+                {product.name}
+              </h3>
+            </Link>
+            <p className={`${styles.blurbText} ${isList ? styles.listBlurbText : ''}`}>{product.blurb}</p>
+          </div>
+          
+          <div className={isList ? styles.listStatsWrapper : styles.statsWrapper}>
+            <span>{product.rating} Rating</span>
+            <span>{product.reviews} Reviews</span>
+          </div>
+        </div>
+
+        <div className={isList ? styles.listActionsContainer : styles.actionsContainer}>
+          <div className="flex flex-col">
+            <p className={isList ? styles.listPriceDisplay : styles.priceDisplay}>Rs. {product.price.toLocaleString()}</p>
             {product.originalPrice && (
-              <p className={styles.originalPrice}>Rs. {product.originalPrice.toLocaleString()}</p>
+              <p className={isList ? styles.listOriginalPrice : styles.originalPrice}>Rs. {product.originalPrice.toLocaleString()}</p>
             )}
           </div>
           <div className={styles.actionButtonGroup}>
             <button
-              suppressHydrationWarning
-              type="button"
               disabled={!product.inStock}
               onClick={handleAdd}
+              suppressHydrationWarning={true}
               className={`interactive-button ${styles.addBtn} ${
                 !product.inStock
                   ? styles.btnDisabled
@@ -150,20 +161,39 @@ export default function ProductCard({ product, initiallyWishlisted = false }) {
                     : styles.btnReady
               }`}
             >
-              {!product.inStock ? 'Out of stock' : added ? 'Added' : 'Add to cart'}
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={added ? 'added' : 'ready'}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex items-center justify-center gap-2"
+                >
+                  {!product.inStock ? 'Out of stock' : added ? 'Added' : (
+                    <>
+                      <ShoppingBag size={16} />
+                      Buy
+                    </>
+                  )}
+                </motion.span>
+              </AnimatePresence>
             </button>
-            <button 
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
               onClick={handleToggleWishlist}
+              suppressHydrationWarning={true}
               className={`${styles.wishlistActionBtn} ${isWishlisted ? styles.wishlistActive : ''}`}
-              title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
             >
-              <svg viewBox="0 0 24 24" className={styles.heartIcon}>
-                <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-              </svg>
-            </button>
+              <Heart 
+                size={20} 
+                className={styles.heartIcon} 
+                fill={isWishlisted ? "currentColor" : "none"} 
+              />
+            </motion.button>
           </div>
         </div>
       </div>
-    </article>
+    </motion.article>
   )
 }
+

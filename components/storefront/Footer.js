@@ -29,10 +29,10 @@ export default function Footer() {
         <div>
           <p className="font-heading text-lg font-semibold text-white">Shop</p>
           <div className="mt-4 flex flex-col gap-3 text-sm">
-            <Link href="/products" className="transition hover:text-white">All products</Link>
-            <Link href="/products?category=development-boards" className="transition hover:text-white">Development boards</Link>
-            <Link href="/products?category=sensors-modules" className="transition hover:text-white">Sensors and modules</Link>
-            <Link href="/products?category=stem-kits" className="transition hover:text-white">Maker kits</Link>
+            <Link href="/p" className="transition hover:text-white">All products</Link>
+            <Link href="/p?category=development-boards" className="transition hover:text-white">Development boards</Link>
+            <Link href="/p?category=sensors-modules" className="transition hover:text-white">Sensors and modules</Link>
+            <Link href="/p?category=stem-kits" className="transition hover:text-white">Maker kits</Link>
           </div>
         </div>
 

@@ -41,11 +41,15 @@ export async function POST(request) {
     })
   } catch (error) {
     console.error('Razorpay Order Error:', error)
-    const errorMsg = error.description || error.message || 'Failed to create payment order'
+    
+    // Check if it's a configuration error
+    const isConfigError = error.message.includes('missing in environment')
+    const statusCode = isConfigError ? 501 : 500 // 501 Not Implemented or 503 Service Unavailable might be better, but 500 is default
+    
     return NextResponse.json({ 
-      error: errorMsg,
-      code: error.code || 'RAZORPAY_ERROR',
-      key_id: getRazorpayConfig().key_id
-    }, { status: 500 })
+      error: error.message || 'Failed to create payment order',
+      code: isConfigError ? 'CONFIG_ERROR' : (error.code || 'RAZORPAY_ERROR'),
+      key_id: getRazorpayConfig().key_id || 'NOT_SET'
+    }, { status: statusCode })
   }
 }

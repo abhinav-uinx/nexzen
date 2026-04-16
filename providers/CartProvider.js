@@ -38,6 +38,16 @@ export function CartProvider({ children }) {
     }
     
     loadCart()
+
+    // 1c. Listen for changes in other tabs
+    const handleStorageChange = (e) => {
+      if (e.key === 'cart') {
+        const nextItems = e.newValue ? JSON.parse(e.newValue) : []
+        setCartItems(nextItems)
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
   }, [session?.access_token])
 
   // 2. Persist Side Effects: Save to localStorage AND Database API on every change

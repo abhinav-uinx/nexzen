@@ -71,7 +71,33 @@ async function saveUploadedImage(image, slug) {
   return `/uploads/${fileName}`
 }
 
-function buildMetadata(formData) {
+async function buildMetadata(formData, slug) {
+  // 1. Process manually entered URLs
+  const manualGallery = `${formData.get('galleryUrls') || ''}`.split(',').map(s => s.trim()).filter(Boolean)
+  
+  // 2. Process uploaded gallery files
+  const uploadedGallery = []
+  const galleryFiles = formData.getAll('gallery')
+  for (const file of galleryFiles) {
+    const url = await saveUploadedImage(file, `${slug}-gallery`)
+    if (url) uploadedGallery.push(url)
+  }
+
+  const gallery = [...manualGallery, ...uploadedGallery]
+  
+  const flavours = `${formData.get('variants') || formData.get('flavours') || ''}`.split(',').map(s => s.trim()).filter(Boolean)
+  const sizes = `${formData.get('configs') || formData.get('sizes') || ''}`.split(',').map(s => {
+    const label = s.trim()
+    return label ? { label } : null
+  }).filter(Boolean)
+  
+  const details = []
+  const benefit = `${formData.get('featureContent') || formData.get('benefitContent') || ''}`.trim()
+  const usage = `${formData.get('technicalContent') || formData.get('usageContent') || ''}`.trim()
+  
+  if (benefit) details.push({ title: 'Technical Highlights', content: benefit })
+  if (usage) details.push({ title: 'Usage & Setup Guide', content: usage })
+
   return {
     presentation: {
       family: `${formData.get('brand') || ''}`.trim() || undefined,
@@ -80,11 +106,18 @@ function buildMetadata(formData) {
       rating: parseDecimal(`${formData.get('rating') || ''}`) || undefined,
       reviews: parseInteger(`${formData.get('reviews') || ''}`, 0) || undefined,
       shortSpec: `${formData.get('shortSpec') || ''}`.trim() || undefined,
+      accent: `${formData.get('accent') || ''}`.trim() || undefined,
+      surface: `${formData.get('surface') || ''}`.trim() || undefined,
+      // Premium Hardware Extensions
+      flavours: flavours.length > 0 ? flavours : undefined,
+      sizes: sizes.length > 0 ? sizes : undefined,
+      gallery: gallery.length > 0 ? gallery : undefined,
+      details: details.length > 0 ? details : undefined,
     },
   }
 }
 
-function buildProductData(formData, imageUrl, fallbackImageUrl = null) {
+async function buildProductData(formData, imageUrl, fallbackImageUrl = null) {
   const name = `${formData.get('name') || ''}`.trim()
   const sku = `${formData.get('sku') || ''}`.trim().toUpperCase()
   const categoryId = `${formData.get('categoryId') || ''}`.trim()
@@ -130,7 +163,7 @@ function buildProductData(formData, imageUrl, fallbackImageUrl = null) {
       requiresShipping,
       trackInventory,
       categoryId,
-      metadata: buildMetadata(formData),
+      metadata: await buildMetadata(formData, slug),
     },
   }
 }
@@ -181,7 +214,7 @@ export async function handleCreateAdminProduct(request) {
     }
 
     const formData = await request.formData()
-    const draft = buildProductData(formData, null)
+    const draft = await buildProductData(formData, null)
 
     if (!draft.valid) {
       return Response.json({ error: 'Name, SKU, category, and description are required.' }, { status: 400 })
@@ -189,7 +222,7 @@ export async function handleCreateAdminProduct(request) {
 
     const image = formData.get('image')
     const imageUrl = await saveUploadedImage(image, draft.slug)
-    const payload = buildProductData(formData, imageUrl)
+    const payload = await buildProductData(formData, imageUrl)
 
     const product = await prisma.product.create({
       data: payload.data,
@@ -249,7 +282,7 @@ export async function handleUpdateAdminProduct(request) {
       return Response.json({ error: 'Product not found.' }, { status: 404 })
     }
 
-    const draft = buildProductData(formData, null, existingProduct.imageUrl)
+    const draft = await buildProductData(formData, null, existingProduct.imageUrl)
 
     if (!draft.valid) {
       return Response.json({ error: 'Name, SKU, category, and description are required.' }, { status: 400 })
@@ -257,7 +290,7 @@ export async function handleUpdateAdminProduct(request) {
 
     const image = formData.get('image')
     const uploadedImageUrl = await saveUploadedImage(image, draft.slug)
-    const payload = buildProductData(formData, uploadedImageUrl, existingProduct.imageUrl)
+    const payload = await buildProductData(formData, uploadedImageUrl, existingProduct.imageUrl)
 
     const product = await prisma.product.update({
       where: {

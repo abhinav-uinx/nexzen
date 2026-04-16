@@ -39,9 +39,17 @@ export async function POST(request) {
         razorpayPaymentId: razorpay_payment_id,
       },
       include: {
-        items: true
+        items: true,
+        user: { include: { cart: true } }
       }
     })
+
+    // Clear the user's cart in the database now that payment is confirmed
+    if (updatedOrder.user?.cart?.id) {
+      await prisma.cartItem.deleteMany({
+        where: { cartId: updatedOrder.user.cart.id }
+      }).catch(err => console.error('Failed to clear DB cart items:', err))
+    }
 
     // Now send the emails because payment is CONFIRMED
     sendOrderPendingEmail(updatedOrder.customerEmail, updatedOrder.id, Number(updatedOrder.total)).catch(console.error)

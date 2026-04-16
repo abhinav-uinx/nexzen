@@ -18,6 +18,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      { source: '/products', destination: '/p', permanent: true },
+      { source: '/products/:path*', destination: '/p/:path*', permanent: true },
+      { source: '/active-orders', destination: '/o', permanent: true },
+      { source: '/profile', destination: '/u', permanent: true },
+      { source: '/portal', destination: '/h', permanent: true },
+      { source: '/dashboard', destination: '/d', permanent: true },
+    ]
+  }
 };
 
 export default nextConfig;

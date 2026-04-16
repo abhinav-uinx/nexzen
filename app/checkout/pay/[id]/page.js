@@ -3,12 +3,14 @@
 import { useEffect, useState, use } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useCart } from '@/providers/CartProvider'
 
 export default function RazorpayPaymentPage({ params: paramsPromise }) {
   const params = use(paramsPromise)
   const searchParams = useSearchParams()
   const vpa = searchParams.get('vpa') || null
   const orderId = params.id
+  const { clearCart } = useCart()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [status, setStatus] = useState('initializing') // initializing, paying, success, failed
@@ -69,17 +71,16 @@ export default function RazorpayPaymentPage({ params: paramsPromise }) {
                     })
                   })
 
-                  if (verifyRes.ok) {
-                    setStatus('success')
-                  } else {
-                    setStatus('failed')
-                    setError('Payment verification failed.')
+                    if (verifyRes.ok) {
+                      clearCart()
+                      setStatus('success')
+                    } else {
+                      router.push(`/cart?error=failed&orderId=${orderId}`)
+                    }
+                  } catch (e) {
+                    router.push(`/cart?error=failed&orderId=${orderId}`)
                   }
-                } catch (e) {
-                  setStatus('failed')
-                  setError('Verification error.')
-                }
-              },
+                },
               prefill: {
                 name: order.customerName,
                 email: order.customerEmail,
@@ -90,8 +91,7 @@ export default function RazorpayPaymentPage({ params: paramsPromise }) {
               modal: {
                 ondismiss: function() {
                   if (status !== 'success') {
-                    setStatus('failed')
-                    setError('Payment window closed.')
+                    router.push(`/cart?error=cancelled&orderId=${orderId}`)
                   }
                 }
               }
@@ -135,9 +135,9 @@ export default function RazorpayPaymentPage({ params: paramsPromise }) {
           </svg>
         </div>
         <h1 className="font-heading text-4xl font-bold">Payment Successful</h1>
-        <p className="mt-4 text-slate-400">Your order has been confirmed. You can close this tab now.</p>
-        <Link href="/profile" className="mt-8 rounded-full bg-white px-8 py-3 text-sm font-bold text-slate-950">
-          View My Orders
+        <p className="mt-4 text-slate-400">Your order has been confirmed. You can view your active shipments now.</p>
+        <Link href="/active-orders" className="mt-8 rounded-full bg-white px-8 py-3 text-sm font-bold text-slate-950 transition-all hover:bg-emerald-400">
+          View Active Orders
         </Link>
       </div>
     )
@@ -153,9 +153,14 @@ export default function RazorpayPaymentPage({ params: paramsPromise }) {
         </div>
         <h1 className="font-heading text-4xl font-bold">Payment Failed</h1>
         <p className="mt-4 text-slate-400">{error}</p>
-        <button onClick={() => window.location.reload()} className="mt-8 rounded-full bg-white/10 px-8 py-3 text-sm font-bold border border-white/20">
-          Try Again
-        </button>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <button onClick={() => window.location.reload()} className="rounded-full bg-white px-8 py-3 text-sm font-bold text-slate-950 transition-all hover:bg-slate-200">
+            Try Again
+          </button>
+          <Link href="/cart" className="rounded-full bg-white/10 px-8 py-3 text-sm font-bold border border-white/20 transition-all hover:bg-white/20">
+            Back to Cart
+          </Link>
+        </div>
       </div>
     )
   }

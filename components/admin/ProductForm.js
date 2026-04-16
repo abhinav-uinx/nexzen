@@ -7,6 +7,16 @@ const initialState = {
   success: '',
 }
 
+const PRESET_THEMES = [
+  { name: 'Default Nexzen', accent: 'from-[#0f172a] via-[#1d4ed8] to-[#38bdf8]', surface: 'bg-[#eff6ff]', tone: 'slate' },
+  { name: 'Hardware Pro (Blue)', accent: 'from-[#1e40af] via-[#3b82f6] to-[#60a5fa]', surface: 'bg-[#f0f9ff]', tone: 'sky' },
+  { name: 'Logic Green (Arduino)', accent: 'from-[#065f46] via-[#059669] to-[#34d399]', surface: 'bg-[#ecfdf5]', tone: 'emerald' },
+  { name: 'Signal Red (R-Pi)', accent: 'from-[#991b1b] via-[#dc2626] to-[#f87171]', surface: 'bg-[#fef2f2]', tone: 'rose' },
+  { name: 'Energy Orange', accent: 'from-[#9a3412] via-[#ea580c] to-[#fb923c]', surface: 'bg-[#fff7ed]', tone: 'orange' },
+  { name: 'Deep Space (Dark)', accent: 'from-[#020617] via-[#1e293b] to-[#475569]', surface: 'bg-[#f8fafc]', tone: 'slate' },
+  { name: 'Vision Purple', accent: 'from-[#581c87] via-[#9333ea] to-[#c084fc]', surface: 'bg-[#faf5ff]', tone: 'violet' },
+]
+
 function getDefaultValues(brands) {
   return {
     id: '',
@@ -29,9 +39,17 @@ function getDefaultValues(brands) {
     requiresShipping: true,
     trackInventory: true,
     shortSpec: '',
+    accent: '',
+    surface: '',
     dependencies: '',
     shortDescription: '',
     description: '',
+    // Premium Specifications
+    variants: '',
+    configs: '',
+    galleryUrls: '',
+    featureContent: '',
+    technicalContent: '',
   }
 }
 
@@ -47,6 +65,22 @@ export default function ProductForm({
   const [isPending, startTransition] = useTransition()
   const defaults = initialValues || getDefaultValues(brands)
   const [brandValue, setBrandValue] = useState(defaults.brand || brands[0] || '')
+  
+  const [accent, setAccent] = useState(defaults.accent || PRESET_THEMES[0].accent)
+  const [surface, setSurface] = useState(defaults.surface || PRESET_THEMES[0].surface)
+  const [badgeTone, setBadgeTone] = useState(defaults.badgeTone || 'slate')
+
+  function handleThemeChange(e) {
+    const themeName = e.target.value
+    if (themeName === 'custom') return
+    
+    const theme = PRESET_THEMES.find(t => t.name === themeName)
+    if (theme) {
+      setAccent(theme.accent)
+      setSurface(theme.surface)
+      setBadgeTone(theme.tone)
+    }
+  }
 
   function handleSubmit(event) {
     event.preventDefault()
@@ -281,16 +315,17 @@ export default function ProductForm({
           Badge tone
           <select
             name="badgeTone"
-            defaultValue={defaults.badgeTone || 'slate'}
+            value={badgeTone}
+            onChange={(e) => setBadgeTone(e.target.value)}
             className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500"
           >
-            <option value="slate">Slate</option>
-            <option value="amber">Amber</option>
-            <option value="emerald">Emerald</option>
-            <option value="rose">Rose</option>
-            <option value="violet">Violet</option>
-            <option value="sky">Sky</option>
-            <option value="orange">Orange</option>
+            <option value="slate">Slate (Default)</option>
+            <option value="amber">Amber (Premium)</option>
+            <option value="emerald">Emerald (New/Success)</option>
+            <option value="rose">Rose (Hot/Sale)</option>
+            <option value="violet">Violet (Exclusive)</option>
+            <option value="sky">Sky (Pro)</option>
+            <option value="orange">Orange (Industrial)</option>
           </select>
         </label>
         <label className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700">
@@ -316,9 +351,103 @@ export default function ProductForm({
             name="dependencies"
             defaultValue={defaults.dependencies}
             className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500"
-            placeholder="comma-separated SKU or slug values"
+            placeholder="e.g. nex-uno-r4, nex-lidar-mini (comma-separated SKUs or Slugs)"
           />
         </label>
+        <div className="md:col-span-2 grid gap-4 grid-cols-1 md:grid-cols-3 items-end p-4 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
+          <label className="grid gap-2 text-sm font-semibold text-blue-700">
+            Design Preset Theme
+            <select
+              onChange={handleThemeChange}
+              defaultValue={PRESET_THEMES.find(t => t.accent === accent)?.name || 'custom'}
+              className="rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500"
+            >
+              {PRESET_THEMES.map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
+              <option value="custom">Manual / Custom</option>
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm text-slate-700">
+            Accent Gradient (Tailwind)
+            <input
+              name="accent"
+              value={accent}
+              onChange={(e) => setAccent(e.target.value)}
+              className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500"
+              placeholder="from-[#0f172a] via-[#1d4ed8] to-[#38bdf8]"
+            />
+          </label>
+          <label className="grid gap-2 text-sm text-slate-700">
+            Surface Color (Tailwind)
+            <input
+              name="surface"
+              value={surface}
+              onChange={(e) => setSurface(e.target.value)}
+              className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500"
+              placeholder="bg-[#eff6ff]"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div className="border-t border-slate-100 pt-8 mt-4 space-y-6">
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-widest text-blue-700">Premium Specifications</h3>
+          <p className="text-xs text-slate-500 mt-1">Manage variants, configurations and technical sections stored as metadata.</p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="grid gap-2 text-sm text-slate-700">
+            Variants / Type
+            <input
+              name="variants"
+              defaultValue={defaults.variants || defaults.flavours}
+              className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500"
+              placeholder="Standard, Pro, Headerless"
+            />
+            <p className="text-[10px] text-slate-400">Comma-separated list of product types (e.g. Pin types, Colors).</p>
+          </label>
+          <label className="grid gap-2 text-sm text-slate-700">
+            Configuration / Specs
+            <input
+              name="configs"
+              defaultValue={defaults.configs || defaults.sizes}
+              className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500"
+              placeholder="4GB, 8GB, 128MB Flash"
+            />
+            <p className="text-[10px] text-slate-400">Comma-separated list of hardware configurations.</p>
+          </label>
+          <label className="grid gap-2 text-sm text-slate-700 md:col-span-2">
+            Gallery Image URLs
+            <textarea
+              name="galleryUrls"
+              rows={2}
+              defaultValue={defaults.galleryUrls}
+              className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500"
+              placeholder="https://example.com/img1.png, https://example.com/img2.png"
+            />
+            <p className="text-[10px] text-slate-400">Comma-separated URLs for the product image carousel.</p>
+          </label>
+          <label className="grid gap-2 text-sm text-slate-700 md:col-span-2">
+            Technical Highlights
+            <textarea
+              name="featureContent"
+              rows={3}
+              defaultValue={defaults.featureContent || defaults.benefitContent}
+              className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500"
+              placeholder="Describe the main technical features and certifications."
+            />
+          </label>
+          <label className="grid gap-2 text-sm text-slate-700 md:col-span-2">
+            Usage & Setup Guide
+            <textarea
+              name="technicalContent"
+              rows={3}
+              defaultValue={defaults.technicalContent || defaults.usageContent}
+              className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500"
+              placeholder="How should the customer initialize or wire this product?"
+            />
+          </label>
+        </div>
       </div>
 
       <label className="grid gap-2 text-sm text-slate-700">
@@ -345,13 +474,26 @@ export default function ProductForm({
       </label>
 
       <label className="grid gap-2 text-sm text-slate-700">
-        Product image
+        Gallery photos (Upload Multiple)
+        <input
+          name="gallery"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          multiple
+          className="rounded-2xl border border-dashed border-slate-300 px-4 py-3"
+        />
+        <p className="text-[10px] text-slate-400">Select multiple image files to build the storefront carousel.</p>
+      </label>
+
+      <label className="grid gap-2 text-sm text-slate-700">
+        Product image (Primary)
         <input
           name="image"
           type="file"
           accept="image/png,image/jpeg,image/webp"
           className="rounded-2xl border border-dashed border-slate-300 px-4 py-3"
         />
+        <p className="text-[10px] text-slate-400">Main photo shown in search and catalog.</p>
       </label>
 
       {status.error && (

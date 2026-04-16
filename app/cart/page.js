@@ -1,12 +1,21 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
 import { useCart } from '@/providers/CartProvider'
 
 export default function CartPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-white"><div className="h-10 w-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" /></div>}>
+      <CartPageContent />
+    </Suspense>
+  )
+}
+
+function CartPageContent() {
   const router = useRouter()
   const { user, session } = useAuth()
   const {
@@ -39,6 +48,20 @@ export default function CartPage() {
   const [checkoutMessage, setCheckoutMessage] = useState('')
   const [checkoutError, setCheckoutError] = useState('')
   const [isCheckingOut, startCheckoutTransition] = useTransition()
+
+  const searchParams = useSearchParams()
+  const errorParam = searchParams.get('error')
+
+  // Handle incoming payment errors from terminal redirects
+  useEffect(() => {
+    if (errorParam) {
+      if (errorParam === 'cancelled') {
+        setCheckoutError('Payment was cancelled. You can try again whenever you are ready.')
+      } else if (errorParam === 'failed') {
+        setCheckoutError('Payment failed. Please check your payment details or try another method.')
+      }
+    }
+  }, [errorParam])
 
   // Fetch user address & UPI on mount if logged in
   useEffect(() => {
@@ -144,17 +167,11 @@ export default function CartPage() {
       if (paymentMethod === 'razorpay' || paymentMethod === 'upi') {
         const upiParam = shippingData.upiId ? `?vpa=${encodeURIComponent(shippingData.upiId)}` : ''
         const paymentUrl = `/checkout/pay/${orderId}${upiParam}`
-        window.open(paymentUrl, '_blank')
-        setCheckoutMessage('Payment window opened in a new tab. Waiting for confirmation...')
-        // After a small delay, clear cart and redirect to profile to see the pending order
-        setTimeout(() => {
-            clearCart()
-            router.push('/profile')
-        }, 5000)
+        router.push(paymentUrl)
       } else {
         clearCart()
         setCheckoutMessage(`Order ${result.order.id} placed successfully with Cash on Delivery.`)
-        router.push('/profile')
+        router.push('/active-orders')
       }
     })
   }
@@ -162,36 +179,51 @@ export default function CartPage() {
   return (
     <section className="px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        {/* Checkout Header & Progress */}
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_16px_48px_rgba(15,23,42,0.05)] sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Checkout</p>
-                <h1 className="mt-3 font-heading text-4xl font-semibold text-slate-950">
-                    {step === 1 ? 'Review your items' : step === 2 ? 'Shipping details' : 'Secure payment'}
-                </h1>
-            </div>
-            
-            {/* Progress Bar */}
-            <div className="flex items-center gap-2">
-                {[1, 2, 3].map((s) => (
-                    <div key={s} className="flex items-center">
-                        <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${step >= s ? 'bg-slate-950 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                            {s}
-                        </div>
-                        {s < 3 && <div className={`h-[1px] w-8 ${step > s ? 'bg-slate-950' : 'bg-slate-200'}`} />}
-                    </div>
-                ))}
-            </div>
-          </div>
-        </div>
-
         {cartItems.length === 0 ? (
-          <div className="mt-8 rounded-[2rem] border border-dashed border-slate-300 bg-white p-12 text-center">
-             {/* Empty cart logic remains same */}
+          <div className="flex min-h-[60vh] flex-col items-center justify-center text-center animate-apple-fade">
+             <div className="relative mb-8 flex h-32 w-32 items-center justify-center rounded-full bg-slate-50 border border-slate-100 shadow-inner">
+                <svg className="h-12 w-12 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+             </div>
+             <h2 className="font-heading text-3xl font-bold text-slate-950">Your cart is empty</h2>
+             <p className="mt-4 max-w-sm text-sm leading-7 text-slate-600">
+                It looks like you haven't added any building blocks to your collection yet.
+             </p>
+             <Link
+                href="/"
+                className="interactive-button mt-10 rounded-full bg-slate-950 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-blue-700 hover:shadow-[0_20px_40px_rgba(37,99,235,0.2)] active:scale-[0.98]"
+             >
+                Explore Products
+             </Link>
           </div>
         ) : (
-          <div className="mt-8 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <>
+            {/* Checkout Header & Progress */}
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_16px_48px_rgba(15,23,42,0.05)] sm:p-8">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Checkout</p>
+                    <h1 className="mt-3 font-heading text-4xl font-semibold text-slate-950">
+                        {step === 1 ? 'Review your items' : step === 2 ? 'Shipping details' : 'Secure payment'}
+                    </h1>
+                </div>
+                
+                {/* Progress Bar */}
+                <div className="flex items-center gap-2">
+                    {[1, 2, 3].map((s) => (
+                        <div key={s} className="flex items-center">
+                            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${step >= s ? 'bg-slate-950 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                                {s}
+                            </div>
+                            {s < 3 && <div className={`h-[1px] w-8 ${step > s ? 'bg-slate-950' : 'bg-slate-200'}`} />}
+                        </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
             
             {/* Main Content Area */}
             <div className="space-y-4">
@@ -202,33 +234,33 @@ export default function CartPage() {
                     <span>Quantity & Action</span>
                   </div>
                   {cartItems.map((item) => (
-                    <div key={item.id} className="group rounded-3xl border border-slate-200 bg-white p-4 transition-all hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(37,99,235,0.04)]">
+                    <div key={item.id} className="group rounded-2xl border border-slate-200 bg-white p-3 transition-all hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(37,99,235,0.04)]">
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex flex-1 items-center gap-4">
+                        <div className="flex flex-1 items-center gap-3">
                             {item.imageUrl && (
-                                <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl bg-slate-50 border border-slate-100">
+                                <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100">
                                     <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
                                 </div>
                             )}
                             <div className="min-w-0">
-                                <p className="truncate text-[10px] uppercase tracking-widest text-slate-500">{item.family}</p>
-                                <h3 className="truncate font-heading text-lg font-bold text-slate-950 group-hover:text-blue-700 transition-colors">{item.name}</h3>
-                                <p className="mt-0.5 text-sm font-semibold text-slate-600">Rs. {item.price.toLocaleString()}</p>
+                                <p className="truncate text-[9px] uppercase tracking-widest text-slate-400 font-bold">{item.family}</p>
+                                <h3 className="truncate font-heading text-base font-bold text-slate-950 group-hover:text-blue-700 transition-colors uppercase">{item.name}</h3>
+                                <p className="mt-0.5 text-xs font-bold text-slate-600">Rs. {item.price.toLocaleString()}</p>
                             </div>
                         </div>
                         
-                        <div className="flex items-center justify-between gap-6 sm:justify-end">
-                          <div className="flex items-center rounded-2xl bg-slate-50 p-1 border border-slate-100">
+                        <div className="flex items-center justify-between gap-4 sm:justify-end">
+                          <div className="flex items-center rounded-xl bg-slate-50 p-0.5 border border-slate-100">
                             <button
                               onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              className="interactive-button flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all"
+                              className="interactive-button flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all"
                             >
                               -
                             </button>
-                            <span className="min-w-10 text-center text-sm font-bold text-slate-950">{item.quantity}</span>
+                            <span className="min-w-8 text-center text-xs font-bold text-slate-950">{item.quantity}</span>
                             <button
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="interactive-button flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all"
+                              className="interactive-button flex h-7 w-7 items-center justify-center rounded-lg text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all"
                             >
                               +
                             </button>
@@ -433,12 +465,39 @@ export default function CartPage() {
                 )}
               </div>
 
-              {checkoutError && <p className="mt-6 text-center text-sm font-bold text-rose-400">{checkoutError}</p>}
               {checkoutMessage && <p className="mt-6 text-center text-sm font-bold text-emerald-400">{checkoutMessage}</p>}
             </div>
           </div>
+          </>
         )}
       </div>
+
+      {/* Payment Error Modal */}
+      {checkoutError && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-md scale-in-center rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-[0_24px_80px_rgba(0,0,0,0.15)] animate-in zoom-in-95 duration-300">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-rose-50 text-rose-500 border border-rose-100">
+              <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <h3 className="font-heading text-2xl font-bold text-slate-950">Payment Issue</h3>
+            <p className="mt-4 text-sm leading-relaxed text-slate-600 font-medium">
+              {checkoutError}
+            </p>
+            <button
+              onClick={() => {
+                setCheckoutError('')
+                // Remove the error parameter from URL without page reload
+                router.replace('/cart')
+              }}
+              className="mt-8 w-full rounded-full bg-slate-950 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-blue-700 active:scale-[0.98]"
+            >
+              Continue to Cart
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

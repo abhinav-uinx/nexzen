@@ -146,6 +146,20 @@ export default function AdminCatalogManager({ categories, brands, products }) {
                     <p className="text-sm text-slate-600">
                       Rs. {Number(product.price).toLocaleString()} • Stock {product.stockQuantity} • {product.brand || 'No brand'}
                     </p>
+                    {((product.flavours && product.flavours.length > 0) || (product.sizes && product.sizes.length > 0)) && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {product.flavours?.map(f => (
+                          <span key={f} className="text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                            {f}
+                          </span>
+                        ))}
+                        {product.sizes?.map(s => (
+                          <span key={s.label} className="text-[10px] font-bold uppercase tracking-widest text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                            {s.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-3">
                     <button

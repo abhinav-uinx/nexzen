@@ -15,6 +15,8 @@
     "@prisma/client": "^7.7.0",
     "@supabase/supabase-js": "^2.102.1",
     "dotenv": "^17.4.1",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.8.0",
     "next": "16.2.2",
     "nodemailer": "^8.0.5",
     "pg": "^8.20.0",

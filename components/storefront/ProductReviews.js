@@ -5,7 +5,7 @@ import { useAuth } from '@/providers/AuthProvider'
 
 import styles from './ProductReviews.module.css'
 
-export default function ProductReviews({ productId }) {
+export default function ProductReviews({ productId, density = 'default' }) {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -73,17 +73,21 @@ export default function ProductReviews({ productId }) {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
+      <div className={`${styles.header} ${density === 'compact' ? 'items-end' : ''}`}>
         <div>
-          <p className={styles.subtitle}>Community Feedback</p>
+          <p className={`${styles.subtitle} ${density === 'compact' ? 'text-[10px] tracking-[0.2em] font-black text-blue-600' : ''}`}>
+            COMMUNITY FEEDBACK
+          </p>
           <div className={styles.titleWrapper}>
-            <h2 className={styles.title}>Customer Reviews</h2>
+            <h2 className={`${styles.title} ${density === 'compact' ? 'font-black uppercase tracking-tighter text-3xl' : ''}`}>
+              Customer Reviews
+            </h2>
             <span className={styles.count}>({reviews.length})</span>
           </div>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className={styles.writeReviewBtn}
+          className={`${styles.writeReviewBtn} ${density === 'compact' ? 'rounded-lg px-6 py-3 text-[10px] font-black uppercase tracking-widest' : ''}`}
         >
           Write a Review
         </button>
@@ -94,11 +98,11 @@ export default function ProductReviews({ productId }) {
       ) : reviews.length === 0 ? (
         <p className={styles.emptyState}>No reviews yet. Be the first to review this product!</p>
       ) : (
-        <div className={styles.reviewsList}>
+        <div className={`${styles.reviewsList} ${density === 'compact' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : ''}`}>
           {(isExpanded ? reviews : reviews.slice(0, 3)).map(review => (
-            <div key={review.id} className={styles.reviewItem}>
+            <div key={review.id} className={`${styles.reviewItem} ${density === 'compact' ? 'border-2 border-slate-50 bg-slate-50/30 p-4 rounded-xl' : ''}`}>
               <div className={styles.reviewHeader}>
-                <div className={styles.avatarWrapper}>
+                <div className={`${styles.avatarWrapper} ${density === 'compact' ? 'h-8 w-8' : ''}`}>
                   {review.user?.avatarUrl ? (
                     <img src={review.user.avatarUrl} alt="avatar" className={styles.avatarImg} />
                   ) : (
@@ -108,16 +112,20 @@ export default function ProductReviews({ productId }) {
                   )}
                 </div>
                 <div>
-                  <p className={styles.reviewerName}>{review.user?.name || 'Guest User'}</p>
-                  <div className={styles.ratingWrapper}>
+                  <p className={`${styles.reviewerName} ${density === 'compact' ? 'text-[11px] font-black uppercase tracking-widest' : ''}`}>
+                    {review.user?.name || 'Guest User'}
+                  </p>
+                  <div className={`${styles.ratingWrapper} ${density === 'compact' ? 'text-[10px]' : ''}`}>
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <span key={i}>{i < review.rating ? '★' : '☆'}</span>
+                      <span key={i} className={i < review.rating ? 'text-blue-600' : 'text-slate-200 text-xs'}>{i < review.rating ? '★' : '☆'}</span>
                     ))}
                   </div>
                 </div>
               </div>
               {review.comment && (
-                <p className={styles.comment}>{review.comment}</p>
+                <p className={`${styles.comment} ${density === 'compact' ? 'mt-3 text-xs leading-relaxed text-slate-600 font-medium' : ''}`}>
+                  {review.comment}
+                </p>
               )}
             </div>
           ))}

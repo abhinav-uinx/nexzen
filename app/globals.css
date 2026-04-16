@@ -1,18 +1,30 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --background: #f8fafc;
-  --foreground: #020617;
-  --font-body: 'Aptos', 'Segoe UI Variable Text', 'Segoe UI', sans-serif;
-  --font-heading: 'Bahnschrift', 'Segoe UI Variable Display', 'Trebuchet MS', sans-serif;
+  --background: #f5f5f7;
+  --foreground: #000000;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Apple-inspired tokens */
+  --apple-grey: #86868b;
+  --apple-soft-grey: #f5f5f7;
+  --apple-border: rgba(0, 0, 0, 0.1);
+  --apple-blue: #0066cc;
+  
+  --ease-apple: cubic-bezier(0.28, 0.11, 0.32, 1);
 }
 
 * {
   box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html {
   scroll-behavior: smooth;
+  background: var(--background);
 }
 
 body {
@@ -20,6 +32,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body);
+  overflow-x: hidden;
 }
 
 body * {
@@ -33,109 +46,83 @@ a {
 
 .font-heading {
   font-family: var(--font-heading);
+  letter-spacing: -0.02em;
 }
 
-.animate-fade-up {
-  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+/* Enhanced Animations */
+.animate-apple-fade {
+  animation: apple-fade 0.8s var(--ease-apple) both;
 }
 
-.animate-soft-pop {
-  animation: soft-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.animate-float {
-  animation: float 7s ease-in-out infinite;
+@keyframes apple-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .interactive-button {
   position: relative;
   transform: translateY(0) scale(1);
-  transition:
-    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 220ms ease,
-    border-color 220ms ease,
-    color 220ms ease;
+  transition: all 0.3s var(--ease-apple);
   will-change: transform;
 }
 
 .interactive-button:hover {
-  transform: translateY(-2px) scale(1.01);
+  transform: scale(1.02);
 }
 
 .interactive-button:active {
-  transform: translateY(1px) scale(0.98);
+  transform: scale(0.98);
 }
 
-.interactive-button:focus-visible {
-  outline: 2px solid rgba(59, 130, 246, 0.45);
-  outline-offset: 3px;
+.glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes soft-pop {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
+.glass-dark {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-
-  .animate-fade-up,
-  .animate-soft-pop,
-  .animate-float {
-    animation: none;
-  }
-
-  .interactive-button,
-  .interactive-button:hover,
-  .interactive-button:active {
-    transform: none;
-    transition: none;
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(148, 163, 184, 0.12);
+  background: var(--apple-soft-grey);
 }
 
 ::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.35);
+  background: rgba(0, 0, 0, 0.2);
 }
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Text Balance Utility */
+.text-balance {
+  text-wrap: balance;
+}
+
