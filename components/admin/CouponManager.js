@@ -91,6 +91,7 @@ export default function CouponManager() {
         <form onSubmit={createNewCoupon} className="flex flex-col gap-3 rounded-[1.5rem] bg-slate-50 p-4 border border-slate-100 sm:w-80">
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Create New Coupon</p>
           <input 
+            suppressHydrationWarning
             type="text"
             placeholder="COUPON_CODE"
             className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-mono focus:border-blue-500 focus:outline-none"
@@ -100,6 +101,7 @@ export default function CouponManager() {
           />
           <div className="flex gap-2">
             <input 
+              suppressHydrationWarning
               type="number"
               placeholder="Disc %"
               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
@@ -142,6 +144,7 @@ export default function CouponManager() {
                   <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
                     <span className="text-sm font-bold text-slate-900">Discount:</span>
                     <input 
+                      suppressHydrationWarning
                       type="number"
                       className="w-16 bg-transparent text-center font-bold text-blue-700 focus:outline-none"
                       value={coupon.discountPercent}

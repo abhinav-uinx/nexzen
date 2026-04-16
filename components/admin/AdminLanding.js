@@ -58,6 +58,13 @@ export default function AdminLanding({ adminBasePath = '/nexzen-control-room', c
               Manage Categories
             </Link>
             <Link 
+              href={`${adminBasePath}/brands`}
+              className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-blue-600 hover:border-[3px] hover:shadow-lg active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2H2v10h10V2zM12 12H2v10h10V12zM22 2h-10v10h10V2zM22 12h-10v10h10V12z"></path></svg>
+              Manage Brands
+            </Link>
+            <Link 
               href={`${adminBasePath}/coupons`}
               className="inline-flex items-center gap-2 justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition-all duration-200 hover:border-emerald-600 hover:border-[3px] hover:shadow-lg active:scale-95"
             >

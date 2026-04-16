@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 import { useCart } from '@/providers/CartProvider'
-import { Search, ShoppingBag, User, Menu, X, ChevronRight } from 'lucide-react'
+import { Search, ShoppingBag, User, Menu, X, ChevronRight, SlidersHorizontal } from 'lucide-react'
 
 export default function Navbar() {
   const router = useRouter()
@@ -67,10 +67,18 @@ export default function Navbar() {
         <div className="flex items-center gap-4 shrink-0">
           <button 
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden"
+            className="md:hidden flex items-center justify-center w-10 h-10 text-white transition-all active:scale-95"
             suppressHydrationWarning={true}
           >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileOpen ? (
+              <X size={26} className="animate-in fade-in zoom-in spin-in-90 duration-300" />
+            ) : (
+              <div className="flex flex-col gap-1 items-center justify-center">
+                <span className="h-1.5 w-1.5 bg-white rounded-full animate-pulse transition-all"></span>
+                <span className="h-1.5 w-1.5 bg-white rounded-full transition-all"></span>
+                <span className="h-1.5 w-1.5 bg-white rounded-full animate-pulse transition-all"></span>
+              </div>
+            )}
           </button>
           
           <Link href="/" className="flex items-center gap-4 group">
@@ -94,12 +102,21 @@ export default function Navbar() {
         {!isAdminRoute && (
           <div className="hidden flex-1 max-w-xl md:block">
             <form onSubmit={submitSearch} className="relative group">
-              <div className="flex items-center rounded-full bg-black border border-white/20 p-1.5 pl-6 transition-all focus-within:border-white/40 focus-within:ring-2 focus-within:ring-white/5">
+              <div className="flex items-center rounded-full bg-black border border-white/20 p-1.5 pl-2 transition-all focus-within:border-white/40 focus-within:ring-2 focus-within:ring-white/5">
+                <button
+                  suppressHydrationWarning
+                  type="button"
+                  onClick={() => router.push('/p?filter=open')}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all hover:scale-110 active:scale-90"
+                  title="Advanced Filters"
+                >
+                  <SlidersHorizontal size={16} />
+                </button>
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search products, kits, or components..."
-                  className="flex-1 bg-transparent py-2 text-sm text-white placeholder:text-white/30 outline-none"
+                  placeholder="Search products..."
+                  className="flex-1 bg-transparent py-2 pl-3 text-sm text-white placeholder:text-white/30 outline-none"
                   suppressHydrationWarning={true}
                 />
                 <button 
@@ -206,12 +223,20 @@ export default function Navbar() {
           </nav>
 
           <form onSubmit={submitSearch} className="mt-12">
-            <div className="flex items-center rounded-full bg-white/5 border border-white/10 p-2 pl-6">
+            <div className="flex items-center rounded-full bg-white/5 border border-white/10 p-2 pl-2">
+              <button
+                suppressHydrationWarning
+                type="button"
+                onClick={() => { setMobileOpen(false); router.push('/p?filter=open'); }}
+                className="flex h-12 w-12 items-center justify-center rounded-full text-white active:scale-90"
+              >
+                <SlidersHorizontal size={20} />
+              </button>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search Nexzen..."
-                className="flex-1 bg-transparent py-2 text-lg text-white placeholder:text-white/20 outline-none"
+                className="flex-1 bg-transparent py-2 pl-4 text-lg text-white placeholder:text-white/20 outline-none"
               />
               <button 
                 type="submit"

@@ -100,7 +100,7 @@ async function buildMetadata(formData, slug) {
 
   return {
     presentation: {
-      family: `${formData.get('brand') || ''}`.trim() || undefined,
+      family: `${formData.get('brandName') || formData.get('brand') || ''}`.trim() || undefined,
       badge: `${formData.get('badge') || ''}`.trim() || undefined,
       badgeTone: `${formData.get('badgeTone') || ''}`.trim() || undefined,
       rating: parseDecimal(`${formData.get('rating') || ''}`) || undefined,
@@ -152,7 +152,8 @@ async function buildProductData(formData, imageUrl, fallbackImageUrl = null) {
       costPrice: parseDecimal(`${formData.get('costPrice') || ''}`),
       imageUrl: imageUrl || fallbackImageUrl || null,
       barcode: barcode || null,
-      brand: `${formData.get('brand') || ''}`.trim() || null,
+      brandId: `${formData.get('brandId') || ''}`.trim() || null,
+      brand: `${formData.get('brandName') || formData.get('brand') || ''}`.trim() || null,
       stockQuantity,
       lowStockThreshold: parseInteger(`${formData.get('lowStockThreshold') || ''}`, 5),
       inStock: stockQuantity > 0,
@@ -206,6 +207,31 @@ async function syncDependencies(productId, dependencyTokens) {
   }
 }
 
+async function ensureUniqueSlug(baseSlug, productId = null) {
+  let slug = baseSlug
+  let attempts = 0
+  const maxAttempts = 5
+
+  while (attempts < maxAttempts) {
+    const existing = await prisma.product.findFirst({
+      where: {
+        slug,
+        NOT: productId ? { id: productId } : undefined,
+      },
+      select: { id: true },
+    })
+
+    if (!existing) return slug
+
+    // If collision, append 4 random chars
+    const suffix = Math.random().toString(36).substring(2, 6)
+    slug = `${baseSlug}-${suffix}`
+    attempts++
+  }
+
+  return `${baseSlug}-${randomUUID().substring(0, 8)}`
+}
+
 export async function handleCreateAdminProduct(request) {
   try {
     const auth = await requireAdminSession(request)
@@ -214,15 +240,21 @@ export async function handleCreateAdminProduct(request) {
     }
 
     const formData = await request.formData()
-    const draft = await buildProductData(formData, null)
+    const rawData = await buildProductData(formData, null)
 
-    if (!draft.valid) {
+    if (!rawData.valid) {
       return Response.json({ error: 'Name, SKU, category, and description are required.' }, { status: 400 })
     }
 
+    // Ensure Slug Uniqueness
+    const uniqueSlug = await ensureUniqueSlug(rawData.slug)
+    
     const image = formData.get('image')
-    const imageUrl = await saveUploadedImage(image, draft.slug)
+    const imageUrl = await saveUploadedImage(image, uniqueSlug)
     const payload = await buildProductData(formData, imageUrl)
+    
+    // Override with unique slug
+    payload.data.slug = uniqueSlug
 
     const product = await prisma.product.create({
       data: payload.data,
@@ -251,6 +283,19 @@ export async function handleCreateAdminProduct(request) {
       },
     })
   } catch (error) {
+    console.error('Create Product Error:', error)
+    
+    // Handle Prisma unique constraint violations (P2002)
+    if (error.code === 'P2002') {
+      const target = error.meta?.target || []
+      if (target.includes('slug')) {
+        return Response.json({ error: 'A product with a similar name/slug already exists. Please try a different name.' }, { status: 400 })
+      }
+      if (target.includes('sku')) {
+        return Response.json({ error: 'A product with this SKU already exists.' }, { status: 400 })
+      }
+    }
+
     const message =
       error instanceof Error ? error.message : 'Something went wrong while creating the product.'
 
@@ -282,15 +327,21 @@ export async function handleUpdateAdminProduct(request) {
       return Response.json({ error: 'Product not found.' }, { status: 404 })
     }
 
-    const draft = await buildProductData(formData, null, existingProduct.imageUrl)
+    const rawData = await buildProductData(formData, null, existingProduct.imageUrl)
 
-    if (!draft.valid) {
+    if (!rawData.valid) {
       return Response.json({ error: 'Name, SKU, category, and description are required.' }, { status: 400 })
     }
 
+    // Ensure Slug Uniqueness for update (ignoring current product)
+    const uniqueSlug = await ensureUniqueSlug(rawData.slug, productId)
+
     const image = formData.get('image')
-    const uploadedImageUrl = await saveUploadedImage(image, draft.slug)
+    const uploadedImageUrl = await saveUploadedImage(image, uniqueSlug)
     const payload = await buildProductData(formData, uploadedImageUrl, existingProduct.imageUrl)
+    
+    // Override with unique slug
+    payload.data.slug = uniqueSlug
 
     const product = await prisma.product.update({
       where: {
@@ -322,6 +373,19 @@ export async function handleUpdateAdminProduct(request) {
       },
     })
   } catch (error) {
+    console.error('Update Product Error:', error)
+
+    // Handle Prisma unique constraint violations (P2002)
+    if (error.code === 'P2002') {
+      const target = error.meta?.target || []
+      if (target.includes('slug')) {
+        return Response.json({ error: 'Another product already has a similar name/slug. Please try a different name.' }, { status: 400 })
+      }
+      if (target.includes('sku')) {
+        return Response.json({ error: 'Another product already has this SKU.' }, { status: 400 })
+      }
+    }
+
     const message =
       error instanceof Error ? error.message : 'Something went wrong while updating the product.'
 

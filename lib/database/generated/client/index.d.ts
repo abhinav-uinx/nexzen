@@ -44,6 +44,11 @@ export type Coupon = $Result.DefaultSelection<Prisma.$CouponPayload>
  */
 export type Product = $Result.DefaultSelection<Prisma.$ProductPayload>
 /**
+ * Model Brand
+ * 
+ */
+export type Brand = $Result.DefaultSelection<Prisma.$BrandPayload>
+/**
  * Model ProductDependency
  * 
  */
@@ -336,6 +341,16 @@ export class PrismaClient<
     * ```
     */
   get product(): Prisma.ProductDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.brand`: Exposes CRUD operations for the **Brand** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Brands
+    * const brands = await prisma.brand.findMany()
+    * ```
+    */
+  get brand(): Prisma.BrandDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.productDependency`: Exposes CRUD operations for the **ProductDependency** model.
@@ -906,6 +921,7 @@ export namespace Prisma {
     Banner: 'Banner',
     Coupon: 'Coupon',
     Product: 'Product',
+    Brand: 'Brand',
     ProductDependency: 'ProductDependency',
     InventoryMovement: 'InventoryMovement',
     User: 'User',
@@ -934,7 +950,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "category" | "siteHighlight" | "collection" | "banner" | "coupon" | "product" | "productDependency" | "inventoryMovement" | "user" | "wishlistItem" | "userIdentity" | "userSession" | "admin" | "adminSession" | "order" | "orderItem" | "review" | "cart" | "cartItem"
+      modelProps: "category" | "siteHighlight" | "collection" | "banner" | "coupon" | "product" | "brand" | "productDependency" | "inventoryMovement" | "user" | "wishlistItem" | "userIdentity" | "userSession" | "admin" | "adminSession" | "order" | "orderItem" | "review" | "cart" | "cartItem"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1379,6 +1395,80 @@ export namespace Prisma {
           count: {
             args: Prisma.ProductCountArgs<ExtArgs>
             result: $Utils.Optional<ProductCountAggregateOutputType> | number
+          }
+        }
+      }
+      Brand: {
+        payload: Prisma.$BrandPayload<ExtArgs>
+        fields: Prisma.BrandFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BrandFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BrandFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload>
+          }
+          findFirst: {
+            args: Prisma.BrandFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BrandFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload>
+          }
+          findMany: {
+            args: Prisma.BrandFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload>[]
+          }
+          create: {
+            args: Prisma.BrandCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload>
+          }
+          createMany: {
+            args: Prisma.BrandCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BrandCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload>[]
+          }
+          delete: {
+            args: Prisma.BrandDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload>
+          }
+          update: {
+            args: Prisma.BrandUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload>
+          }
+          deleteMany: {
+            args: Prisma.BrandDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BrandUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.BrandUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload>[]
+          }
+          upsert: {
+            args: Prisma.BrandUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BrandPayload>
+          }
+          aggregate: {
+            args: Prisma.BrandAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBrand>
+          }
+          groupBy: {
+            args: Prisma.BrandGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BrandGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BrandCountArgs<ExtArgs>
+            result: $Utils.Optional<BrandCountAggregateOutputType> | number
           }
         }
       }
@@ -2458,6 +2548,7 @@ export namespace Prisma {
     banner?: BannerOmit
     coupon?: CouponOmit
     product?: ProductOmit
+    brand?: BrandOmit
     productDependency?: ProductDependencyOmit
     inventoryMovement?: InventoryMovementOmit
     user?: UserOmit
@@ -2659,6 +2750,37 @@ export namespace Prisma {
    */
   export type ProductCountOutputTypeCountWishlistArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: WishlistItemWhereInput
+  }
+
+
+  /**
+   * Count Type BrandCountOutputType
+   */
+
+  export type BrandCountOutputType = {
+    products: number
+  }
+
+  export type BrandCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    products?: boolean | BrandCountOutputTypeCountProductsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * BrandCountOutputType without action
+   */
+  export type BrandCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BrandCountOutputType
+     */
+    select?: BrandCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * BrandCountOutputType without action
+   */
+  export type BrandCountOutputTypeCountProductsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProductWhereInput
   }
 
 
@@ -8329,6 +8451,7 @@ export namespace Prisma {
     categoryId: string | null
     barcode: string | null
     brand: string | null
+    brandId: string | null
     compareAtPrice: Decimal | null
     costPrice: Decimal | null
     lowStockThreshold: number | null
@@ -8355,6 +8478,7 @@ export namespace Prisma {
     categoryId: string | null
     barcode: string | null
     brand: string | null
+    brandId: string | null
     compareAtPrice: Decimal | null
     costPrice: Decimal | null
     lowStockThreshold: number | null
@@ -8381,6 +8505,7 @@ export namespace Prisma {
     categoryId: number
     barcode: number
     brand: number
+    brandId: number
     compareAtPrice: number
     costPrice: number
     lowStockThreshold: number
@@ -8430,6 +8555,7 @@ export namespace Prisma {
     categoryId?: true
     barcode?: true
     brand?: true
+    brandId?: true
     compareAtPrice?: true
     costPrice?: true
     lowStockThreshold?: true
@@ -8456,6 +8582,7 @@ export namespace Prisma {
     categoryId?: true
     barcode?: true
     brand?: true
+    brandId?: true
     compareAtPrice?: true
     costPrice?: true
     lowStockThreshold?: true
@@ -8482,6 +8609,7 @@ export namespace Prisma {
     categoryId?: true
     barcode?: true
     brand?: true
+    brandId?: true
     compareAtPrice?: true
     costPrice?: true
     lowStockThreshold?: true
@@ -8596,6 +8724,7 @@ export namespace Prisma {
     categoryId: string
     barcode: string | null
     brand: string | null
+    brandId: string | null
     compareAtPrice: Decimal | null
     costPrice: Decimal | null
     lowStockThreshold: number
@@ -8642,6 +8771,7 @@ export namespace Prisma {
     categoryId?: boolean
     barcode?: boolean
     brand?: boolean
+    brandId?: boolean
     compareAtPrice?: boolean
     costPrice?: boolean
     lowStockThreshold?: boolean
@@ -8654,6 +8784,7 @@ export namespace Prisma {
     stockQuantity?: boolean
     trackInventory?: boolean
     weightGrams?: boolean
+    brandRef?: boolean | Product$brandRefArgs<ExtArgs>
     cartItems?: boolean | Product$cartItemsArgs<ExtArgs>
     inventoryMovements?: boolean | Product$inventoryMovementsArgs<ExtArgs>
     orderItems?: boolean | Product$orderItemsArgs<ExtArgs>
@@ -8678,6 +8809,7 @@ export namespace Prisma {
     categoryId?: boolean
     barcode?: boolean
     brand?: boolean
+    brandId?: boolean
     compareAtPrice?: boolean
     costPrice?: boolean
     lowStockThreshold?: boolean
@@ -8690,6 +8822,7 @@ export namespace Prisma {
     stockQuantity?: boolean
     trackInventory?: boolean
     weightGrams?: boolean
+    brandRef?: boolean | Product$brandRefArgs<ExtArgs>
     category?: boolean | CategoryDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
 
@@ -8706,6 +8839,7 @@ export namespace Prisma {
     categoryId?: boolean
     barcode?: boolean
     brand?: boolean
+    brandId?: boolean
     compareAtPrice?: boolean
     costPrice?: boolean
     lowStockThreshold?: boolean
@@ -8718,6 +8852,7 @@ export namespace Prisma {
     stockQuantity?: boolean
     trackInventory?: boolean
     weightGrams?: boolean
+    brandRef?: boolean | Product$brandRefArgs<ExtArgs>
     category?: boolean | CategoryDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
 
@@ -8734,6 +8869,7 @@ export namespace Prisma {
     categoryId?: boolean
     barcode?: boolean
     brand?: boolean
+    brandId?: boolean
     compareAtPrice?: boolean
     costPrice?: boolean
     lowStockThreshold?: boolean
@@ -8748,8 +8884,9 @@ export namespace Prisma {
     weightGrams?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "description" | "price" | "imageUrl" | "inStock" | "createdAt" | "updatedAt" | "categoryId" | "barcode" | "brand" | "compareAtPrice" | "costPrice" | "lowStockThreshold" | "metadata" | "requiresShipping" | "reservedQuantity" | "shortDescription" | "sku" | "status" | "stockQuantity" | "trackInventory" | "weightGrams", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "description" | "price" | "imageUrl" | "inStock" | "createdAt" | "updatedAt" | "categoryId" | "barcode" | "brand" | "brandId" | "compareAtPrice" | "costPrice" | "lowStockThreshold" | "metadata" | "requiresShipping" | "reservedQuantity" | "shortDescription" | "sku" | "status" | "stockQuantity" | "trackInventory" | "weightGrams", ExtArgs["result"]["product"]>
   export type ProductInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    brandRef?: boolean | Product$brandRefArgs<ExtArgs>
     cartItems?: boolean | Product$cartItemsArgs<ExtArgs>
     inventoryMovements?: boolean | Product$inventoryMovementsArgs<ExtArgs>
     orderItems?: boolean | Product$orderItemsArgs<ExtArgs>
@@ -8761,15 +8898,18 @@ export namespace Prisma {
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProductIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    brandRef?: boolean | Product$brandRefArgs<ExtArgs>
     category?: boolean | CategoryDefaultArgs<ExtArgs>
   }
   export type ProductIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    brandRef?: boolean | Product$brandRefArgs<ExtArgs>
     category?: boolean | CategoryDefaultArgs<ExtArgs>
   }
 
   export type $ProductPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Product"
     objects: {
+      brandRef: Prisma.$BrandPayload<ExtArgs> | null
       cartItems: Prisma.$CartItemPayload<ExtArgs>[]
       inventoryMovements: Prisma.$InventoryMovementPayload<ExtArgs>[]
       orderItems: Prisma.$OrderItemPayload<ExtArgs>[]
@@ -8792,6 +8932,7 @@ export namespace Prisma {
       categoryId: string
       barcode: string | null
       brand: string | null
+      brandId: string | null
       compareAtPrice: Prisma.Decimal | null
       costPrice: Prisma.Decimal | null
       lowStockThreshold: number
@@ -9198,6 +9339,7 @@ export namespace Prisma {
    */
   export interface Prisma__ProductClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    brandRef<T extends Product$brandRefArgs<ExtArgs> = {}>(args?: Subset<T, Product$brandRefArgs<ExtArgs>>): Prisma__BrandClient<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     cartItems<T extends Product$cartItemsArgs<ExtArgs> = {}>(args?: Subset<T, Product$cartItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CartItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     inventoryMovements<T extends Product$inventoryMovementsArgs<ExtArgs> = {}>(args?: Subset<T, Product$inventoryMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     orderItems<T extends Product$orderItemsArgs<ExtArgs> = {}>(args?: Subset<T, Product$orderItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -9247,6 +9389,7 @@ export namespace Prisma {
     readonly categoryId: FieldRef<"Product", 'String'>
     readonly barcode: FieldRef<"Product", 'String'>
     readonly brand: FieldRef<"Product", 'String'>
+    readonly brandId: FieldRef<"Product", 'String'>
     readonly compareAtPrice: FieldRef<"Product", 'Decimal'>
     readonly costPrice: FieldRef<"Product", 'Decimal'>
     readonly lowStockThreshold: FieldRef<"Product", 'Int'>
@@ -9660,6 +9803,25 @@ export namespace Prisma {
   }
 
   /**
+   * Product.brandRef
+   */
+  export type Product$brandRefArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
+    where?: BrandWhereInput
+  }
+
+  /**
    * Product.cartItems
    */
   export type Product$cartItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9843,6 +10005,1107 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ProductInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Brand
+   */
+
+  export type AggregateBrand = {
+    _count: BrandCountAggregateOutputType | null
+    _min: BrandMinAggregateOutputType | null
+    _max: BrandMaxAggregateOutputType | null
+  }
+
+  export type BrandMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    slug: string | null
+    description: string | null
+    logoUrl: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BrandMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    slug: string | null
+    description: string | null
+    logoUrl: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BrandCountAggregateOutputType = {
+    id: number
+    name: number
+    slug: number
+    description: number
+    logoUrl: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type BrandMinAggregateInputType = {
+    id?: true
+    name?: true
+    slug?: true
+    description?: true
+    logoUrl?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BrandMaxAggregateInputType = {
+    id?: true
+    name?: true
+    slug?: true
+    description?: true
+    logoUrl?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BrandCountAggregateInputType = {
+    id?: true
+    name?: true
+    slug?: true
+    description?: true
+    logoUrl?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type BrandAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Brand to aggregate.
+     */
+    where?: BrandWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Brands to fetch.
+     */
+    orderBy?: BrandOrderByWithRelationInput | BrandOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BrandWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Brands from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Brands.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Brands
+    **/
+    _count?: true | BrandCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BrandMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BrandMaxAggregateInputType
+  }
+
+  export type GetBrandAggregateType<T extends BrandAggregateArgs> = {
+        [P in keyof T & keyof AggregateBrand]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBrand[P]>
+      : GetScalarType<T[P], AggregateBrand[P]>
+  }
+
+
+
+
+  export type BrandGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BrandWhereInput
+    orderBy?: BrandOrderByWithAggregationInput | BrandOrderByWithAggregationInput[]
+    by: BrandScalarFieldEnum[] | BrandScalarFieldEnum
+    having?: BrandScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BrandCountAggregateInputType | true
+    _min?: BrandMinAggregateInputType
+    _max?: BrandMaxAggregateInputType
+  }
+
+  export type BrandGroupByOutputType = {
+    id: string
+    name: string
+    slug: string
+    description: string | null
+    logoUrl: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: BrandCountAggregateOutputType | null
+    _min: BrandMinAggregateOutputType | null
+    _max: BrandMaxAggregateOutputType | null
+  }
+
+  type GetBrandGroupByPayload<T extends BrandGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BrandGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BrandGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BrandGroupByOutputType[P]>
+            : GetScalarType<T[P], BrandGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BrandSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    slug?: boolean
+    description?: boolean
+    logoUrl?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    products?: boolean | Brand$productsArgs<ExtArgs>
+    _count?: boolean | BrandCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["brand"]>
+
+  export type BrandSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    slug?: boolean
+    description?: boolean
+    logoUrl?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["brand"]>
+
+  export type BrandSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    slug?: boolean
+    description?: boolean
+    logoUrl?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["brand"]>
+
+  export type BrandSelectScalar = {
+    id?: boolean
+    name?: boolean
+    slug?: boolean
+    description?: boolean
+    logoUrl?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type BrandOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "description" | "logoUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["brand"]>
+  export type BrandInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    products?: boolean | Brand$productsArgs<ExtArgs>
+    _count?: boolean | BrandCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type BrandIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type BrandIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $BrandPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Brand"
+    objects: {
+      products: Prisma.$ProductPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      slug: string
+      description: string | null
+      logoUrl: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["brand"]>
+    composites: {}
+  }
+
+  type BrandGetPayload<S extends boolean | null | undefined | BrandDefaultArgs> = $Result.GetResult<Prisma.$BrandPayload, S>
+
+  type BrandCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BrandFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BrandCountAggregateInputType | true
+    }
+
+  export interface BrandDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Brand'], meta: { name: 'Brand' } }
+    /**
+     * Find zero or one Brand that matches the filter.
+     * @param {BrandFindUniqueArgs} args - Arguments to find a Brand
+     * @example
+     * // Get one Brand
+     * const brand = await prisma.brand.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BrandFindUniqueArgs>(args: SelectSubset<T, BrandFindUniqueArgs<ExtArgs>>): Prisma__BrandClient<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Brand that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BrandFindUniqueOrThrowArgs} args - Arguments to find a Brand
+     * @example
+     * // Get one Brand
+     * const brand = await prisma.brand.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BrandFindUniqueOrThrowArgs>(args: SelectSubset<T, BrandFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BrandClient<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Brand that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BrandFindFirstArgs} args - Arguments to find a Brand
+     * @example
+     * // Get one Brand
+     * const brand = await prisma.brand.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BrandFindFirstArgs>(args?: SelectSubset<T, BrandFindFirstArgs<ExtArgs>>): Prisma__BrandClient<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Brand that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BrandFindFirstOrThrowArgs} args - Arguments to find a Brand
+     * @example
+     * // Get one Brand
+     * const brand = await prisma.brand.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BrandFindFirstOrThrowArgs>(args?: SelectSubset<T, BrandFindFirstOrThrowArgs<ExtArgs>>): Prisma__BrandClient<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Brands that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BrandFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Brands
+     * const brands = await prisma.brand.findMany()
+     * 
+     * // Get first 10 Brands
+     * const brands = await prisma.brand.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const brandWithIdOnly = await prisma.brand.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BrandFindManyArgs>(args?: SelectSubset<T, BrandFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Brand.
+     * @param {BrandCreateArgs} args - Arguments to create a Brand.
+     * @example
+     * // Create one Brand
+     * const Brand = await prisma.brand.create({
+     *   data: {
+     *     // ... data to create a Brand
+     *   }
+     * })
+     * 
+     */
+    create<T extends BrandCreateArgs>(args: SelectSubset<T, BrandCreateArgs<ExtArgs>>): Prisma__BrandClient<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Brands.
+     * @param {BrandCreateManyArgs} args - Arguments to create many Brands.
+     * @example
+     * // Create many Brands
+     * const brand = await prisma.brand.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BrandCreateManyArgs>(args?: SelectSubset<T, BrandCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Brands and returns the data saved in the database.
+     * @param {BrandCreateManyAndReturnArgs} args - Arguments to create many Brands.
+     * @example
+     * // Create many Brands
+     * const brand = await prisma.brand.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Brands and only return the `id`
+     * const brandWithIdOnly = await prisma.brand.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BrandCreateManyAndReturnArgs>(args?: SelectSubset<T, BrandCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Brand.
+     * @param {BrandDeleteArgs} args - Arguments to delete one Brand.
+     * @example
+     * // Delete one Brand
+     * const Brand = await prisma.brand.delete({
+     *   where: {
+     *     // ... filter to delete one Brand
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BrandDeleteArgs>(args: SelectSubset<T, BrandDeleteArgs<ExtArgs>>): Prisma__BrandClient<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Brand.
+     * @param {BrandUpdateArgs} args - Arguments to update one Brand.
+     * @example
+     * // Update one Brand
+     * const brand = await prisma.brand.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BrandUpdateArgs>(args: SelectSubset<T, BrandUpdateArgs<ExtArgs>>): Prisma__BrandClient<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Brands.
+     * @param {BrandDeleteManyArgs} args - Arguments to filter Brands to delete.
+     * @example
+     * // Delete a few Brands
+     * const { count } = await prisma.brand.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BrandDeleteManyArgs>(args?: SelectSubset<T, BrandDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Brands.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BrandUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Brands
+     * const brand = await prisma.brand.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BrandUpdateManyArgs>(args: SelectSubset<T, BrandUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Brands and returns the data updated in the database.
+     * @param {BrandUpdateManyAndReturnArgs} args - Arguments to update many Brands.
+     * @example
+     * // Update many Brands
+     * const brand = await prisma.brand.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Brands and only return the `id`
+     * const brandWithIdOnly = await prisma.brand.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends BrandUpdateManyAndReturnArgs>(args: SelectSubset<T, BrandUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Brand.
+     * @param {BrandUpsertArgs} args - Arguments to update or create a Brand.
+     * @example
+     * // Update or create a Brand
+     * const brand = await prisma.brand.upsert({
+     *   create: {
+     *     // ... data to create a Brand
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Brand we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BrandUpsertArgs>(args: SelectSubset<T, BrandUpsertArgs<ExtArgs>>): Prisma__BrandClient<$Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Brands.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BrandCountArgs} args - Arguments to filter Brands to count.
+     * @example
+     * // Count the number of Brands
+     * const count = await prisma.brand.count({
+     *   where: {
+     *     // ... the filter for the Brands we want to count
+     *   }
+     * })
+    **/
+    count<T extends BrandCountArgs>(
+      args?: Subset<T, BrandCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BrandCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Brand.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BrandAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BrandAggregateArgs>(args: Subset<T, BrandAggregateArgs>): Prisma.PrismaPromise<GetBrandAggregateType<T>>
+
+    /**
+     * Group by Brand.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BrandGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BrandGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BrandGroupByArgs['orderBy'] }
+        : { orderBy?: BrandGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BrandGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBrandGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Brand model
+   */
+  readonly fields: BrandFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Brand.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BrandClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    products<T extends Brand$productsArgs<ExtArgs> = {}>(args?: Subset<T, Brand$productsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Brand model
+   */
+  interface BrandFieldRefs {
+    readonly id: FieldRef<"Brand", 'String'>
+    readonly name: FieldRef<"Brand", 'String'>
+    readonly slug: FieldRef<"Brand", 'String'>
+    readonly description: FieldRef<"Brand", 'String'>
+    readonly logoUrl: FieldRef<"Brand", 'String'>
+    readonly createdAt: FieldRef<"Brand", 'DateTime'>
+    readonly updatedAt: FieldRef<"Brand", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Brand findUnique
+   */
+  export type BrandFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
+    /**
+     * Filter, which Brand to fetch.
+     */
+    where: BrandWhereUniqueInput
+  }
+
+  /**
+   * Brand findUniqueOrThrow
+   */
+  export type BrandFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
+    /**
+     * Filter, which Brand to fetch.
+     */
+    where: BrandWhereUniqueInput
+  }
+
+  /**
+   * Brand findFirst
+   */
+  export type BrandFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
+    /**
+     * Filter, which Brand to fetch.
+     */
+    where?: BrandWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Brands to fetch.
+     */
+    orderBy?: BrandOrderByWithRelationInput | BrandOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Brands.
+     */
+    cursor?: BrandWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Brands from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Brands.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Brands.
+     */
+    distinct?: BrandScalarFieldEnum | BrandScalarFieldEnum[]
+  }
+
+  /**
+   * Brand findFirstOrThrow
+   */
+  export type BrandFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
+    /**
+     * Filter, which Brand to fetch.
+     */
+    where?: BrandWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Brands to fetch.
+     */
+    orderBy?: BrandOrderByWithRelationInput | BrandOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Brands.
+     */
+    cursor?: BrandWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Brands from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Brands.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Brands.
+     */
+    distinct?: BrandScalarFieldEnum | BrandScalarFieldEnum[]
+  }
+
+  /**
+   * Brand findMany
+   */
+  export type BrandFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
+    /**
+     * Filter, which Brands to fetch.
+     */
+    where?: BrandWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Brands to fetch.
+     */
+    orderBy?: BrandOrderByWithRelationInput | BrandOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Brands.
+     */
+    cursor?: BrandWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Brands from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Brands.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Brands.
+     */
+    distinct?: BrandScalarFieldEnum | BrandScalarFieldEnum[]
+  }
+
+  /**
+   * Brand create
+   */
+  export type BrandCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Brand.
+     */
+    data: XOR<BrandCreateInput, BrandUncheckedCreateInput>
+  }
+
+  /**
+   * Brand createMany
+   */
+  export type BrandCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Brands.
+     */
+    data: BrandCreateManyInput | BrandCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Brand createManyAndReturn
+   */
+  export type BrandCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * The data used to create many Brands.
+     */
+    data: BrandCreateManyInput | BrandCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Brand update
+   */
+  export type BrandUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Brand.
+     */
+    data: XOR<BrandUpdateInput, BrandUncheckedUpdateInput>
+    /**
+     * Choose, which Brand to update.
+     */
+    where: BrandWhereUniqueInput
+  }
+
+  /**
+   * Brand updateMany
+   */
+  export type BrandUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Brands.
+     */
+    data: XOR<BrandUpdateManyMutationInput, BrandUncheckedUpdateManyInput>
+    /**
+     * Filter which Brands to update
+     */
+    where?: BrandWhereInput
+    /**
+     * Limit how many Brands to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Brand updateManyAndReturn
+   */
+  export type BrandUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * The data used to update Brands.
+     */
+    data: XOR<BrandUpdateManyMutationInput, BrandUncheckedUpdateManyInput>
+    /**
+     * Filter which Brands to update
+     */
+    where?: BrandWhereInput
+    /**
+     * Limit how many Brands to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Brand upsert
+   */
+  export type BrandUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Brand to update in case it exists.
+     */
+    where: BrandWhereUniqueInput
+    /**
+     * In case the Brand found by the `where` argument doesn't exist, create a new Brand with this data.
+     */
+    create: XOR<BrandCreateInput, BrandUncheckedCreateInput>
+    /**
+     * In case the Brand was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BrandUpdateInput, BrandUncheckedUpdateInput>
+  }
+
+  /**
+   * Brand delete
+   */
+  export type BrandDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
+    /**
+     * Filter which Brand to delete.
+     */
+    where: BrandWhereUniqueInput
+  }
+
+  /**
+   * Brand deleteMany
+   */
+  export type BrandDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Brands to delete
+     */
+    where?: BrandWhereInput
+    /**
+     * Limit how many Brands to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Brand.products
+   */
+  export type Brand$productsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Product
+     */
+    select?: ProductSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Product
+     */
+    omit?: ProductOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductInclude<ExtArgs> | null
+    where?: ProductWhereInput
+    orderBy?: ProductOrderByWithRelationInput | ProductOrderByWithRelationInput[]
+    cursor?: ProductWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProductScalarFieldEnum | ProductScalarFieldEnum[]
+  }
+
+  /**
+   * Brand without action
+   */
+  export type BrandDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Brand
+     */
+    select?: BrandSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Brand
+     */
+    omit?: BrandOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BrandInclude<ExtArgs> | null
   }
 
 
@@ -25040,6 +26303,7 @@ export namespace Prisma {
     categoryId: 'categoryId',
     barcode: 'barcode',
     brand: 'brand',
+    brandId: 'brandId',
     compareAtPrice: 'compareAtPrice',
     costPrice: 'costPrice',
     lowStockThreshold: 'lowStockThreshold',
@@ -25055,6 +26319,19 @@ export namespace Prisma {
   };
 
   export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
+
+
+  export const BrandScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    slug: 'slug',
+    description: 'description',
+    logoUrl: 'logoUrl',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type BrandScalarFieldEnum = (typeof BrandScalarFieldEnum)[keyof typeof BrandScalarFieldEnum]
 
 
   export const ProductDependencyScalarFieldEnum: {
@@ -25824,6 +27101,7 @@ export namespace Prisma {
     categoryId?: StringFilter<"Product"> | string
     barcode?: StringNullableFilter<"Product"> | string | null
     brand?: StringNullableFilter<"Product"> | string | null
+    brandId?: StringNullableFilter<"Product"> | string | null
     compareAtPrice?: DecimalNullableFilter<"Product"> | Decimal | DecimalJsLike | number | string | null
     costPrice?: DecimalNullableFilter<"Product"> | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFilter<"Product"> | number
@@ -25836,6 +27114,7 @@ export namespace Prisma {
     stockQuantity?: IntFilter<"Product"> | number
     trackInventory?: BoolFilter<"Product"> | boolean
     weightGrams?: IntNullableFilter<"Product"> | number | null
+    brandRef?: XOR<BrandNullableScalarRelationFilter, BrandWhereInput> | null
     cartItems?: CartItemListRelationFilter
     inventoryMovements?: InventoryMovementListRelationFilter
     orderItems?: OrderItemListRelationFilter
@@ -25859,6 +27138,7 @@ export namespace Prisma {
     categoryId?: SortOrder
     barcode?: SortOrderInput | SortOrder
     brand?: SortOrderInput | SortOrder
+    brandId?: SortOrderInput | SortOrder
     compareAtPrice?: SortOrderInput | SortOrder
     costPrice?: SortOrderInput | SortOrder
     lowStockThreshold?: SortOrder
@@ -25871,6 +27151,7 @@ export namespace Prisma {
     stockQuantity?: SortOrder
     trackInventory?: SortOrder
     weightGrams?: SortOrderInput | SortOrder
+    brandRef?: BrandOrderByWithRelationInput
     cartItems?: CartItemOrderByRelationAggregateInput
     inventoryMovements?: InventoryMovementOrderByRelationAggregateInput
     orderItems?: OrderItemOrderByRelationAggregateInput
@@ -25898,6 +27179,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Product"> | Date | string
     categoryId?: StringFilter<"Product"> | string
     brand?: StringNullableFilter<"Product"> | string | null
+    brandId?: StringNullableFilter<"Product"> | string | null
     compareAtPrice?: DecimalNullableFilter<"Product"> | Decimal | DecimalJsLike | number | string | null
     costPrice?: DecimalNullableFilter<"Product"> | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFilter<"Product"> | number
@@ -25909,6 +27191,7 @@ export namespace Prisma {
     stockQuantity?: IntFilter<"Product"> | number
     trackInventory?: BoolFilter<"Product"> | boolean
     weightGrams?: IntNullableFilter<"Product"> | number | null
+    brandRef?: XOR<BrandNullableScalarRelationFilter, BrandWhereInput> | null
     cartItems?: CartItemListRelationFilter
     inventoryMovements?: InventoryMovementListRelationFilter
     orderItems?: OrderItemListRelationFilter
@@ -25932,6 +27215,7 @@ export namespace Prisma {
     categoryId?: SortOrder
     barcode?: SortOrderInput | SortOrder
     brand?: SortOrderInput | SortOrder
+    brandId?: SortOrderInput | SortOrder
     compareAtPrice?: SortOrderInput | SortOrder
     costPrice?: SortOrderInput | SortOrder
     lowStockThreshold?: SortOrder
@@ -25967,6 +27251,7 @@ export namespace Prisma {
     categoryId?: StringWithAggregatesFilter<"Product"> | string
     barcode?: StringNullableWithAggregatesFilter<"Product"> | string | null
     brand?: StringNullableWithAggregatesFilter<"Product"> | string | null
+    brandId?: StringNullableWithAggregatesFilter<"Product"> | string | null
     compareAtPrice?: DecimalNullableWithAggregatesFilter<"Product"> | Decimal | DecimalJsLike | number | string | null
     costPrice?: DecimalNullableWithAggregatesFilter<"Product"> | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntWithAggregatesFilter<"Product"> | number
@@ -25979,6 +27264,71 @@ export namespace Prisma {
     stockQuantity?: IntWithAggregatesFilter<"Product"> | number
     trackInventory?: BoolWithAggregatesFilter<"Product"> | boolean
     weightGrams?: IntNullableWithAggregatesFilter<"Product"> | number | null
+  }
+
+  export type BrandWhereInput = {
+    AND?: BrandWhereInput | BrandWhereInput[]
+    OR?: BrandWhereInput[]
+    NOT?: BrandWhereInput | BrandWhereInput[]
+    id?: StringFilter<"Brand"> | string
+    name?: StringFilter<"Brand"> | string
+    slug?: StringFilter<"Brand"> | string
+    description?: StringNullableFilter<"Brand"> | string | null
+    logoUrl?: StringNullableFilter<"Brand"> | string | null
+    createdAt?: DateTimeFilter<"Brand"> | Date | string
+    updatedAt?: DateTimeFilter<"Brand"> | Date | string
+    products?: ProductListRelationFilter
+  }
+
+  export type BrandOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    slug?: SortOrder
+    description?: SortOrderInput | SortOrder
+    logoUrl?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    products?: ProductOrderByRelationAggregateInput
+  }
+
+  export type BrandWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    name?: string
+    slug?: string
+    AND?: BrandWhereInput | BrandWhereInput[]
+    OR?: BrandWhereInput[]
+    NOT?: BrandWhereInput | BrandWhereInput[]
+    description?: StringNullableFilter<"Brand"> | string | null
+    logoUrl?: StringNullableFilter<"Brand"> | string | null
+    createdAt?: DateTimeFilter<"Brand"> | Date | string
+    updatedAt?: DateTimeFilter<"Brand"> | Date | string
+    products?: ProductListRelationFilter
+  }, "id" | "name" | "slug">
+
+  export type BrandOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    slug?: SortOrder
+    description?: SortOrderInput | SortOrder
+    logoUrl?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: BrandCountOrderByAggregateInput
+    _max?: BrandMaxOrderByAggregateInput
+    _min?: BrandMinOrderByAggregateInput
+  }
+
+  export type BrandScalarWhereWithAggregatesInput = {
+    AND?: BrandScalarWhereWithAggregatesInput | BrandScalarWhereWithAggregatesInput[]
+    OR?: BrandScalarWhereWithAggregatesInput[]
+    NOT?: BrandScalarWhereWithAggregatesInput | BrandScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Brand"> | string
+    name?: StringWithAggregatesFilter<"Brand"> | string
+    slug?: StringWithAggregatesFilter<"Brand"> | string
+    description?: StringNullableWithAggregatesFilter<"Brand"> | string | null
+    logoUrl?: StringNullableWithAggregatesFilter<"Brand"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Brand"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Brand"> | Date | string
   }
 
   export type ProductDependencyWhereInput = {
@@ -27489,6 +28839,7 @@ export namespace Prisma {
     stockQuantity?: number
     trackInventory?: boolean
     weightGrams?: number | null
+    brandRef?: BrandCreateNestedOneWithoutProductsInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
@@ -27512,6 +28863,7 @@ export namespace Prisma {
     categoryId: string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -27557,6 +28909,7 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     trackInventory?: BoolFieldUpdateOperationsInput | boolean
     weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    brandRef?: BrandUpdateOneWithoutProductsNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     inventoryMovements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
@@ -27580,6 +28933,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -27614,6 +28968,7 @@ export namespace Prisma {
     categoryId: string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -27667,6 +29022,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -27679,6 +29035,80 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     trackInventory?: BoolFieldUpdateOperationsInput | boolean
     weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type BrandCreateInput = {
+    id?: string
+    name: string
+    slug: string
+    description?: string | null
+    logoUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    products?: ProductCreateNestedManyWithoutBrandRefInput
+  }
+
+  export type BrandUncheckedCreateInput = {
+    id?: string
+    name: string
+    slug: string
+    description?: string | null
+    logoUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    products?: ProductUncheckedCreateNestedManyWithoutBrandRefInput
+  }
+
+  export type BrandUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    products?: ProductUpdateManyWithoutBrandRefNestedInput
+  }
+
+  export type BrandUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    products?: ProductUncheckedUpdateManyWithoutBrandRefNestedInput
+  }
+
+  export type BrandCreateManyInput = {
+    id?: string
+    name: string
+    slug: string
+    description?: string | null
+    logoUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BrandUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BrandUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ProductDependencyCreateInput = {
@@ -29267,6 +30697,11 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type BrandNullableScalarRelationFilter = {
+    is?: BrandWhereInput | null
+    isNot?: BrandWhereInput | null
+  }
+
   export type CartItemListRelationFilter = {
     every?: CartItemWhereInput
     some?: CartItemWhereInput
@@ -29345,6 +30780,7 @@ export namespace Prisma {
     categoryId?: SortOrder
     barcode?: SortOrder
     brand?: SortOrder
+    brandId?: SortOrder
     compareAtPrice?: SortOrder
     costPrice?: SortOrder
     lowStockThreshold?: SortOrder
@@ -29382,6 +30818,7 @@ export namespace Prisma {
     categoryId?: SortOrder
     barcode?: SortOrder
     brand?: SortOrder
+    brandId?: SortOrder
     compareAtPrice?: SortOrder
     costPrice?: SortOrder
     lowStockThreshold?: SortOrder
@@ -29408,6 +30845,7 @@ export namespace Prisma {
     categoryId?: SortOrder
     barcode?: SortOrder
     brand?: SortOrder
+    brandId?: SortOrder
     compareAtPrice?: SortOrder
     costPrice?: SortOrder
     lowStockThreshold?: SortOrder
@@ -29513,6 +30951,36 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type BrandCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    slug?: SortOrder
+    description?: SortOrder
+    logoUrl?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BrandMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    slug?: SortOrder
+    description?: SortOrder
+    logoUrl?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BrandMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    slug?: SortOrder
+    description?: SortOrder
+    logoUrl?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type ProductScalarRelationFilter = {
@@ -30298,6 +31766,12 @@ export namespace Prisma {
     set?: boolean
   }
 
+  export type BrandCreateNestedOneWithoutProductsInput = {
+    create?: XOR<BrandCreateWithoutProductsInput, BrandUncheckedCreateWithoutProductsInput>
+    connectOrCreate?: BrandCreateOrConnectWithoutProductsInput
+    connect?: BrandWhereUniqueInput
+  }
+
   export type CartItemCreateNestedManyWithoutProductInput = {
     create?: XOR<CartItemCreateWithoutProductInput, CartItemUncheckedCreateWithoutProductInput> | CartItemCreateWithoutProductInput[] | CartItemUncheckedCreateWithoutProductInput[]
     connectOrCreate?: CartItemCreateOrConnectWithoutProductInput | CartItemCreateOrConnectWithoutProductInput[]
@@ -30428,6 +31902,16 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type BrandUpdateOneWithoutProductsNestedInput = {
+    create?: XOR<BrandCreateWithoutProductsInput, BrandUncheckedCreateWithoutProductsInput>
+    connectOrCreate?: BrandCreateOrConnectWithoutProductsInput
+    upsert?: BrandUpsertWithoutProductsInput
+    disconnect?: BrandWhereInput | boolean
+    delete?: BrandWhereInput | boolean
+    connect?: BrandWhereUniqueInput
+    update?: XOR<XOR<BrandUpdateToOneWithWhereWithoutProductsInput, BrandUpdateWithoutProductsInput>, BrandUncheckedUpdateWithoutProductsInput>
   }
 
   export type CartItemUpdateManyWithoutProductNestedInput = {
@@ -30632,6 +32116,48 @@ export namespace Prisma {
     update?: WishlistItemUpdateWithWhereUniqueWithoutProductInput | WishlistItemUpdateWithWhereUniqueWithoutProductInput[]
     updateMany?: WishlistItemUpdateManyWithWhereWithoutProductInput | WishlistItemUpdateManyWithWhereWithoutProductInput[]
     deleteMany?: WishlistItemScalarWhereInput | WishlistItemScalarWhereInput[]
+  }
+
+  export type ProductCreateNestedManyWithoutBrandRefInput = {
+    create?: XOR<ProductCreateWithoutBrandRefInput, ProductUncheckedCreateWithoutBrandRefInput> | ProductCreateWithoutBrandRefInput[] | ProductUncheckedCreateWithoutBrandRefInput[]
+    connectOrCreate?: ProductCreateOrConnectWithoutBrandRefInput | ProductCreateOrConnectWithoutBrandRefInput[]
+    createMany?: ProductCreateManyBrandRefInputEnvelope
+    connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+  }
+
+  export type ProductUncheckedCreateNestedManyWithoutBrandRefInput = {
+    create?: XOR<ProductCreateWithoutBrandRefInput, ProductUncheckedCreateWithoutBrandRefInput> | ProductCreateWithoutBrandRefInput[] | ProductUncheckedCreateWithoutBrandRefInput[]
+    connectOrCreate?: ProductCreateOrConnectWithoutBrandRefInput | ProductCreateOrConnectWithoutBrandRefInput[]
+    createMany?: ProductCreateManyBrandRefInputEnvelope
+    connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+  }
+
+  export type ProductUpdateManyWithoutBrandRefNestedInput = {
+    create?: XOR<ProductCreateWithoutBrandRefInput, ProductUncheckedCreateWithoutBrandRefInput> | ProductCreateWithoutBrandRefInput[] | ProductUncheckedCreateWithoutBrandRefInput[]
+    connectOrCreate?: ProductCreateOrConnectWithoutBrandRefInput | ProductCreateOrConnectWithoutBrandRefInput[]
+    upsert?: ProductUpsertWithWhereUniqueWithoutBrandRefInput | ProductUpsertWithWhereUniqueWithoutBrandRefInput[]
+    createMany?: ProductCreateManyBrandRefInputEnvelope
+    set?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+    disconnect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+    delete?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+    connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+    update?: ProductUpdateWithWhereUniqueWithoutBrandRefInput | ProductUpdateWithWhereUniqueWithoutBrandRefInput[]
+    updateMany?: ProductUpdateManyWithWhereWithoutBrandRefInput | ProductUpdateManyWithWhereWithoutBrandRefInput[]
+    deleteMany?: ProductScalarWhereInput | ProductScalarWhereInput[]
+  }
+
+  export type ProductUncheckedUpdateManyWithoutBrandRefNestedInput = {
+    create?: XOR<ProductCreateWithoutBrandRefInput, ProductUncheckedCreateWithoutBrandRefInput> | ProductCreateWithoutBrandRefInput[] | ProductUncheckedCreateWithoutBrandRefInput[]
+    connectOrCreate?: ProductCreateOrConnectWithoutBrandRefInput | ProductCreateOrConnectWithoutBrandRefInput[]
+    upsert?: ProductUpsertWithWhereUniqueWithoutBrandRefInput | ProductUpsertWithWhereUniqueWithoutBrandRefInput[]
+    createMany?: ProductCreateManyBrandRefInputEnvelope
+    set?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+    disconnect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+    delete?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+    connect?: ProductWhereUniqueInput | ProductWhereUniqueInput[]
+    update?: ProductUpdateWithWhereUniqueWithoutBrandRefInput | ProductUpdateWithWhereUniqueWithoutBrandRefInput[]
+    updateMany?: ProductUpdateManyWithWhereWithoutBrandRefInput | ProductUpdateManyWithWhereWithoutBrandRefInput[]
+    deleteMany?: ProductScalarWhereInput | ProductScalarWhereInput[]
   }
 
   export type ProductCreateNestedOneWithoutRequiredByInput = {
@@ -31614,6 +33140,7 @@ export namespace Prisma {
     stockQuantity?: number
     trackInventory?: boolean
     weightGrams?: number | null
+    brandRef?: BrandCreateNestedOneWithoutProductsInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
@@ -31635,6 +33162,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -31698,6 +33226,7 @@ export namespace Prisma {
     categoryId?: StringFilter<"Product"> | string
     barcode?: StringNullableFilter<"Product"> | string | null
     brand?: StringNullableFilter<"Product"> | string | null
+    brandId?: StringNullableFilter<"Product"> | string | null
     compareAtPrice?: DecimalNullableFilter<"Product"> | Decimal | DecimalJsLike | number | string | null
     costPrice?: DecimalNullableFilter<"Product"> | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFilter<"Product"> | number
@@ -31710,6 +33239,31 @@ export namespace Prisma {
     stockQuantity?: IntFilter<"Product"> | number
     trackInventory?: BoolFilter<"Product"> | boolean
     weightGrams?: IntNullableFilter<"Product"> | number | null
+  }
+
+  export type BrandCreateWithoutProductsInput = {
+    id?: string
+    name: string
+    slug: string
+    description?: string | null
+    logoUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BrandUncheckedCreateWithoutProductsInput = {
+    id?: string
+    name: string
+    slug: string
+    description?: string | null
+    logoUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BrandCreateOrConnectWithoutProductsInput = {
+    where: BrandWhereUniqueInput
+    create: XOR<BrandCreateWithoutProductsInput, BrandUncheckedCreateWithoutProductsInput>
   }
 
   export type CartItemCreateWithoutProductInput = {
@@ -31941,6 +33495,37 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type BrandUpsertWithoutProductsInput = {
+    update: XOR<BrandUpdateWithoutProductsInput, BrandUncheckedUpdateWithoutProductsInput>
+    create: XOR<BrandCreateWithoutProductsInput, BrandUncheckedCreateWithoutProductsInput>
+    where?: BrandWhereInput
+  }
+
+  export type BrandUpdateToOneWithWhereWithoutProductsInput = {
+    where?: BrandWhereInput
+    data: XOR<BrandUpdateWithoutProductsInput, BrandUncheckedUpdateWithoutProductsInput>
+  }
+
+  export type BrandUpdateWithoutProductsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BrandUncheckedUpdateWithoutProductsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CartItemUpsertWithWhereUniqueWithoutProductInput = {
     where: CartItemWhereUniqueInput
     update: XOR<CartItemUpdateWithoutProductInput, CartItemUncheckedUpdateWithoutProductInput>
@@ -32165,7 +33750,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"WishlistItem"> | Date | string
   }
 
-  export type ProductCreateWithoutRequiredByInput = {
+  export type ProductCreateWithoutBrandRefInput = {
     id?: string
     name: string
     slug: string
@@ -32193,6 +33778,101 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     category: CategoryCreateNestedOneWithoutProductsInput
+    requiredBy?: ProductDependencyCreateNestedManyWithoutDependencyProductInput
+    dependencies?: ProductDependencyCreateNestedManyWithoutProductInput
+    reviews?: ReviewCreateNestedManyWithoutProductInput
+    wishlist?: WishlistItemCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductUncheckedCreateWithoutBrandRefInput = {
+    id?: string
+    name: string
+    slug: string
+    description?: string | null
+    price: Decimal | DecimalJsLike | number | string
+    imageUrl?: string | null
+    inStock?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    categoryId: string
+    barcode?: string | null
+    brand?: string | null
+    compareAtPrice?: Decimal | DecimalJsLike | number | string | null
+    costPrice?: Decimal | DecimalJsLike | number | string | null
+    lowStockThreshold?: number
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    requiresShipping?: boolean
+    reservedQuantity?: number
+    shortDescription?: string | null
+    sku?: string | null
+    status?: $Enums.ProductStatus
+    stockQuantity?: number
+    trackInventory?: boolean
+    weightGrams?: number | null
+    cartItems?: CartItemUncheckedCreateNestedManyWithoutProductInput
+    inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
+    orderItems?: OrderItemUncheckedCreateNestedManyWithoutProductInput
+    requiredBy?: ProductDependencyUncheckedCreateNestedManyWithoutDependencyProductInput
+    dependencies?: ProductDependencyUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
+    wishlist?: WishlistItemUncheckedCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductCreateOrConnectWithoutBrandRefInput = {
+    where: ProductWhereUniqueInput
+    create: XOR<ProductCreateWithoutBrandRefInput, ProductUncheckedCreateWithoutBrandRefInput>
+  }
+
+  export type ProductCreateManyBrandRefInputEnvelope = {
+    data: ProductCreateManyBrandRefInput | ProductCreateManyBrandRefInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ProductUpsertWithWhereUniqueWithoutBrandRefInput = {
+    where: ProductWhereUniqueInput
+    update: XOR<ProductUpdateWithoutBrandRefInput, ProductUncheckedUpdateWithoutBrandRefInput>
+    create: XOR<ProductCreateWithoutBrandRefInput, ProductUncheckedCreateWithoutBrandRefInput>
+  }
+
+  export type ProductUpdateWithWhereUniqueWithoutBrandRefInput = {
+    where: ProductWhereUniqueInput
+    data: XOR<ProductUpdateWithoutBrandRefInput, ProductUncheckedUpdateWithoutBrandRefInput>
+  }
+
+  export type ProductUpdateManyWithWhereWithoutBrandRefInput = {
+    where: ProductScalarWhereInput
+    data: XOR<ProductUpdateManyMutationInput, ProductUncheckedUpdateManyWithoutBrandRefInput>
+  }
+
+  export type ProductCreateWithoutRequiredByInput = {
+    id?: string
+    name: string
+    slug: string
+    description?: string | null
+    price: Decimal | DecimalJsLike | number | string
+    imageUrl?: string | null
+    inStock?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    barcode?: string | null
+    brand?: string | null
+    compareAtPrice?: Decimal | DecimalJsLike | number | string | null
+    costPrice?: Decimal | DecimalJsLike | number | string | null
+    lowStockThreshold?: number
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    requiresShipping?: boolean
+    reservedQuantity?: number
+    shortDescription?: string | null
+    sku?: string | null
+    status?: $Enums.ProductStatus
+    stockQuantity?: number
+    trackInventory?: boolean
+    weightGrams?: number | null
+    brandRef?: BrandCreateNestedOneWithoutProductsInput
+    cartItems?: CartItemCreateNestedManyWithoutProductInput
+    inventoryMovements?: InventoryMovementCreateNestedManyWithoutProductInput
+    orderItems?: OrderItemCreateNestedManyWithoutProductInput
+    category: CategoryCreateNestedOneWithoutProductsInput
     dependencies?: ProductDependencyCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
     wishlist?: WishlistItemCreateNestedManyWithoutProductInput
@@ -32211,6 +33891,7 @@ export namespace Prisma {
     categoryId: string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -32260,6 +33941,7 @@ export namespace Prisma {
     stockQuantity?: number
     trackInventory?: boolean
     weightGrams?: number | null
+    brandRef?: BrandCreateNestedOneWithoutProductsInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
@@ -32282,6 +33964,7 @@ export namespace Prisma {
     categoryId: string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -32342,6 +34025,7 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     trackInventory?: BoolFieldUpdateOperationsInput | boolean
     weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    brandRef?: BrandUpdateOneWithoutProductsNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     inventoryMovements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
@@ -32364,6 +34048,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -32419,6 +34104,7 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     trackInventory?: BoolFieldUpdateOperationsInput | boolean
     weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    brandRef?: BrandUpdateOneWithoutProductsNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     inventoryMovements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
@@ -32441,6 +34127,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -32485,6 +34172,7 @@ export namespace Prisma {
     stockQuantity?: number
     trackInventory?: boolean
     weightGrams?: number | null
+    brandRef?: BrandCreateNestedOneWithoutProductsInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -32507,6 +34195,7 @@ export namespace Prisma {
     categoryId: string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -32567,6 +34256,7 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     trackInventory?: BoolFieldUpdateOperationsInput | boolean
     weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    brandRef?: BrandUpdateOneWithoutProductsNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -32589,6 +34279,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -33068,6 +34759,7 @@ export namespace Prisma {
     stockQuantity?: number
     trackInventory?: boolean
     weightGrams?: number | null
+    brandRef?: BrandCreateNestedOneWithoutProductsInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
@@ -33090,6 +34782,7 @@ export namespace Prisma {
     categoryId: string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -33211,6 +34904,7 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     trackInventory?: BoolFieldUpdateOperationsInput | boolean
     weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    brandRef?: BrandUpdateOneWithoutProductsNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     inventoryMovements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
@@ -33233,6 +34927,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -33846,6 +35541,7 @@ export namespace Prisma {
     stockQuantity?: number
     trackInventory?: boolean
     weightGrams?: number | null
+    brandRef?: BrandCreateNestedOneWithoutProductsInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutProductInput
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -33868,6 +35564,7 @@ export namespace Prisma {
     categoryId: string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -33999,6 +35696,7 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     trackInventory?: BoolFieldUpdateOperationsInput | boolean
     weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    brandRef?: BrandUpdateOneWithoutProductsNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     inventoryMovements?: InventoryMovementUpdateManyWithoutProductNestedInput
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -34021,6 +35719,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -34065,6 +35764,7 @@ export namespace Prisma {
     stockQuantity?: number
     trackInventory?: boolean
     weightGrams?: number | null
+    brandRef?: BrandCreateNestedOneWithoutProductsInput
     cartItems?: CartItemCreateNestedManyWithoutProductInput
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
@@ -34087,6 +35787,7 @@ export namespace Prisma {
     categoryId: string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -34202,6 +35903,7 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     trackInventory?: BoolFieldUpdateOperationsInput | boolean
     weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    brandRef?: BrandUpdateOneWithoutProductsNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     inventoryMovements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
@@ -34224,6 +35926,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -34514,6 +36217,7 @@ export namespace Prisma {
     stockQuantity?: number
     trackInventory?: boolean
     weightGrams?: number | null
+    brandRef?: BrandCreateNestedOneWithoutProductsInput
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutProductInput
     orderItems?: OrderItemCreateNestedManyWithoutProductInput
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -34536,6 +36240,7 @@ export namespace Prisma {
     categoryId: string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -34625,6 +36330,7 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     trackInventory?: BoolFieldUpdateOperationsInput | boolean
     weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    brandRef?: BrandUpdateOneWithoutProductsNestedInput
     inventoryMovements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -34647,6 +36353,7 @@ export namespace Prisma {
     categoryId?: StringFieldUpdateOperationsInput | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -34679,6 +36386,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     barcode?: string | null
     brand?: string | null
+    brandId?: string | null
     compareAtPrice?: Decimal | DecimalJsLike | number | string | null
     costPrice?: Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: number
@@ -34717,6 +36425,7 @@ export namespace Prisma {
     stockQuantity?: IntFieldUpdateOperationsInput | number
     trackInventory?: BoolFieldUpdateOperationsInput | boolean
     weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    brandRef?: BrandUpdateOneWithoutProductsNestedInput
     cartItems?: CartItemUpdateManyWithoutProductNestedInput
     inventoryMovements?: InventoryMovementUpdateManyWithoutProductNestedInput
     orderItems?: OrderItemUpdateManyWithoutProductNestedInput
@@ -34738,6 +36447,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -34771,6 +36481,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     barcode?: NullableStringFieldUpdateOperationsInput | string | null
     brand?: NullableStringFieldUpdateOperationsInput | string | null
+    brandId?: NullableStringFieldUpdateOperationsInput | string | null
     compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     lowStockThreshold?: IntFieldUpdateOperationsInput | number
@@ -35051,6 +36762,128 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     userEmail?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductCreateManyBrandRefInput = {
+    id?: string
+    name: string
+    slug: string
+    description?: string | null
+    price: Decimal | DecimalJsLike | number | string
+    imageUrl?: string | null
+    inStock?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    categoryId: string
+    barcode?: string | null
+    brand?: string | null
+    compareAtPrice?: Decimal | DecimalJsLike | number | string | null
+    costPrice?: Decimal | DecimalJsLike | number | string | null
+    lowStockThreshold?: number
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    requiresShipping?: boolean
+    reservedQuantity?: number
+    shortDescription?: string | null
+    sku?: string | null
+    status?: $Enums.ProductStatus
+    stockQuantity?: number
+    trackInventory?: boolean
+    weightGrams?: number | null
+  }
+
+  export type ProductUpdateWithoutBrandRefInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    inStock?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
+    brand?: NullableStringFieldUpdateOperationsInput | string | null
+    compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lowStockThreshold?: IntFieldUpdateOperationsInput | number
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    requiresShipping?: BoolFieldUpdateOperationsInput | boolean
+    reservedQuantity?: IntFieldUpdateOperationsInput | number
+    shortDescription?: NullableStringFieldUpdateOperationsInput | string | null
+    sku?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
+    stockQuantity?: IntFieldUpdateOperationsInput | number
+    trackInventory?: BoolFieldUpdateOperationsInput | boolean
+    weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    cartItems?: CartItemUpdateManyWithoutProductNestedInput
+    inventoryMovements?: InventoryMovementUpdateManyWithoutProductNestedInput
+    orderItems?: OrderItemUpdateManyWithoutProductNestedInput
+    category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
+    requiredBy?: ProductDependencyUpdateManyWithoutDependencyProductNestedInput
+    dependencies?: ProductDependencyUpdateManyWithoutProductNestedInput
+    reviews?: ReviewUpdateManyWithoutProductNestedInput
+    wishlist?: WishlistItemUpdateManyWithoutProductNestedInput
+  }
+
+  export type ProductUncheckedUpdateWithoutBrandRefInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    inStock?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
+    brand?: NullableStringFieldUpdateOperationsInput | string | null
+    compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lowStockThreshold?: IntFieldUpdateOperationsInput | number
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    requiresShipping?: BoolFieldUpdateOperationsInput | boolean
+    reservedQuantity?: IntFieldUpdateOperationsInput | number
+    shortDescription?: NullableStringFieldUpdateOperationsInput | string | null
+    sku?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
+    stockQuantity?: IntFieldUpdateOperationsInput | number
+    trackInventory?: BoolFieldUpdateOperationsInput | boolean
+    weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
+    cartItems?: CartItemUncheckedUpdateManyWithoutProductNestedInput
+    inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
+    orderItems?: OrderItemUncheckedUpdateManyWithoutProductNestedInput
+    requiredBy?: ProductDependencyUncheckedUpdateManyWithoutDependencyProductNestedInput
+    dependencies?: ProductDependencyUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
+    wishlist?: WishlistItemUncheckedUpdateManyWithoutProductNestedInput
+  }
+
+  export type ProductUncheckedUpdateManyWithoutBrandRefInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    inStock?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    categoryId?: StringFieldUpdateOperationsInput | string
+    barcode?: NullableStringFieldUpdateOperationsInput | string | null
+    brand?: NullableStringFieldUpdateOperationsInput | string | null
+    compareAtPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    costPrice?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    lowStockThreshold?: IntFieldUpdateOperationsInput | number
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    requiresShipping?: BoolFieldUpdateOperationsInput | boolean
+    reservedQuantity?: IntFieldUpdateOperationsInput | number
+    shortDescription?: NullableStringFieldUpdateOperationsInput | string | null
+    sku?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
+    stockQuantity?: IntFieldUpdateOperationsInput | number
+    trackInventory?: BoolFieldUpdateOperationsInput | boolean
+    weightGrams?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type OrderCreateManyUserInput = {

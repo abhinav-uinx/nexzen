@@ -16,6 +16,7 @@ export default function ImageGallery({ images = [] }) {
           <button
             key={i}
             onClick={() => setActiveImage(img)}
+            suppressHydrationWarning
             className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
               activeImage === img ? 'border-slate-950 ring-2 ring-slate-100' : 'border-slate-100 opacity-60 hover:opacity-100'
             }`}

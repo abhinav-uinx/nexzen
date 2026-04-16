@@ -25,25 +25,18 @@ export default async function UploadProductPage() {
     redirect(`${adminBasePath}/login`)
   }
 
-  const [categories, brandRows] = await Promise.all([
+  const [categories, brands] = await Promise.all([
     getAllCategories(),
-    prisma.product.findMany({
-      where: {
-        brand: {
-          not: null,
-        },
-      },
+    prisma.brand.findMany({
       select: {
-        brand: true,
+        id: true,
+        name: true,
       },
-      distinct: ['brand'],
       orderBy: {
-        brand: 'asc',
+        name: 'asc',
       },
     }),
   ])
-
-  const brands = brandRows.map((row) => row.brand).filter(Boolean)
 
   return (
     <section className="px-4 py-8 sm:px-6 lg:px-8">
@@ -56,7 +49,12 @@ export default async function UploadProductPage() {
             &larr; Back to Admin Dashboard
           </Link>
         </div>
-        <ProductForm categories={categories} brands={brands} mode="create" />
+        <ProductForm 
+          adminBasePath={adminBasePath}
+          categories={categories} 
+          brands={brands} 
+          mode="create" 
+        />
       </div>
     </section>
   )

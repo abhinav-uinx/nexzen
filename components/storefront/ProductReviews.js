@@ -87,6 +87,7 @@ export default function ProductReviews({ productId, density = 'default' }) {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
+          suppressHydrationWarning
           className={`${styles.writeReviewBtn} ${density === 'compact' ? 'rounded-lg px-6 py-3 text-[10px] font-black uppercase tracking-widest' : ''}`}
         >
           Write a Review

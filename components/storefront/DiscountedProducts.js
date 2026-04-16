@@ -35,9 +35,8 @@ export default function DiscountedProducts({ products, wishlistedIds }) {
               Precision components at exceptional value.
             </h2>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <SectionToggle view={view} setView={setView} />
-            <Link href="/products" className="hidden group items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-slate-950 sm:flex">
+          <div className="flex items-center justify-end">
+            <Link href="/products" className="group flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-slate-950">
               View all
               <span className="transition-transform group-hover:translate-x-1">→</span>
             </Link>

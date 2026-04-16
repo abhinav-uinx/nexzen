@@ -88,6 +88,8 @@ model Product {
   categoryId         String
   barcode            String?             @unique
   brand              String?
+  brandId            String?
+  brandRef           Brand?              @relation(fields: [brandId], references: [id])
   compareAtPrice     Decimal?            @db.Decimal(10, 2)
   costPrice          Decimal?            @db.Decimal(10, 2)
   lowStockThreshold  Int                 @default(5)
@@ -108,6 +110,19 @@ model Product {
   dependencies       ProductDependency[] @relation("ProductDependencies")
   reviews            Review[]
   wishlist           WishlistItem[]
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  logoUrl     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@map("brands")
 }
 
 model ProductDependency {

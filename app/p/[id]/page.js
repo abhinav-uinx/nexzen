@@ -98,29 +98,17 @@ export default async function ProductDetailsPage({ params }) {
               <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">MRP Inclusive of all taxes</p>
             </div>
 
+            {/* Product description / Blurb */}
+            {product.blurb && (
+              <div className="mt-8 border-l-2 border-slate-950 pl-6 py-2">
+                <p className="text-sm font-medium leading-relaxed text-slate-600">
+                  {product.blurb}
+                </p>
+              </div>
+            )}
+
             {/* Selection Logic */}
             <VariantSelector flavours={product.flavours} sizes={product.sizes} />
-
-            {/* Pincode Check (Mock) */}
-            <div className="mt-12 overflow-hidden rounded-2xl bg-slate-50 border border-slate-100 p-1">
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h3 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-950">
-                  <MapPin size={14} className="text-slate-400" />
-                  Serviceability Check
-                </h3>
-                <div className="mt-6 flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="ENTER PINCODE" 
-                    className="flex-1 rounded-lg border-2 border-slate-100 bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-widest outline-none transition-all focus:border-slate-950 focus:bg-white"
-                    maxLength={6}
-                  />
-                  <button className="rounded-lg bg-slate-950 px-8 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-blue-700 active:scale-95 shadow-xl shadow-slate-950/10">
-                    CHECK
-                  </button>
-                </div>
-              </div>
-            </div>
 
             {/* Main CTA */}
             <div className="mt-12">

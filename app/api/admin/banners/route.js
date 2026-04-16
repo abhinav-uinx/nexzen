@@ -97,6 +97,82 @@ export async function POST(request) {
   }
 }
 
+export async function PATCH(request) {
+  try {
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get(getAdminCookieName())?.value
+    const session = await getAdminSession(sessionToken)
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const formData = await request.formData()
+    const id = formData.get('id')
+    const title = formData.get('title')
+    const subtitle = formData.get('subtitle')
+    const eyebrow = formData.get('eyebrow')
+    const metric = formData.get('metric')
+    const ctaText = formData.get('ctaText')
+    const secondaryCtaText = formData.get('secondaryCtaText')
+    const secondaryHref = formData.get('secondaryHref')
+    const accent = formData.get('accent')
+    const link = formData.get('link')
+    const order = parseInt(formData.get('order') || '0', 10)
+    const imageFile = formData.get('image')
+
+    if (!id || !title) {
+      return NextResponse.json({ error: 'ID and title are required' }, { status: 400 })
+    }
+
+    const updateData = {
+      title,
+      subtitle,
+      eyebrow,
+      metric,
+      ctaText,
+      secondaryCtaText,
+      secondaryHref,
+      accent,
+      link,
+      order,
+    }
+
+    // Handle optional image upload
+    if (imageFile && typeof imageFile === 'object' && imageFile.size > 0) {
+      const supabase = createSupabaseServerClient()
+      const fileExt = imageFile.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+      const filePath = `banners/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('hero-banners')
+        .upload(filePath, imageFile)
+
+      if (uploadError) {
+        console.error('Storage Upload Error:', uploadError)
+        return NextResponse.json({ error: `Upload failed: ${uploadError.message}` }, { status: 500 })
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('hero-banners')
+        .getPublicUrl(filePath)
+
+      updateData.imageUrl = publicUrl
+    }
+
+    const updatedBanner = await prisma.banner.update({
+      where: { id },
+      data: updateData
+    })
+
+    return NextResponse.json({ banner: updatedBanner })
+  } catch (error) {
+    console.error('Error updating banner:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+
 export async function DELETE(request) {
   try {
     const cookieStore = await cookies()

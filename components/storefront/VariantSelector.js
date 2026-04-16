@@ -20,6 +20,7 @@ export default function VariantSelector({ flavours = [], sizes = [], onSelect })
                   setSelectedFlavour(flavour)
                   onSelect?.({ flavour, size: selectedSize })
                 }}
+                suppressHydrationWarning
                 className={`rounded border-2 px-6 py-3 text-xs font-bold transition-all duration-200 ${
                   selectedFlavour === flavour
                     ? 'border-slate-950 bg-slate-950 text-white shadow-lg'
@@ -45,6 +46,7 @@ export default function VariantSelector({ flavours = [], sizes = [], onSelect })
                   setSelectedSize(size.label)
                   onSelect?.({ flavour: selectedFlavour, size: size.label })
                 }}
+                suppressHydrationWarning
                 className={`flex flex-col items-center justify-center rounded border-2 px-8 py-3 transition-all duration-200 ${
                   selectedSize === size.label
                     ? 'border-slate-950 bg-slate-100 text-slate-950'
