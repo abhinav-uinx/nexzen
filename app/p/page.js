@@ -96,7 +96,7 @@ export default async function ProductsPage({ searchParams }) {
           </div>
         </div>
 
-        <div className="mt-12 grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="mt-6 sm:mt-12 grid gap-3 sm:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {products.map((product) => (
             <ProductCard 
               key={product.id} 

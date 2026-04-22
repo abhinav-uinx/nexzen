@@ -89,6 +89,7 @@ export default function Footer() {
         <div className="mb-3 flex justify-center gap-4">
           <Link href="/privacy" className="transition hover:text-slate-300">Privacy Policy</Link>
           <Link href="/terms" className="transition hover:text-slate-300">Terms of Service</Link>
+          <Link href="/support" className="transition hover:text-slate-300">Support Center</Link>
         </div>
         Copyright 2026 Nexzen. Designed as a modern electronics storefront concept.
       </div>

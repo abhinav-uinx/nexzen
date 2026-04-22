@@ -58,9 +58,7 @@ export default function Navbar() {
 
   return (
     <header 
-      className={`sticky top-0 z-50 w-full bg-[#000000] text-white transition-all border-b border-white/5 ${
-        mobileOpen ? 'h-screen' : 'h-[80px] sm:h-[90px]'
-      }`}
+      className="sticky top-0 z-50 w-full bg-[#000000] text-white transition-all border-b border-white/5 h-[80px] sm:h-[90px]"
     >
       <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-6 lg:px-10 gap-8">
         {/* Brand Area */}
@@ -73,11 +71,7 @@ export default function Navbar() {
             {mobileOpen ? (
               <X size={26} className="animate-in fade-in zoom-in spin-in-90 duration-300" />
             ) : (
-              <div className="flex flex-col gap-1 items-center justify-center">
-                <span className="h-1.5 w-1.5 bg-white rounded-full animate-pulse transition-all"></span>
-                <span className="h-1.5 w-1.5 bg-white rounded-full transition-all"></span>
-                <span className="h-1.5 w-1.5 bg-white rounded-full animate-pulse transition-all"></span>
-              </div>
+              <Menu size={26} className="animate-in fade-in zoom-in duration-300" />
             )}
           </button>
           
@@ -219,7 +213,7 @@ export default function Navbar() {
             <Link href="/p" onClick={() => setMobileOpen(false)}>Catalog</Link>
             <Link href="/p?category=stem-kits" onClick={() => setMobileOpen(false)}>STEM Kits</Link>
             <Link href="/p?sort=newest" onClick={() => setMobileOpen(false)}>New Arrivals</Link>
-            <Link href="/h" onClick={() => setMobileOpen(false)}>Support</Link>
+            <Link href="/support" onClick={() => setMobileOpen(false)}>Support</Link>
           </nav>
 
           <form onSubmit={submitSearch} className="mt-12">
