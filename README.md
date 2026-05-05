@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://nexzen-ashy.vercel.app/" target="_blank">
-    <img src="https://img.shields.io/badge/VIEW%20LIVE%20DEMO-OPEN%20WEBSITE-ff6b00?style=for-the-badge&logo=vercel&logoColor=white&labelColor=0f172a" alt="View Live Demo" />
+    <img src="https://img.shields.io/badge/VIEW%20LIVE%20DEMO-OPEN%20WEBSITE-84cc16?style=for-the-badge&logo=vercel&logoColor=0f172a&labelColor=0f172a" alt="View Live Demo" height="56" />
   </a>
 </p>
 
