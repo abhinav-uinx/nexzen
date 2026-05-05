@@ -1,6 +1,6 @@
 # Nexzen
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Open%20Website-0f172a?style=for-the-badge)](https://nexzen-ashy.vercel.app/)
+[![Demo](https://img.shields.io/badge/Demo-Open%20Website-0f172a?style=for-the-badge)](https://nexzen-ashy.vercel.app/)
 
 Nexzen is a production-focused electronics storefront for maker kits, development boards, sensors, components, and rapid prototyping gear. The app combines a customer storefront, authenticated user account flows, order management, payment checkout, and an admin console for catalog and operations work.
 
