@@ -1,12 +1,19 @@
 import { NextResponse } from 'next/server'
 import { getAppUserForRequest } from '@/lib/auth/user-session'
-import { getRecentUserSearches, saveUserSearch } from '@/lib/search/history'
+import { clearUserSearches, getRecentUserSearches, getTrendingSearches, saveUserSearch } from '@/lib/search/history'
 import { normalizeInteger, normalizeText } from '@/lib/security/validation'
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const limit = normalizeInteger(searchParams.get('limit'), { min: 1, max: 12, fallback: 6 })
+    const scope = normalizeText(searchParams.get('scope'), 20).toLowerCase()
+
+    if (scope === 'trending') {
+      const searches = await getTrendingSearches({ limit })
+      return NextResponse.json({ ok: true, searches })
+    }
+
     const { appUser } = await getAppUserForRequest(request)
 
     if (!appUser?.id) {
@@ -44,5 +51,20 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, saved: true })
   } catch {
     return NextResponse.json({ ok: false, saved: false }, { status: 200 })
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const { appUser } = await getAppUserForRequest(request)
+
+    if (!appUser?.id) {
+      return NextResponse.json({ ok: false, cleared: 0 }, { status: 401 })
+    }
+
+    const cleared = await clearUserSearches({ userId: appUser.id })
+    return NextResponse.json({ ok: true, cleared })
+  } catch {
+    return NextResponse.json({ ok: false, cleared: 0 }, { status: 200 })
   }
 }

@@ -218,9 +218,9 @@ export default function OrdersPanel({
                   <Link
                     key={item.id}
                     href={`/products/${item.product?.slug || item.product?.id || ''}`}
-                    className="interactive-button group flex items-center justify-between rounded-xl border border-slate-100 bg-white p-3 transition hover:border-blue-200 hover:bg-blue-50/40"
+                    className="interactive-button group flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 transition hover:border-blue-200 hover:bg-blue-50/40"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
                       <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-slate-50 border border-slate-100">
                         {item.product?.imageUrl ? (
                           <img src={item.product.imageUrl} alt="" className="h-full w-full object-cover" />
@@ -228,15 +228,14 @@ export default function OrdersPanel({
                           <div className="flex h-full w-full items-center justify-center bg-slate-100 text-[10px] font-bold text-slate-300">NZ</div>
                         )}
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-950 group-hover:text-blue-700 transition-colors">{item.product?.name || 'Product removed'}</p>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-slate-950 group-hover:text-blue-700 transition-colors">{item.product?.name || 'Product removed'}</p>
                         <p className="mt-0.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                           QTY: {item.quantity} • Rs. {Number(item.price || 0).toLocaleString('en-IN')}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="hidden sm:inline text-[10px] font-bold text-blue-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">View Details</span>
+                    <div className="flex flex-shrink-0 items-center">
                       <svg className="h-4 w-4 text-slate-300 group-hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>

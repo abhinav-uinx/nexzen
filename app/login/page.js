@@ -8,7 +8,7 @@ export default function LoginPage() {
   return (
     <section className="px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-[2rem] border border-slate-200 bg-[radial-gradient(circle_at_top,#2155ff_0%,#0f172a_58%,#020617_100%)] p-8 text-white shadow-[0_20px_70px_rgba(15,23,42,0.2)] sm:p-10">
+        <div className="hidden rounded-[2rem] border border-slate-200 bg-[radial-gradient(circle_at_top,#2155ff_0%,#0f172a_58%,#020617_100%)] p-8 text-white shadow-[0_20px_70px_rgba(15,23,42,0.2)] sm:p-10 lg:block">
           <p className="text-sm uppercase tracking-[0.26em] text-cyan-300">Nexzen Access</p>
           <h1 className="mt-4 font-heading text-4xl font-semibold leading-tight sm:text-5xl">
             Sign in to save carts, track orders, and build faster.

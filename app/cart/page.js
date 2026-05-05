@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
 import { useCart } from '@/providers/CartProvider'
+import { getVisibleSavedAddresses } from '@/lib/profile/addresses'
 
 export default function CartPage() {
   return (
@@ -39,16 +40,30 @@ function CartPageContent() {
     pincode: '',
     phone: '',
   })
+  const [billingSameAsShipping, setBillingSameAsShipping] = useState(true)
+  const [billingData, setBillingData] = useState({
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    pincode: '',
+    phone: '',
+  })
   const [savedAddresses, setSavedAddresses] = useState([])
+  const [editingSavedAddressId, setEditingSavedAddressId] = useState('')
+  const [addressLabelDraft, setAddressLabelDraft] = useState('Home')
   const [paymentMethod, setPaymentMethod] = useState('razorpay') // razorpay, cod
 
   const [couponCode, setCouponCode] = useState(appliedCoupon?.name || '')
   const [couponMessage, setCouponMessage] = useState('')
   const [couponError, setCouponError] = useState('')
-  const [isApplyingCoupon, startCouponTransition] = useTransition()
+  const [, startCouponTransition] = useTransition()
   const [checkoutMessage, setCheckoutMessage] = useState('')
   const [checkoutError, setCheckoutError] = useState('')
+  const [showPaymentDisclaimer, setShowPaymentDisclaimer] = useState(false)
+  const [addressSyncMessage, setAddressSyncMessage] = useState('')
   const [isCheckingOut, startCheckoutTransition] = useTransition()
+  const [isSavingAddress, startAddressSaveTransition] = useTransition()
 
   const searchParams = useSearchParams()
   const errorParam = searchParams.get('error')
@@ -76,17 +91,28 @@ function CartPageContent() {
           
           if (profile) {
             const addresses = Array.isArray(profile.savedAddresses) ? profile.savedAddresses : []
+            const visibleAddresses = getVisibleSavedAddresses(addresses)
             setSavedAddresses(addresses)
+            const defaultAddress = visibleAddresses.find((address) => address.isDefault) || visibleAddresses[0] || null
             setShippingData(prev => ({
               ...prev,
-              addressLine1: profile.addressLine1 || prev.addressLine1,
-              addressLine2: profile.addressLine2 || prev.addressLine2,
-              city: profile.city || prev.city,
-              state: profile.state || prev.state,
-              pincode: profile.pincode || prev.pincode,
-              phone: profile.phone || prev.phone,
+              addressLine1: defaultAddress?.addressLine1 || profile.addressLine1 || prev.addressLine1,
+              addressLine2: defaultAddress?.addressLine2 || profile.addressLine2 || prev.addressLine2,
+              city: defaultAddress?.city || profile.city || prev.city,
+              state: defaultAddress?.state || profile.state || prev.state,
+              pincode: defaultAddress?.pincode || profile.pincode || prev.pincode,
+              phone: defaultAddress?.phone || profile.phone || prev.phone,
               upiId: profile.savedUpiId || prev.upiId
             }))
+            setBillingData({
+              addressLine1: defaultAddress?.addressLine1 || profile.addressLine1 || '',
+              addressLine2: defaultAddress?.addressLine2 || profile.addressLine2 || '',
+              city: defaultAddress?.city || profile.city || '',
+              state: defaultAddress?.state || profile.state || '',
+              pincode: defaultAddress?.pincode || profile.pincode || '',
+              phone: defaultAddress?.phone || profile.phone || '',
+            })
+            setAddressLabelDraft(defaultAddress?.label || 'Home')
           }
         } catch (e) {
           console.warn('Silent skip of profile pre-fill:', e)
@@ -142,6 +168,15 @@ function CartPageContent() {
         setCheckoutError('Invalid pincode.')
         return false
     }
+
+    if (!billingSameAsShipping) {
+      const billingRequired = billingData.addressLine1 && billingData.city && billingData.state && billingData.pincode && billingData.phone
+      if (!billingRequired) {
+        setCheckoutError('Please complete the billing address fields or keep billing same as shipping.')
+        return false
+      }
+    }
+
     return true
   }
 
@@ -163,7 +198,12 @@ function CartPageContent() {
         return
     }
 
-    // Step 3: Final Placement
+    // Step 3: warn before final placement or payment gateway handoff.
+    setShowPaymentDisclaimer(true)
+  }
+
+  function placeOrderAfterDisclaimer() {
+    setShowPaymentDisclaimer(false)
     setCheckoutError('')
     setCheckoutMessage('')
 
@@ -185,6 +225,7 @@ function CartPageContent() {
           discountPercentage: appliedCoupon?.discountPercent || 0,
           couponCode: appliedCoupon?.name || null,
           ...shippingData,
+          billingAddress: billingSameAsShipping ? { ...shippingData } : billingData,
           paymentMethod
         }),
       })
@@ -211,6 +252,8 @@ function CartPageContent() {
   }
 
   function applySavedAddress(address) {
+    setEditingSavedAddressId(address.id || '')
+    setAddressLabelDraft(address.label || 'Home')
     setShippingData((prev) => ({
       ...prev,
       addressLine1: address.addressLine1 || '',
@@ -220,6 +263,76 @@ function CartPageContent() {
       pincode: address.pincode || '',
       phone: address.phone || prev.phone || '',
     }))
+  }
+
+  function applyBillingAddress(address) {
+    setBillingData({
+      addressLine1: address.addressLine1 || '',
+      addressLine2: address.addressLine2 || '',
+      city: address.city || '',
+      state: address.state || '',
+      pincode: address.pincode || '',
+      phone: address.phone || '',
+    })
+  }
+
+  function saveCheckoutAddressToProfile() {
+    if (!session?.access_token) {
+      setCheckoutError('Sign in first to save addresses.')
+      return
+    }
+
+    const nextAddress = {
+      id: editingSavedAddressId || `checkout-${Date.now()}`,
+      label: addressLabelDraft || `Address ${getVisibleSavedAddresses(savedAddresses).length + 1}`,
+      addressLine1: shippingData.addressLine1,
+      addressLine2: shippingData.addressLine2,
+      city: shippingData.city,
+      state: shippingData.state,
+      pincode: shippingData.pincode,
+      phone: shippingData.phone,
+      isDefault: getVisibleSavedAddresses(savedAddresses).length === 0,
+      hidden: false,
+    }
+
+    const nextAddresses = [nextAddress, ...savedAddresses.filter((item) =>
+      item.addressLine1 !== nextAddress.addressLine1 ||
+      item.city !== nextAddress.city ||
+      item.pincode !== nextAddress.pincode
+    )]
+
+    startAddressSaveTransition(async () => {
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            phone: shippingData.phone,
+            addressLine1: shippingData.addressLine1,
+            addressLine2: shippingData.addressLine2,
+            city: shippingData.city,
+            state: shippingData.state,
+            pincode: shippingData.pincode,
+            savedAddresses: nextAddresses,
+          }),
+        })
+
+        const result = await response.json().catch(() => ({}))
+        if (!response.ok) {
+          throw new Error(result.error || 'Could not save this address.')
+        }
+
+        setSavedAddresses(Array.isArray(result.profile?.savedAddresses) ? result.profile.savedAddresses : nextAddresses)
+        setEditingSavedAddressId(nextAddress.id)
+        setAddressSyncMessage('Saved to your address book for future checkout.')
+        setCheckoutError('')
+      } catch (error) {
+        setCheckoutError(error instanceof Error ? error.message : 'Could not save this address.')
+      }
+    })
   }
 
   return (
@@ -234,11 +347,12 @@ function CartPageContent() {
              </div>
              <h2 className="font-heading text-3xl font-bold text-slate-950">Your cart is empty</h2>
              <p className="mt-4 max-w-sm text-sm leading-7 text-slate-600">
-                It looks like you haven't added any building blocks to your collection yet.
+                It looks like you haven&apos;t added any building blocks to your collection yet.
              </p>
              <Link
-                href="/"
-                className="interactive-button mt-10 rounded-full bg-slate-950 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-blue-700 hover:shadow-[0_20px_40px_rgba(37,99,235,0.2)] active:scale-[0.98]"
+                href="/p"
+                className="interactive-button mt-10 rounded-full bg-slate-950 px-8 py-4 text-sm font-bold text-white shadow-[0_16px_36px_rgba(15,23,42,0.2)] transition-all hover:bg-slate-800 hover:shadow-[0_20px_40px_rgba(15,23,42,0.24)] active:scale-[0.98]"
+                style={{ backgroundColor: '#020617', color: '#ffffff' }}
              >
                 Explore Products
              </Link>
@@ -331,16 +445,14 @@ function CartPageContent() {
               {step === 2 && (
                 <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-[0_16px_48px_rgba(15,23,42,0.05)] animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <h2 className="font-heading text-xl font-bold mb-6">Delivery Address</h2>
-                    {savedAddresses.length > 0 && (
+                    {getVisibleSavedAddresses(savedAddresses).length > 0 && (
                       <div className="mb-6">
                         <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Saved addresses</p>
                         <div className="grid gap-3">
-                          {savedAddresses.map((address) => (
-                            <button
+                          {getVisibleSavedAddresses(savedAddresses).map((address) => (
+                            <div
                               key={address.id}
-                              type="button"
-                              onClick={() => applySavedAddress(address)}
-                              className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/50"
+                              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                             >
                               <div className="flex items-center justify-between gap-3">
                                 <div>
@@ -357,11 +469,63 @@ function CartPageContent() {
                                   </span>
                                 )}
                               </div>
-                            </button>
+                              <div className="mt-4 flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => applySavedAddress(address)}
+                                  className="interactive-button rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white"
+                                >
+                                  Use for shipping
+                                </button>
+                                {!billingSameAsShipping ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => applyBillingAddress(address)}
+                                    className="interactive-button rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700"
+                                  >
+                                    Use for billing
+                                  </button>
+                                ) : null}
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </div>
                     )}
+                    <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-950">Address book connection</p>
+                          <p className="mt-1 text-xs text-slate-500">Save or update the current shipping address without leaving checkout.</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={saveCheckoutAddressToProfile}
+                          disabled={isSavingAddress}
+                          className="interactive-button inline-flex rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                        >
+                          {isSavingAddress ? 'Saving...' : editingSavedAddressId ? 'Update saved address' : 'Save as new address'}
+                        </button>
+                      </div>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                        <input
+                          type="text"
+                          placeholder="Address label (Home, Office)"
+                          value={addressLabelDraft}
+                          onChange={(event) => setAddressLabelDraft(event.target.value)}
+                          className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 outline-none focus:border-blue-500 transition-all"
+                        />
+                        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={billingSameAsShipping}
+                            onChange={(event) => setBillingSameAsShipping(event.target.checked)}
+                          />
+                          Billing same as shipping
+                        </label>
+                      </div>
+                      {addressSyncMessage ? <p className="mt-3 text-sm text-emerald-600">{addressSyncMessage}</p> : null}
+                    </div>
                     <div className="grid gap-6 sm:grid-cols-2">
                         <div className="sm:col-span-2">
                             <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Street Address</label>
@@ -414,6 +578,63 @@ function CartPageContent() {
                             />
                         </div>
                     </div>
+                    {!billingSameAsShipping && (
+                      <div className="mt-6 rounded-[2rem] border border-slate-200 bg-slate-50/60 p-6">
+                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Billing address</p>
+                        <div className="mt-4 grid gap-6 sm:grid-cols-2">
+                          <div className="sm:col-span-2">
+                            <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Billing Street Address</label>
+                            <input
+                              type="text"
+                              placeholder="House No, Building, Area"
+                              value={billingData.addressLine1}
+                              onChange={e => setBillingData({ ...billingData, addressLine1: e.target.value })}
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 outline-none focus:border-blue-500 transition-all"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">City</label>
+                            <input
+                              type="text"
+                              placeholder="Bengaluru"
+                              value={billingData.city}
+                              onChange={e => setBillingData({ ...billingData, city: e.target.value })}
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 outline-none focus:border-blue-500 transition-all"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">State</label>
+                            <input
+                              type="text"
+                              placeholder="Karnataka"
+                              value={billingData.state}
+                              onChange={e => setBillingData({ ...billingData, state: e.target.value })}
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 outline-none focus:border-blue-500 transition-all"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Pincode</label>
+                            <input
+                              type="text"
+                              placeholder="560001"
+                              value={billingData.pincode}
+                              onChange={e => setBillingData({ ...billingData, pincode: e.target.value })}
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 outline-none focus:border-blue-500 transition-all"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Phone No</label>
+                            <input
+                              type="text"
+                              placeholder="+91 99000 00000"
+                              value={billingData.phone}
+                              onChange={e => setBillingData({ ...billingData, phone: e.target.value })}
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 outline-none focus:border-blue-500 transition-all"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                 </div>
               )}
 
@@ -563,6 +784,48 @@ function CartPageContent() {
           </>
         )}
       </div>
+
+      {/* Demo Payment Disclaimer Modal */}
+      {showPaymentDisclaimer && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm animate-in fade-in duration-300">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="checkout-demo-disclaimer-title"
+            className="w-full max-w-lg rounded-[2rem] border border-amber-200 bg-white p-8 text-left shadow-[0_24px_80px_rgba(0,0,0,0.18)] animate-in zoom-in-95 duration-300"
+          >
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 text-amber-700">
+              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              </svg>
+            </div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-700">Demo payment warning</p>
+            <h3 id="checkout-demo-disclaimer-title" className="mt-3 font-heading text-2xl font-bold text-slate-950">
+              Do not make a real payment
+            </h3>
+            <p className="mt-4 text-sm leading-7 text-slate-600">
+              This website is for demonstration purposes only. Please do not make any payment or enter real payment details. Nexzen is not responsible for any financial loss, failed transaction, or payment made on this demo website.
+            </p>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setShowPaymentDisclaimer(false)}
+                className="rounded-full border border-slate-200 bg-white px-5 py-4 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                Go Back
+              </button>
+              <button
+                type="button"
+                onClick={placeOrderAfterDisclaimer}
+                disabled={isCheckingOut}
+                className="rounded-full bg-slate-950 px-5 py-4 text-sm font-bold text-white shadow-xl transition hover:bg-amber-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isCheckingOut ? 'Processing...' : 'I Understand, Continue'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Payment Error Modal */}
       {checkoutError && (

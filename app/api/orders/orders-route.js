@@ -38,6 +38,15 @@ export async function handleGetOrders(request) {
                 name: true,
                 slug: true,
                 imageUrl: true,
+                price: true,
+                inStock: true,
+                description: true,
+                category: {
+                  select: {
+                    name: true,
+                    slug: true,
+                  },
+                },
               },
             },
           },
@@ -76,7 +85,15 @@ export async function handleGetOrders(request) {
           id: item.id,
           quantity: item.quantity,
           price: Number(item.price),
-          product: item.product,
+          product: item.product
+            ? {
+                ...item.product,
+                price: Number(item.product.price || 0),
+                categoryName: item.product.category?.name || 'Product',
+                category: item.product.category?.slug || '',
+                blurb: item.product.description || 'Built for hardware teams shipping real projects.',
+              }
+            : null,
         })),
       })),
     })

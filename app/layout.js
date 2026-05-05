@@ -1,6 +1,7 @@
 import './globals.css'
 import Footer from '@/components/storefront/Footer'
 import Navbar from '@/components/storefront/Navbar'
+import DemoDisclaimerPopup from '@/components/storefront/DemoDisclaimerPopup'
 import { AuthProvider } from '@/providers/AuthProvider'
 import { CartProvider } from '@/providers/CartProvider'
 
@@ -18,11 +19,12 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: '#000000',
 }
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ colorScheme: 'light' }}>
       <body suppressHydrationWarning>
         <AuthProvider>
           <CartProvider>
@@ -30,6 +32,7 @@ export default function RootLayout({ children }) {
               <Navbar />
               <main className="flex-1">{children}</main>
               <Footer />
+              <DemoDisclaimerPopup />
             </div>
           </CartProvider>
         </AuthProvider>

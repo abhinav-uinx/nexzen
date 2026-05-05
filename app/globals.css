@@ -2,6 +2,7 @@
 @import 'tailwindcss';
 
 :root {
+  color-scheme: light;
   --background: #f5f5f7;
   --foreground: #000000;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
@@ -25,6 +26,7 @@
 html {
   scroll-behavior: smooth;
   background: var(--background);
+  color-scheme: light;
 }
 
 body {
@@ -33,10 +35,18 @@ body {
   color: var(--foreground);
   font-family: var(--font-body);
   overflow-x: hidden;
+  color-scheme: light;
 }
 
 body * {
   -webkit-tap-highlight-color: transparent;
+}
+
+input,
+textarea,
+select,
+button {
+  color-scheme: light;
 }
 
 a {

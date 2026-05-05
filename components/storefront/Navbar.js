@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 import { useCart } from '@/providers/CartProvider'
-import { ShoppingBag, User, Menu, X, ChevronRight, SlidersHorizontal, GitCompareArrows } from 'lucide-react'
+import { ShoppingBag, User, Menu, X, ChevronRight, SlidersHorizontal, GitCompareArrows, Search } from 'lucide-react'
 import SearchSuggest from '@/components/storefront/SearchSuggest'
 import { useCompareItems } from '@/components/storefront/CompareButton'
 import { buildSearchPath } from '@/lib/catalog/search-url'
@@ -21,7 +21,13 @@ export default function Navbar() {
   const { session, user, signOut } = useAuth()
   const [query, setQuery] = useState('')
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [accountSummary, setAccountSummary] = useState({
+    wishlistCount: 0,
+    orderCount: 0,
+    profileIncomplete: false,
+  })
   
   const profileRef = useRef(null)
   const hiddenAdminBasePath = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '/nexzen-control-room'
@@ -45,7 +51,7 @@ export default function Navbar() {
       }
     }
     document.addEventListener('mousedown', handleOutsideClick)
-    return () => document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [])
 
   useEffect(() => {
@@ -71,6 +77,72 @@ export default function Navbar() {
     }
   }, [pathname])
 
+  useEffect(() => {
+    let active = true
+
+    async function loadAccountSummary() {
+      if (!user || !session?.access_token || isAdminRoute) {
+        if (active) {
+          setAccountSummary({
+            wishlistCount: 0,
+            orderCount: 0,
+            profileIncomplete: false,
+          })
+        }
+        return
+      }
+
+      try {
+        const headers = {
+          Authorization: `Bearer ${session.access_token}`,
+        }
+
+        const [profileResponse, ordersResponse, wishlistResponse] = await Promise.all([
+          fetch('/api/profile', { headers }),
+          fetch('/api/orders', { headers }),
+          fetch('/api/wishlist', { headers }),
+        ])
+
+        const profileResult = await profileResponse.json().catch(() => ({}))
+        const ordersResult = await ordersResponse.json().catch(() => ({}))
+        const wishlistResult = await wishlistResponse.json().catch(() => ({}))
+
+        const profile = profileResult?.profile || {}
+        const orderCount = Array.isArray(ordersResult?.orders) ? ordersResult.orders.length : 0
+        const wishlistCount = Array.isArray(wishlistResult?.wishlist) ? wishlistResult.wishlist.length : 0
+        const profileIncomplete = !(
+          profile?.name &&
+          profile?.phone &&
+          profile?.addressLine1 &&
+          profile?.city &&
+          profile?.state &&
+          profile?.pincode
+        )
+
+        if (active) {
+          setAccountSummary({
+            wishlistCount,
+            orderCount,
+            profileIncomplete,
+          })
+        }
+      } catch {
+        if (active) {
+          setAccountSummary((current) => ({
+            ...current,
+            profileIncomplete: false,
+          }))
+        }
+      }
+    }
+
+    loadAccountSummary()
+
+    return () => {
+      active = false
+    }
+  }, [isAdminRoute, session?.access_token, user])
+
   function goToSearch(value = query.trim()) {
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem(
@@ -85,6 +157,7 @@ export default function Navbar() {
     }
     router.push(buildSearchPath(value))
     setMobileOpen(false)
+    setMobileSearchOpen(false)
   }
 
   function submitSearch(event) {
@@ -96,6 +169,7 @@ export default function Navbar() {
     await signOut()
     setProfileOpen(false)
     setMobileOpen(false)
+    setMobileSearchOpen(false)
     router.push('/')
   }
 
@@ -107,7 +181,10 @@ export default function Navbar() {
         {/* Brand Area */}
         <div className="flex items-center gap-4 shrink-0">
           <button 
-            onClick={() => setMobileOpen(!mobileOpen)}
+            onClick={() => {
+              setMobileSearchOpen(false)
+              setMobileOpen(!mobileOpen)
+            }}
             className="md:hidden flex items-center justify-center w-10 h-10 text-white transition-all active:scale-95"
             suppressHydrationWarning={true}
           >
@@ -134,6 +211,45 @@ export default function Navbar() {
             </div>
           </Link>
         </div>
+
+        {!isAdminRoute && mobileSearchOpen && (
+          <div className="absolute inset-x-0 top-0 z-50 flex h-full items-center bg-black px-4 md:hidden">
+            <form onSubmit={submitSearch} className="relative w-full">
+              <SearchSuggest
+                value={query}
+                onChange={setQuery}
+                onSubmit={goToSearch}
+                authToken={session?.access_token || ''}
+                placeholder="Search products..."
+                wrapperClassName="text-slate-950"
+                inputClassName="w-full rounded-full border border-white/15 bg-white/5 py-3 pl-[3.75rem] pr-[6.5rem] text-sm text-white placeholder:text-white/30 outline-none"
+                renderLeading={() => (
+                  <span className="absolute left-4 top-1/2 z-10 flex -translate-y-1/2 items-center justify-center text-white/70">
+                    <Search size={18} />
+                  </span>
+                )}
+                renderTrailing={() => (
+                  <div className="absolute right-2 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1">
+                    <button
+                      type="submit"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black"
+                    >
+                      <ChevronRight size={18} strokeWidth={3} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMobileSearchOpen(false)}
+                      className="flex h-9 w-9 items-center justify-center rounded-full text-white/70"
+                      aria-label="Close search"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                )}
+              />
+            </form>
+          </div>
+        )}
 
         {/* Central Search Bar */}
         {!isAdminRoute && (
@@ -184,14 +300,26 @@ export default function Navbar() {
 
           <div className="flex items-center gap-6">
             {!isAdminRoute && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false)
+                  setMobileSearchOpen(true)
+                }}
+                className="flex items-center justify-center text-white/70 transition-colors hover:text-white md:hidden"
+                aria-label="Open search"
+              >
+                <Search size={20} />
+              </button>
+            )}
+
+            {!isAdminRoute && compareItems.length > 0 && (
               <Link href="/compare" className="flex items-center gap-2 text-white/70 transition-colors hover:text-white">
                 <div className="relative">
                   <GitCompareArrows size={20} />
-                  {compareItems.length > 0 && (
-                    <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-black border border-[#111]">
-                      {compareItems.length}
-                    </span>
-                  )}
+                  <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-black border border-[#111]">
+                    {compareItems.length}
+                  </span>
                 </div>
                 <span className="hidden lg:inline text-sm font-medium">Compare</span>
               </Link>
@@ -218,14 +346,21 @@ export default function Navbar() {
                   className="flex items-center gap-2 text-white/70 transition-colors hover:text-white"
                   suppressHydrationWarning={true}
                 >
-                  <User size={20} />
+                  <div className="relative">
+                    <User size={20} />
+                    {accountSummary.profileIncomplete ? (
+                      <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                        !
+                      </span>
+                    ) : null}
+                  </div>
                   <span className="hidden lg:inline text-sm font-medium">
                     { (typeof window !== 'undefined' && user) ? userLabel : 'Sign In' }
                   </span>
                 </button>
                 
                 {profileOpen && user && (
-                  <div className="absolute right-0 top-[calc(100%+20px)] w-64 animate-apple-fade overflow-hidden rounded-2xl border border-white/5 bg-[#1a1a1a] p-2 shadow-2xl ring-1 ring-white/10">
+                  <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-64 overflow-hidden rounded-2xl border border-white/5 bg-[#1a1a1a] p-2 shadow-2xl ring-1 ring-white/10 animate-[apple-fade_0.18s_var(--ease-apple)_both]">
                     <div className="mb-2 flex items-center gap-3 border-b border-white/5 px-3 py-3">
                       <div className="relative h-10 w-10 overflow-hidden rounded-full bg-white/5">
                         <Image src={profileImageSrc} alt="Profile" fill className="object-cover" />
@@ -237,10 +372,10 @@ export default function Navbar() {
                     </div>
                     
                     <div className="space-y-1">
-                      {[
-                        { label: 'Profile', href: '/u' },
-                        { label: 'Wishlist', href: '/u?tab=wishlist' },
-                        { label: 'Orders', href: '/o' }
+                      {[ 
+                        { label: 'Profile', href: '/u', alert: accountSummary.profileIncomplete ? '!' : null, alertTone: 'rose' },
+                        { label: 'Wishlist', href: '/u?tab=wishlist', count: accountSummary.wishlistCount },
+                        { label: 'Orders', href: '/o', count: accountSummary.orderCount }
                       ].map((item) => (
                         <Link
                           key={item.label}
@@ -248,8 +383,20 @@ export default function Navbar() {
                           onClick={() => setProfileOpen(false)}
                           className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white"
                         >
-                          {item.label}
-                          <ChevronRight size={14} className="opacity-40" />
+                          <span>{item.label}</span>
+                          <div className="flex items-center gap-2">
+                            {item.alert ? (
+                              <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+                                {item.alert}
+                              </span>
+                            ) : null}
+                            {item.count > 0 ? (
+                              <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-white/10 px-1.5 text-[10px] font-bold text-white">
+                                {item.count > 99 ? '99+' : item.count}
+                              </span>
+                            ) : null}
+                            <ChevronRight size={14} className="opacity-40" />
+                          </div>
                         </Link>
                       ))}
                       <button
@@ -268,7 +415,7 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Menu Overlay */}
-      {mobileOpen && (
+      {mobileOpen && !mobileSearchOpen && (
         <div className="fixed inset-0 top-[80px] z-40 bg-[#000] px-10 pt-10 text-white animate-apple-fade">
           <nav className="flex flex-col gap-6 text-3xl font-bold tracking-tight">
             <Link href="/p" onClick={() => setMobileOpen(false)}>Catalog</Link>

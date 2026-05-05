@@ -24,13 +24,17 @@ export default function ComparePageClient() {
   if (items.length === 0) {
     return (
       <section className="px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl rounded-[2rem] border border-dashed border-slate-300 bg-white p-10 text-center shadow-[0_16px_48px_rgba(15,23,42,0.05)]">
-          <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Compare</p>
-          <h1 className="mt-3 font-heading text-4xl font-semibold text-slate-950">No products in compare yet</h1>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
+        <div className="mx-auto max-w-6xl rounded-[2rem] border border-slate-200 bg-white p-10 text-center shadow-[0_16px_48px_rgba(15,23,42,0.05)]">
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-blue-700">Compare</p>
+          <h1 className="mt-3 font-heading text-4xl font-semibold text-slate-950 sm:text-5xl">No products in compare yet</h1>
+          <p className="mt-3 text-base leading-7 text-slate-700">
             Add up to four products from the catalog to compare them side by side.
           </p>
-          <Link href="/p" className="interactive-button mt-6 inline-flex rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white">
+          <Link
+            href="/p"
+            className="interactive-button mt-6 inline-flex rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(15,23,42,0.2)] hover:bg-slate-800"
+            style={{ backgroundColor: '#020617', color: '#ffffff' }}
+          >
             Browse catalog
           </Link>
         </div>
