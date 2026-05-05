@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef } from 'react'
 import Link from 'next/link'
 import InsightBadge from './InsightBadge'
+import { withAdminHeaders } from '@/lib/admin/client'
 
 const initialState = {
   error: '',
@@ -108,7 +109,7 @@ export default function ProductForm({
       try {
         const response = await fetch('/api/admin/ai/generate-product', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: withAdminHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ 
             name: currentName, 
             sku,
@@ -227,6 +228,7 @@ export default function ProductForm({
     startTransition(async () => {
       const response = await fetch('/api/admin/products', {
         method: mode === 'edit' ? 'PATCH' : 'POST',
+        headers: withAdminHeaders(),
         body: formData,
       })
 

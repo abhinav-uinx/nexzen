@@ -9,7 +9,12 @@ export function proxy(request) {
   const ip = getClientIpFromHeaders(request.headers)
 
   if (pathname === '/admin' || pathname.startsWith('/admin/')) {
-    return new NextResponse('Not Found', { status: 404 })
+    return new NextResponse('Not Found', {
+      status: 404,
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    })
   }
 
   const isHiddenAdminPage =
@@ -17,7 +22,12 @@ export function proxy(request) {
   const isAdminApi = pathname.startsWith('/api/admin/')
 
   if ((isHiddenAdminPage || isAdminApi) && !isIpAllowed(ip, allowedIps)) {
-    return new NextResponse('Not Found', { status: 404 })
+    return new NextResponse('Not Found', {
+      status: 404,
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    })
   }
 
   if (isHiddenAdminPage) {
@@ -25,10 +35,18 @@ export function proxy(request) {
     const url = request.nextUrl.clone()
     url.pathname = targetPath
 
-    return NextResponse.rewrite(url)
+    const response = NextResponse.rewrite(url)
+    response.headers.set('Cache-Control', 'no-store')
+    return response
   }
 
-  return NextResponse.next()
+  const response = NextResponse.next()
+
+  if (isAdminApi) {
+    response.headers.set('Cache-Control', 'no-store')
+  }
+
+  return response
 }
 
 export const config = {

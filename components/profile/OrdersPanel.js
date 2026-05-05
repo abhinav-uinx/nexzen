@@ -1,5 +1,31 @@
+'use client'
+
 import Link from 'next/link'
+import { useState } from 'react'
 import { formatOrderDate, getDisplayOrderId, isDeliveredOrder } from '@/lib/commerce/orders'
+import { useAuth } from '@/providers/AuthProvider'
+import LoadingPanel from '@/components/ui/LoadingPanel'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
+
+const TIMELINE = ['pending', 'processing', 'shipped', 'delivered']
+
+function getTimelineState(order) {
+  const normalized = `${order?.status || ''}`.toLowerCase()
+  if (normalized === 'cancelled') {
+    return ['pending']
+  }
+
+  if (normalized === 'return_requested') {
+    return ['pending', 'processing', 'shipped', 'delivered']
+  }
+
+  const currentIndex = TIMELINE.indexOf(normalized)
+  if (currentIndex === -1) {
+    return ['pending', 'processing']
+  }
+
+  return TIMELINE.slice(0, currentIndex + 1)
+}
 
 function EmptyOrders({ mode }) {
   const isActive = mode === 'active'
@@ -33,9 +59,41 @@ export default function OrdersPanel({
   ordersError,
   mode = 'active',
 }) {
+  const { session } = useAuth()
+  const [actionLoading, setActionLoading] = useState('')
+  const [actionMessage, setActionMessage] = useState('')
+  const [actionError, setActionError] = useState('')
   const filteredOrders = orders.filter((order) =>
     mode === 'delivered' ? isDeliveredOrder(order) : !isDeliveredOrder(order)
   )
+
+  async function runOrderAction(orderId, action) {
+    setActionLoading(`${orderId}:${action}`)
+    setActionError('')
+    setActionMessage('')
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token || ''}`,
+        },
+        body: JSON.stringify({ action }),
+      })
+
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(result.error || 'Could not update this order.')
+      }
+
+      setActionMessage(action === 'cancel' ? 'Cancellation request submitted.' : 'Return request submitted.')
+      window.location.reload()
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Could not update this order.')
+    } finally {
+      setActionLoading('')
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -46,10 +104,12 @@ export default function OrdersPanel({
       </div>
 
       {ordersLoading ? (
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-10 shadow-[0_16px_48px_rgba(15,23,42,0.05)]">
-          <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Loading</p>
-          <h3 className="mt-3 font-heading text-2xl font-semibold text-slate-950">Fetching your saved orders...</h3>
-        </div>
+        <LoadingPanel
+          eyebrow="Orders"
+          title="Fetching your saved orders"
+          description="We are assembling your latest order states, delivery milestones, and item details."
+          compact
+        />
       ) : ordersError ? (
         <div className="rounded-[2rem] border border-rose-200 bg-rose-50 p-8 text-rose-700 shadow-[0_16px_48px_rgba(15,23,42,0.05)]">
           <p className="text-sm uppercase tracking-[0.24em] text-rose-600">Orders</p>
@@ -122,6 +182,32 @@ export default function OrdersPanel({
               </div>
             )}
 
+            <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Order timeline</p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                {TIMELINE.map((step, index) => {
+                  const completed = getTimelineState(order).includes(step)
+                  const isCurrent =
+                    `${order.status || ''}`.toLowerCase() === step ||
+                    (step === 'delivered' && mode === 'delivered')
+
+                  return (
+                    <div key={step} className="flex items-center gap-3">
+                      <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${completed ? 'bg-slate-950 text-white' : 'bg-white text-slate-400 border border-slate-200'}`}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className={`text-xs font-semibold uppercase tracking-widest ${isCurrent ? 'text-blue-700' : 'text-slate-500'}`}>{step}</p>
+                        <p className="text-[11px] text-slate-400">
+                          {completed ? 'Recorded' : 'Pending'}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
             <div className="mt-5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Ordered Items ({(order.items || []).length})</p>
@@ -159,9 +245,50 @@ export default function OrdersPanel({
                 ))}
               </div>
             </div>
+
+            <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={`/api/orders/${order.id}/invoice`}
+                  className="interactive-button inline-flex rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  Download invoice PDF
+                </a>
+                {mode !== 'delivered' ? (
+                  <button
+                    type="button"
+                  onClick={() => runOrderAction(order.id, 'cancel')}
+                  disabled={actionLoading === `${order.id}:cancel`}
+                  className="interactive-button inline-flex rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
+                >
+                    {actionLoading === `${order.id}:cancel` ? <LoadingSpinner size="sm" tone="dark" label="Cancelling..." /> : 'Cancel order'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => runOrderAction(order.id, 'return')}
+                    disabled={actionLoading === `${order.id}:return`}
+                    className="interactive-button inline-flex rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700 disabled:opacity-50"
+                  >
+                    {actionLoading === `${order.id}:return` ? <LoadingSpinner size="sm" tone="dark" label="Submitting..." /> : 'Request return'}
+                  </button>
+                )}
+                {order.supportTicketId ? (
+                  <span className="inline-flex rounded-full bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-600">
+                    Support ID: {order.supportTicketId}
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-xs text-slate-500">
+                Payment: <span className="font-semibold text-slate-900">{order.paymentStatus || 'Pending'}</span>
+              </p>
+            </div>
           </article>
         ))
       )}
+
+      {actionMessage ? <p className="text-sm text-emerald-600">{actionMessage}</p> : null}
+      {actionError ? <p className="text-sm text-rose-600">{actionError}</p> : null}
     </div>
   )
 }

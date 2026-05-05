@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
-import { getPrismaClient } from '@/lib/database/nexus-db'
 import { getAppUserForRequest } from '@/lib/auth/user-session'
+import { isValidIndianPincode, isValidPhoneNumber, normalizeText } from '@/lib/security/validation'
+import { normalizeSavedAddresses } from '@/lib/profile/addresses'
+import { getUserProfileSnapshot, updateUserProfileSnapshot } from '@/lib/profile/persistence'
 
 export async function GET(request) {
   try {
@@ -9,22 +11,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const prisma = getPrismaClient()
-    const profile = await prisma.user.findUnique({
-      where: { id: appUser.id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phone: true,
-        addressLine1: true,
-        addressLine2: true,
-        city: true,
-        state: true,
-        pincode: true,
-        savedUpiId: true,
-      }
-    })
+    const profile = await getUserProfileSnapshot(appUser.id)
 
     return NextResponse.json({ profile })
   } catch (error) {
@@ -39,20 +26,28 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { phone, addressLine1, addressLine2, city, state, pincode, savedUpiId } = await request.json()
-    const prisma = getPrismaClient()
+    const { phone, addressLine1, addressLine2, city, state, pincode, savedUpiId, savedAddresses } = await request.json()
+    const normalizedPhone = normalizeText(phone, 20)
+    const normalizedPincode = normalizeText(pincode, 6)
+    const normalizedAddresses = normalizeSavedAddresses(savedAddresses)
 
-    const updatedUser = await prisma.user.update({
-      where: { id: appUser.id },
-      data: {
-        phone,
-        addressLine1,
-        addressLine2,
-        city,
-        state,
-        pincode,
-        savedUpiId,
-      }
+    if (normalizedPhone && !isValidPhoneNumber(normalizedPhone)) {
+      return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
+    }
+
+    if (normalizedPincode && !isValidIndianPincode(normalizedPincode)) {
+      return NextResponse.json({ error: 'Invalid pincode' }, { status: 400 })
+    }
+
+    const updatedUser = await updateUserProfileSnapshot(appUser.id, {
+      phone: normalizedPhone || null,
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      pincode: normalizedPincode || null,
+      savedAddresses: normalizedAddresses,
+      savedUpiId,
     })
 
     return NextResponse.json({ ok: true, profile: updatedUser })

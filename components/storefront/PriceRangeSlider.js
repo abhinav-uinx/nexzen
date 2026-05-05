@@ -1,69 +1,48 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-
-export default function PriceRangeSlider({ min = 0, max = 10000, step = 100 }) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  
-  const [minVal, setMinVal] = useState(parseInt(searchParams.get('minPrice')) || min)
-  const [maxVal, setMaxVal] = useState(parseInt(searchParams.get('maxPrice')) || max)
-
-  const syncUrl = useCallback((low, high) => {
-    const params = new URLSearchParams(window.location.search)
-    if (low > min) params.set('minPrice', low)
-    else params.delete('minPrice')
-    
-    if (high < max) params.set('maxPrice', high)
-    else params.delete('maxPrice')
-    
-    params.set('page', '1')
-    router.push(`${window.location.pathname}?${params.toString()}`)
-  }, [min, max, router])
-
-  // Debounced URL sync
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      syncUrl(minVal, maxVal)
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [minVal, maxVal, syncUrl])
+export default function PriceRangeSlider({
+  min = 0,
+  max = 10000,
+  step = 100,
+  compact = false,
+  value,
+  onChange,
+}) {
+  const minVal = value?.min ?? min
+  const maxVal = value?.max ?? max
 
   const handleMinChange = (e) => {
-    const value = Math.min(Number(e.target.value), maxVal - step)
-    setMinVal(value)
+    const nextValue = Math.min(Number(e.target.value), maxVal - step)
+    onChange?.({ min: nextValue, max: maxVal })
   }
 
   const handleMaxChange = (e) => {
-    const value = Math.max(Number(e.target.value), minVal + step)
-    setMaxVal(value)
+    const nextValue = Math.max(Number(e.target.value), minVal + step)
+    onChange?.({ min: minVal, max: nextValue })
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="rounded-xl border border-slate-100 bg-white px-3 py-1.5 shadow-sm">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Min:</span>
-          <span className="ml-2 text-sm font-bold text-slate-900">₹{minVal.toLocaleString()}</span>
+    <div className={compact ? 'space-y-4' : 'space-y-6'}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Min</span>
+          <span className="ml-2 text-sm font-bold text-slate-900">Rs. {minVal.toLocaleString('en-IN')}</span>
         </div>
-        <div className="rounded-xl border border-slate-100 bg-white px-3 py-1.5 shadow-sm text-right">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Max:</span>
-          <span className="ml-2 text-sm font-bold text-slate-900">₹{maxVal.toLocaleString()}</span>
+        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-right shadow-sm">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Max</span>
+          <span className="ml-2 text-sm font-bold text-slate-900">Rs. {maxVal.toLocaleString('en-IN')}</span>
         </div>
       </div>
 
       <div className="relative h-1.5 w-full rounded-full bg-slate-100">
-        {/* Progress Bar */}
-        <div 
+        <div
           className="absolute h-full rounded-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]"
-          style={{ 
+          style={{
             left: `${((minVal - min) / (max - min)) * 100}%`,
-            right: `${100 - ((maxVal - min) / (max - min)) * 100}%`
+            right: `${100 - ((maxVal - min) / (max - min)) * 100}%`,
           }}
         />
-        
-        {/* Dual Inputs */}
+
         <input
           type="range"
           min={min}

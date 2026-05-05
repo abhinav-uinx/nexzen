@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nexzen User Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #0f172a;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --accent: #1d4ed8;
+      --paper: #ffffff;
+      --panel: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font-family: "Segoe UI", Inter, Arial, sans-serif;
+      line-height: 1.6;
+      font-size: 12px;
+    }
+    .page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 40px 44px 56px;
+    }
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(135deg, #eff6ff, #ffffff 55%);
+      padding: 28px 30px;
+      margin-bottom: 28px;
+    }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.15;
+    }
+    .hero p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--ink);
+      line-height: 1.2;
+      margin: 0;
+      page-break-after: avoid;
+    }
+    h1 { font-size: 30px; margin: 0 0 12px; }
+    h2 {
+      font-size: 22px;
+      margin: 32px 0 12px;
+      padding-top: 4px;
+      border-top: 1px solid transparent;
+    }
+    h3 { font-size: 16px; margin: 22px 0 10px; color: #0b3aa4; }
+    h4, h5, h6 { font-size: 13px; margin: 18px 0 8px; }
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      page-break-inside: avoid;
+    }
+    ul, ol {
+      margin: 0 0 14px 20px;
+      padding: 0;
+      color: var(--muted);
+    }
+    li {
+      margin: 0 0 5px;
+      page-break-inside: avoid;
+    }
+    hr {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 22px 0;
+    }
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+      background: #eff6ff;
+      color: #1e3a8a;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid #dbeafe;
+      word-break: break-word;
+    }
+    strong { color: var(--ink); }
+    @page {
+      size: A4;
+      margin: 16mm 12mm 18mm;
+    }
+    @media print {
+      .page {
+        max-width: none;
+        padding: 0;
+      }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <p class="eyebrow">Nexzen Documentation</p>
+      <h1>Nexzen User Manual</h1>
+      <p>Customer usage, admin controls, hidden paths, storefront features, and a detailed Active Orders Pipeline guide.</p>
+    </section>
+    <h1>Nexzen User Manual</h1>
+<p>This manual explains how to use the Nexzen website from both the customer side and the admin side.</p>
+<p>It is written for day-to-day operation of the live site, with special focus on:</p>
+<ul><li>customer-facing features</li><li>hidden admin paths</li><li>admin panel tools</li><li>content editing flows</li><li>coupon and inventory management</li><li>search and compare features</li><li>detailed notes for the Active Orders Pipeline</li></ul>
+<hr />
+<h2>1. Website Overview</h2>
+<p>Nexzen is an electronics ecommerce website built for development boards, embedded hardware, sensors, maker kits, wireless/IoT modules, and related accessories.</p>
+<p>The platform includes:</p>
+<ul><li>homepage hero banners</li><li>category architecture cards</li><li>product catalog and clean search flow</li><li>recent search suggestions</li><li>compare products</li><li>cart and checkout</li><li>coupon support</li><li>COD and Razorpay payment support</li><li>order tracking and invoice download</li><li>wishlist, reviews, and support flows</li><li>back-in-stock alerts</li><li>admin dashboard for store operations</li></ul>
+<hr />
+<h2>2. Main Public Website Paths</h2>
+<p>These are the important customer-facing URLs.</p>
+<h3>Core pages</h3>
+<ul><li><code>/</code></li></ul>
+<p>Homepage</p>
+<ul><li><code>/p</code></li></ul>
+<p>Main product catalog</p>
+<ul><li><code>/search</code></li></ul>
+<p>Search results page</p>
+<ul><li><code>/compare</code></li></ul>
+<p>Product compare page</p>
+<ul><li><code>/cart</code></li></ul>
+<p>Shopping cart and checkout flow</p>
+<ul><li><code>/active-orders</code></li></ul>
+<p>Customer active orders page</p>
+<ul><li><code>/ordered-items</code></li></ul>
+<p>Delivered/completed order history page</p>
+<ul><li><code>/profile</code></li></ul>
+<p>Customer profile and account information</p>
+<h3>Product pages</h3>
+<p>Depending on the navigation source, products may open under:</p>
+<ul><li><code>/products/[slug-or-id]</code></li><li><code>/p/[slug-or-id]</code></li></ul>
+<p>Both are used by the storefront.</p>
+<hr />
+<h2>3. Search Experience</h2>
+<p>The website includes a cleaner search flow than traditional query-heavy URLs.</p>
+<h3>What users can do</h3>
+<ul><li>type in the navbar search</li><li>see matching product suggestions while typing</li><li>click a suggestion to open a product</li><li>go to <code>/search</code> without exposing the raw query in the visible URL</li><li>use compact filters without another duplicate search bar</li></ul>
+<h3>Search features currently available</h3>
+<ul><li>live product-name suggestions</li><li>recent searches per signed-in user</li><li>search history stored against the user record</li><li>search pagination</li><li>mobile-optimized search layout</li></ul>
+<h3>Search history behavior</h3>
+<p>If the user is signed in:</p>
+<ul><li>search terms are stored in the database</li><li>search history is mapped to the authenticated user</li><li>clicking the search bar can show recent searches for that user</li></ul>
+<hr />
+<h2>4. Catalog and Product Features</h2>
+<p>The storefront supports more than basic listing and detail pages.</p>
+<h3>Catalog features</h3>
+<ul><li>product grid</li><li>search</li><li>compact filters</li><li>availability filter</li><li>price filter</li><li>pagination</li><li>compare actions</li><li>recently viewed products</li></ul>
+<h3>Product detail features</h3>
+<ul><li>product image/gallery support</li><li>stock display</li><li>technical and descriptive sections</li><li>review section</li><li>frequently paired or related hardware logic</li><li>pincode-based delivery estimate</li><li>back-in-stock alert button for unavailable items</li></ul>
+<h3>Compare page</h3>
+<p>Path:</p>
+<ul><li><code>/compare</code></li></ul>
+<p>Capabilities:</p>
+<ul><li>compare multiple products side by side</li><li>remove one compared item</li><li>remove all compared items at once</li></ul>
+<hr />
+<h2>5. Account, Cart, and Checkout Features</h2>
+<h3>Account features</h3>
+<ul><li>sign in / sign up</li><li>saved profile details</li><li>saved addresses</li><li>recent search history</li><li>active orders</li><li>delivered items</li></ul>
+<h3>Cart and checkout features</h3>
+<ul><li>add to cart</li><li>quantity handling</li><li>checkout with shipping address</li><li>coupon application</li><li>COD orders</li><li>Razorpay online payment orders</li></ul>
+<h3>Payment logic</h3>
+<p>For COD:</p>
+<ul><li>order is created immediately</li><li>payment status starts as <code>PENDING</code></li></ul>
+<p>For Razorpay/online payment:</p>
+<ul><li>order is created first</li><li>payment status starts as <code>AWAITING_PAYMENT</code></li><li>Razorpay order is created</li><li>successful verification or webhook capture marks payment as <code>PAID</code></li></ul>
+<h3>Invoice support</h3>
+<p>Each order supports invoice download as PDF from the customer order views.</p>
+<hr />
+<h2>6. Orders, Tracking, and Customer Order Views</h2>
+<h3>Active orders page</h3>
+<p>Path:</p>
+<ul><li><code>/active-orders</code></li></ul>
+<p>This page is for orders that are still in progress.</p>
+<p>Users can see:</p>
+<ul><li>order ID</li><li>order date</li><li>total amount</li><li>tracking number</li><li>courier name</li><li>latest status update</li><li>order timeline</li><li>ordered items</li><li>support ticket ID</li><li>invoice download</li></ul>
+<p>Users can also:</p>
+<ul><li>cancel eligible orders</li></ul>
+<h3>Delivered items page</h3>
+<p>Path:</p>
+<ul><li><code>/ordered-items</code></li></ul>
+<p>This page shows delivered/completed orders.</p>
+<p>Users can:</p>
+<ul><li>review delivered items</li><li>download invoice PDF</li><li>request return for eligible delivered orders</li></ul>
+<h3>Timeline stages shown to customers</h3>
+<p>The order timeline is presented as:</p>
+<ol><li><code>pending</code></li><li><code>processing</code></li><li><code>shipped</code></li><li><code>delivered</code></li></ol>
+<hr />
+<h2>7. Wishlist, Reviews, and Support</h2>
+<h3>Wishlist</h3>
+<p>Users can save products to wishlist while signed in.</p>
+<h3>Reviews</h3>
+<p>Users can leave product reviews and ratings.</p>
+<h3>Support</h3>
+<p>Orders generate support references, and support ticket handling is built into the order experience.</p>
+<hr />
+<h2>8. Back-In-Stock Alerts</h2>
+<p>When a product is out of stock, signed-in users can subscribe for stock alerts.</p>
+<h3>How it works</h3>
+<ul><li>user clicks the stock alert button on an out-of-stock product</li><li>alert is stored per user and per product</li><li>when stock is restored, notification emails can be sent</li><li>admin dashboard also shows stock-alert analytics</li></ul>
+<hr />
+<h2>9. Hidden Admin Access Paths</h2>
+<p>The admin area does <strong>not</strong> use the public <code>/admin</code> path directly.</p>
+<h3>Actual login path</h3>
+<ul><li><code>/nexzen-control-room/login</code></li></ul>
+<h3>Actual admin dashboard path</h3>
+<ul><li><code>/nexzen-control-room</code></li></ul>
+<h3>Important security behavior</h3>
+<ul><li>direct <code>/admin</code> access is intentionally blocked</li><li>the hidden path rewrites internally to the admin app</li><li>admin requests can be restricted by allowed IP configuration</li><li>admin routes are protected by session and CSRF checks</li></ul>
+<h3>Internal rewrite behavior</h3>
+<p>Public admin path:</p>
+<ul><li><code>/nexzen-control-room</code></li></ul>
+<p>Internally rewritten to:</p>
+<ul><li><code>/admin</code></li></ul>
+<p>This means staff should always use the hidden path, not <code>/admin</code>.</p>
+<hr />
+<h2>10. Admin Login and Recovery</h2>
+<h3>Admin login page</h3>
+<p>Path:</p>
+<ul><li><code>/nexzen-control-room/login</code></li></ul>
+<h3>Standard login</h3>
+<p>Admin signs in with:</p>
+<ul><li>username</li><li>password</li></ul>
+<h3>Recovery options</h3>
+<p>If repeated password failures happen, recovery options become available:</p>
+<ul><li>login with OTP</li><li>reset password</li></ul>
+<h3>Current login-throttling behavior</h3>
+<ul><li>password attempts are rate-limited</li><li>step-up recovery unlocks after repeated failed attempts</li><li>OTP is email-based</li><li>reset links are token-based and one-time-use</li></ul>
+<hr />
+<h2>11. Admin Dashboard</h2>
+<h3>Dashboard path</h3>
+<ul><li><code>/nexzen-control-room</code></li></ul>
+<h3>What the dashboard shows</h3>
+<ul><li>quick action buttons</li><li>total products</li><li>total categories</li><li>low stock count</li><li>revenue summary</li><li>orders today</li><li>pending orders</li><li>stock alert counts</li><li>top searches</li><li>back-in-stock watchlist</li><li>recent products</li><li>low stock priority list</li></ul>
+<h3>Main dashboard action buttons</h3>
+<p>The current admin dashboard includes:</p>
+<ol><li><code>Upload New Product</code></li><li><code>Manage Catalog</code></li><li><code>Manage Active Orders</code></li><li><code>Launch CRM Engine</code></li><li><code>Edit Category Architecture</code></li><li><code>Manage Brands</code></li><li><code>Manage Coupons &amp; Discounts</code></li><li><code>Manage Hero Banners</code></li><li><code>Manage Highlights</code></li><li><code>Manage Collections</code></li></ol>
+<h3>Admin route map</h3>
+<ul><li><code>/nexzen-control-room</code></li></ul>
+<p>Dashboard</p>
+<ul><li><code>/nexzen-control-room/products/upload</code></li></ul>
+<p>Upload new product</p>
+<ul><li><code>/nexzen-control-room/products</code></li></ul>
+<p>Catalog manager</p>
+<ul><li><code>/nexzen-control-room/orders</code></li></ul>
+<p>Active orders pipeline</p>
+<ul><li><code>/nexzen-control-room/crm</code></li></ul>
+<p>CRM engine</p>
+<ul><li><code>/nexzen-control-room/categories</code></li></ul>
+<p>Edit Category Architecture</p>
+<ul><li><code>/nexzen-control-room/brands</code></li></ul>
+<p>Manage brands</p>
+<ul><li><code>/nexzen-control-room/coupons</code></li></ul>
+<p>Manage coupons and discounts</p>
+<ul><li><code>/nexzen-control-room/banners</code></li></ul>
+<p>Manage hero banners</p>
+<ul><li><code>/nexzen-control-room/highlights</code></li></ul>
+<p>Manage homepage highlights</p>
+<ul><li><code>/nexzen-control-room/collections</code></li></ul>
+<p>Manage collections</p>
+<hr />
+<h2>12. Upload New Product</h2>
+<h3>Path</h3>
+<ul><li><code>/nexzen-control-room/products/upload</code></li></ul>
+<h3>Purpose</h3>
+<p>Used to create a new product with pricing, branding, media, and inventory details.</p>
+<h3>Fields and capabilities</h3>
+<ul><li>product name</li><li>SKU</li><li>category</li><li>brand</li><li>barcode</li><li>status: active / draft / archived</li><li>price</li><li>compare-at price</li><li>cost price</li><li>stock quantity</li><li>low stock threshold</li><li>weight in grams</li><li>badge and badge tone</li><li>requires shipping</li><li>track inventory</li><li>short spec</li><li>dependency products</li><li>short description</li><li>full description</li><li>variants</li><li>configurations</li><li>gallery image URLs</li><li>technical highlights</li><li>usage/setup guide</li><li>primary product image upload</li><li>multiple gallery image uploads</li></ul>
+<h3>AI-assisted product creation</h3>
+<p>The product upload form also supports AI-assisted field generation.</p>
+<p>Behavior:</p>
+<ul><li>entering a product name and using the AI trigger can fill major fields</li><li>the AI can help with:</li><li>descriptions</li><li>branding guess</li><li>badge/tone</li><li>technical highlights</li><li>guide content</li><li>some pricing/metadata suggestions</li></ul>
+<p>This is a productivity tool, not a substitute for final admin review.</p>
+<hr />
+<h2>13. Manage Catalog</h2>
+<h3>Path</h3>
+<ul><li><code>/nexzen-control-room/products</code></li></ul>
+<h3>Purpose</h3>
+<p>Used to search, filter, edit, export, and delete products already stored in the catalog.</p>
+<h3>Features</h3>
+<ul><li>search products</li><li>filter by price</li><li>filter by brand</li><li>IoT filter</li><li>low stock filter</li><li>edit a product inline through the product form</li><li>delete product</li><li>paginate through the catalog</li><li>export current product data to Excel</li></ul>
+<h3>Best use</h3>
+<p>Use this page for maintenance after products already exist.</p>
+<hr />
+<h2>14. Edit Category Architecture</h2>
+<h3>Path</h3>
+<ul><li><code>/nexzen-control-room/categories</code></li></ul>
+<h3>Purpose</h3>
+<p>Controls the homepage category-card section labeled Category Architecture.</p>
+<h3>What can be edited</h3>
+<ul><li>category name</li><li>slug</li><li>description</li><li>icon identifier</li><li>image URL</li><li>uploaded category image</li></ul>
+<h3>Image handling</h3>
+<p>Category images can be:</p>
+<ul><li>pasted via URL</li><li>uploaded from the admin page</li></ul>
+<p>Uploaded category images are stored using the category identifier logic and connected back to the category record.</p>
+<h3>Storefront effect</h3>
+<p>These category entries directly affect the cards visible on the homepage category section.</p>
+<hr />
+<h2>15. Manage Brands</h2>
+<h3>Path</h3>
+<ul><li><code>/nexzen-control-room/brands</code></li></ul>
+<h3>Purpose</h3>
+<p>Manage product manufacturers and brand metadata.</p>
+<h3>Features</h3>
+<ul><li>add brand</li><li>edit brand</li><li>search brands</li><li>delete brand</li><li>add logo URL</li><li>store optional description</li></ul>
+<p>Brands can then be attached to products in the upload/edit product flow.</p>
+<hr />
+<h2>16. Manage Hero Banners</h2>
+<h3>Path</h3>
+<ul><li><code>/nexzen-control-room/banners</code></li></ul>
+<h3>Purpose</h3>
+<p>Controls the homepage hero banner slider.</p>
+<h3>Editable fields</h3>
+<ul><li>slide title</li><li>subtitle</li><li>eyebrow text</li><li>primary link</li><li>primary CTA text</li><li>secondary link</li><li>secondary CTA text</li><li>side metric text</li><li>display order</li><li>accent gradient classes</li><li>banner image upload</li></ul>
+<h3>Storefront result</h3>
+<p>These entries control the main hero section of the homepage.</p>
+<hr />
+<h2>17. Manage Highlights</h2>
+<h3>Path</h3>
+<ul><li><code>/nexzen-control-room/highlights</code></li></ul>
+<h3>Purpose</h3>
+<p>Controls the homepage trust/value highlight section.</p>
+<h3>Fields</h3>
+<ul><li>label</li><li>value</li><li>detail</li><li>display order</li></ul>
+<h3>Example use cases</h3>
+<ul><li>fast dispatch</li><li>secure payment</li><li>support response time</li><li>warranty</li></ul>
+<hr />
+<h2>18. Manage Collections</h2>
+<h3>Path</h3>
+<ul><li><code>/nexzen-control-room/collections</code></li></ul>
+<h3>Purpose</h3>
+<p>Manages featured merchandising collections used by the storefront.</p>
+<h3>Fields</h3>
+<ul><li>collection name</li><li>slug</li><li>description</li><li>image URL</li><li>display order</li></ul>
+<h3>Typical examples</h3>
+<ul><li>Creator Boards</li><li>IoT Starters</li><li>Sensor Bundles</li></ul>
+<hr />
+<h2>19. Manage Coupons and Discounts</h2>
+<h3>Path</h3>
+<ul><li><code>/nexzen-control-room/coupons</code></li></ul>
+<h3>Purpose</h3>
+<p>Create and control coupon-based promotions.</p>
+<h3>Coupon features</h3>
+<ul><li>create coupon code</li><li>set discount percentage</li><li>set minimum order value</li><li>set maximum uses</li><li>set expiry datetime</li><li>restrict coupon to a category slug</li><li>enable/disable coupon</li><li>adjust discount percentage inline</li></ul>
+<h3>Important business rules</h3>
+<p>The website validates:</p>
+<ul><li>coupon exists and is active</li><li>coupon is not expired</li><li>coupon has not reached max usage</li><li>order meets minimum order value</li><li>category restriction matches eligible products</li><li>customer does not reuse the same coupon if already used before</li></ul>
+<hr />
+<h2>20. CRM Engine</h2>
+<h3>Path</h3>
+<ul><li><code>/nexzen-control-room/crm</code></li></ul>
+<h3>Purpose</h3>
+<p>Provides a searchable customer directory for operations and support use.</p>
+<h3>Searchable fields</h3>
+<ul><li>customer name</li><li>email</li><li>phone</li><li>internal user ID</li><li>ordered product names</li><li>ordered product IDs</li><li>order IDs</li><li>cart product names</li><li>cart product IDs</li></ul>
+<h3>What admins can see</h3>
+<ul><li>customer identity block</li><li>order count</li><li>active cart item count</li><li>recent order traces</li><li>cart retention snapshot</li></ul>
+<p>This helps operations staff quickly understand both purchase history and current cart intent.</p>
+<hr />
+<h2>21. Admin Analytics and Audit Trail</h2>
+<h3>Dashboard analytics</h3>
+<p>The admin dashboard includes:</p>
+<ul><li>paid revenue total</li><li>paid order count</li><li>today order count</li><li>pending order count</li><li>stock-alert totals</li><li>top searched terms</li><li>most-watched out-of-stock products</li><li>low stock products</li></ul>
+<h3>Audit trail</h3>
+<p>Recent admin actions are recorded and displayed in the admin area.</p>
+<p>Examples include:</p>
+<ul><li>order item status changes</li><li>bulk order acceptance</li><li>order status changes</li><li>user-level bulk acceptance</li></ul>
+<p>This helps with accountability and traceability.</p>
+<hr />
+<h2>22. Detailed Note: Active Orders Pipeline</h2>
+<p>This is the most important operational flow in the admin panel.</p>
+<h3>Main path</h3>
+<ul><li><code>/nexzen-control-room/orders</code></li></ul>
+<h3>Purpose</h3>
+<p>This page is the operational queue for incoming and unresolved orders.</p>
+<p>It is designed to help admins:</p>
+<ul><li>review recent orders</li><li>see payment context</li><li>inspect order items</li><li>accept or reject item-level requests</li><li>perform bulk acceptance actions</li><li>work user-by-user instead of only order-by-order</li></ul>
+<hr />
+<h3>22.1 What counts as an active order</h3>
+<p>On the admin dashboard, active/pending operational work is counted from orders whose status is in:</p>
+<ul><li><code>pending</code></li><li><code>accepted</code></li><li><code>processing</code></li></ul>
+<p>These orders contribute to the dashboard pending-order badge.</p>
+<hr />
+<h3>22.2 How orders enter the pipeline</h3>
+<h4>COD order flow</h4>
+<p>When a customer places a COD order:</p>
+<ul><li>order is created immediately</li><li><code>order.status</code> starts as <code>pending</code></li><li><code>paymentStatus</code> starts as <code>PENDING</code></li><li>tracking number is generated</li><li>support ticket ID is generated</li><li>estimated delivery is generated</li><li>order email can be sent</li></ul>
+<h4>Online payment order flow</h4>
+<p>When a customer places an online order:</p>
+<ul><li>order is created first</li><li><code>order.status</code> starts as <code>pending</code></li><li><code>paymentStatus</code> starts as <code>AWAITING_PAYMENT</code></li><li>a Razorpay order is created</li><li>internal <code>razorpayOrderId</code> is stored on the order</li></ul>
+<p>After payment success:</p>
+<ul><li>signature verification or webhook confirmation runs</li><li><code>paymentStatus</code> becomes <code>PAID</code></li><li>order is finalized</li><li>if status was not already advanced, order becomes <code>accepted</code></li><li>payment ID is stored</li><li>customer/admin notification emails can be sent</li></ul>
+<p>So, online orders usually enter the active pipeline after successful payment verification.</p>
+<hr />
+<h3>22.3 How the admin orders page is organized</h3>
+<p>The admin orders page does not simply dump raw orders in a flat list.</p>
+<p>It groups orders by user/email so staff can resolve workload from a customer-centric view.</p>
+<p>For each grouped customer block, admins can see:</p>
+<ul><li>customer name</li><li>email</li><li>action-item count</li><li>all of that customer’s fetched orders</li></ul>
+<p>The groups are sorted by highest pending work first.</p>
+<p>This makes the page useful for daily triage.</p>
+<hr />
+<h3>22.4 Search behavior in the orders pipeline</h3>
+<p>The orders admin search supports locating orders by:</p>
+<ul><li>tracking number</li><li>phone number</li><li>user email</li><li>user name</li><li>user phone</li></ul>
+<p>Only the newest set of orders is fetched for performance, so it behaves like a focused operations board rather than a full historical warehouse.</p>
+<hr />
+<h3>22.5 What an admin sees per order</h3>
+<p>Inside each expanded user block, each order row shows:</p>
+<ul><li>short order ID</li><li>created date</li><li>shipping location snippet</li><li>payment status</li><li>payment method</li><li>Razorpay payment ID if available</li><li>item list</li><li>item-level approval controls</li><li>total revenue</li><li>discount amount if applied</li><li>current order status</li></ul>
+<hr />
+<h3>22.6 Item-level status logic</h3>
+<p>Each order item can be set to:</p>
+<ul><li><code>pending</code></li><li><code>accepted</code></li><li><code>rejected</code></li></ul>
+<p>This is important because item-level resolution can differ from full-order resolution.</p>
+<p>For example:</p>
+<ul><li>one item may be accepted</li><li>another may be rejected</li><li>the parent order then becomes partially resolved</li></ul>
+<hr />
+<h3>22.7 Parent order status logic</h3>
+<p>When item statuses change, the system recalculates the parent order status.</p>
+<p>Rules currently used:</p>
+<ul><li>if all items are <code>accepted</code>, order becomes <code>accepted</code></li><li>if all items are <code>rejected</code>, order becomes <code>rejected</code></li><li>if there is a mix of resolved states, order becomes <code>partially_resolved</code></li><li>otherwise it can remain in its prior working state</li></ul>
+<p>The admin can also explicitly set order status through the order update route using values such as:</p>
+<ul><li><code>pending</code></li><li><code>processing</code></li><li><code>accepted</code></li><li><code>waiting</code></li><li><code>rejected</code></li></ul>
+<hr />
+<h3>22.8 Bulk actions</h3>
+<p>There are three major admin bulk-resolution behaviors.</p>
+<h4>A. Quick Accept for a single order</h4>
+<p>From a single order row:</p>
+<ul><li>all order items are accepted</li><li>parent order becomes <code>accepted</code></li></ul>
+<h4>B. Accept All Products for one user</h4>
+<p>From the user group header:</p>
+<ul><li>all pending items for that customer email are accepted</li><li>matching orders in working states are updated to <code>accepted</code></li></ul>
+<h4>C. Item-level accept/reject</h4>
+<p>The admin can resolve one item at a time for more precise control.</p>
+<p>This is useful when:</p>
+<ul><li>one SKU is available and another is not</li><li>one item is valid and another requires hold/review</li></ul>
+<hr />
+<h3>22.9 Payment context inside the pipeline</h3>
+<p>The order dashboard also tells the operations team whether an order is:</p>
+<ul><li>COD / cash flow</li><li>online flow</li><li>awaiting payment</li><li>paid</li></ul>
+<p>This matters because fulfillment behavior can depend on payment confirmation.</p>
+<p>In general:</p>
+<ul><li>COD orders may remain operationally pending until accepted/processed</li><li>Razorpay orders should be treated as financially confirmed after successful verification marks them <code>PAID</code></li></ul>
+<hr />
+<h3>22.10 Recommended operational meaning of statuses</h3>
+<p>These are the practical meanings admins should use.</p>
+<h4><code>pending</code></h4>
+<ul><li>new order</li><li>not yet accepted into fulfillment</li><li>needs review</li></ul>
+<h4><code>accepted</code></h4>
+<ul><li>approved for handling</li><li>valid inventory/business approval</li><li>can proceed to packing/dispatch logic</li></ul>
+<h4><code>processing</code></h4>
+<ul><li>actively being prepared or packed</li><li>fulfillment is underway</li></ul>
+<h4><code>waiting</code></h4>
+<ul><li>on hold</li><li>waiting for stock, confirmation, or special review</li></ul>
+<h4><code>partially_resolved</code></h4>
+<ul><li>some items accepted, some rejected</li><li>admin should review final customer communication if needed</li></ul>
+<h4><code>rejected</code></h4>
+<ul><li>order or all items rejected</li></ul>
+<h4><code>shipped</code></h4>
+<ul><li>moving with courier</li></ul>
+<h4><code>delivered</code></h4>
+<ul><li>delivered to customer</li></ul>
+<h4><code>cancelled</code></h4>
+<ul><li>cancelled by customer or operations process</li></ul>
+<h4><code>return_requested</code></h4>
+<ul><li>customer requested return after delivery</li></ul>
+<hr />
+<h3>22.11 Customer-side relationship to the pipeline</h3>
+<p>The admin pipeline is not isolated. It affects what the customer sees.</p>
+<p>Customers later see:</p>
+<ul><li>timeline progress</li><li>latest tracking update</li><li>active-order visibility</li><li>delivered-order visibility</li><li>cancel eligibility</li><li>return eligibility</li></ul>
+<p>Important customer actions tied to status:</p>
+<ul><li>customers can cancel when order is in <code>pending</code>, <code>processing</code>, or <code>accepted</code></li><li>customers can request return when order is <code>delivered</code> or <code>completed</code></li></ul>
+<hr />
+<h3>22.12 Emails and audit logging</h3>
+<p>The active orders flow is connected to system communication and audit history.</p>
+<p>Examples:</p>
+<ul><li>payment success can trigger customer/admin emails</li><li>accepted transitions can trigger order-confirmation style email behavior</li><li>admin item changes are logged</li><li>bulk accept actions are logged</li><li>order status updates are logged</li></ul>
+<p>This creates a stronger operational record.</p>
+<hr />
+<h3>22.13 Practical daily workflow for admins</h3>
+<p>Recommended team workflow:</p>
+<ol><li>Open <code>/nexzen-control-room</code></li><li>Check the <code>Manage Active Orders</code> badge count</li><li>Open <code>/nexzen-control-room/orders</code></li><li>Search for a customer if required, otherwise review highest pending groups first</li><li>Inspect payment status before fulfillment decisions</li><li>Accept or reject item-level requests</li><li>Use Quick Accept only when the full order is clearly valid</li><li>Use customer-level Accept All only when all pending items across their open orders are approved</li><li>Move accepted orders forward to <code>processing</code></li><li>Keep tracking and customer updates aligned with actual fulfillment progress</li></ol>
+<hr />
+<h2>23. Search, Compare, and Analytics Features Added</h2>
+<p>Some of the strongest newer features added to the platform are:</p>
+<ul><li>clean search route</li><li>live search suggestions</li><li>user-specific recent search history</li><li>compare page with remove-one and remove-all</li><li>compact filters</li><li>saved addresses</li><li>coupon rules engine</li><li>invoice PDF download</li><li>back-in-stock alerts</li><li>admin analytics</li><li>admin audit trail</li><li>Razorpay payment verification and webhook support</li><li>category-image editing from admin</li></ul>
+<hr />
+<h2>24. Recommended Admin Best Practices</h2>
+<ul><li>always access admin through <code>/nexzen-control-room</code></li><li>never share the hidden path publicly</li><li>verify banner, category, and collection content before saving</li><li>review AI-generated product text before publishing</li><li>use consistent SKU and barcode formats</li><li>use low-stock filters daily</li><li>review top searches and watchlist products weekly</li><li>keep coupon expiry and usage caps realistic</li><li>rely on audit log when investigating unexpected changes</li></ul>
+<hr />
+<h2>25. Quick Reference</h2>
+<h3>Customer quick links</h3>
+<ul><li>Home: <code>/</code></li><li>Catalog: <code>/p</code></li><li>Search: <code>/search</code></li><li>Compare: <code>/compare</code></li><li>Cart: <code>/cart</code></li><li>Active Orders: <code>/active-orders</code></li><li>Delivered Orders: <code>/ordered-items</code></li><li>Profile: <code>/profile</code></li></ul>
+<h3>Admin quick links</h3>
+<ul><li>Admin Login: <code>/nexzen-control-room/login</code></li><li>Dashboard: <code>/nexzen-control-room</code></li><li>Upload Product: <code>/nexzen-control-room/products/upload</code></li><li>Manage Catalog: <code>/nexzen-control-room/products</code></li><li>Active Orders: <code>/nexzen-control-room/orders</code></li><li>CRM: <code>/nexzen-control-room/crm</code></li><li>Categories: <code>/nexzen-control-room/categories</code></li><li>Brands: <code>/nexzen-control-room/brands</code></li><li>Coupons: <code>/nexzen-control-room/coupons</code></li><li>Hero Banners: <code>/nexzen-control-room/banners</code></li><li>Highlights: <code>/nexzen-control-room/highlights</code></li><li>Collections: <code>/nexzen-control-room/collections</code></li></ul>
+<hr />
+<h2>26. Final Note</h2>
+<p>This manual reflects the current Nexzen implementation in the project codebase, including hidden admin routing, current storefront features, and the admin order-operations model.</p>
+<p>If the team adds new routes, new order statuses, or more fulfillment controls later, this manual should be updated together with the product.</p>
+  </main>
+</body>
+</html>

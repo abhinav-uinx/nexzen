@@ -12,6 +12,7 @@ model Category {
   name        String
   slug        String    @unique
   icon        String?   @default("CPU")
+  imageUrl    String?
   description String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -65,12 +66,17 @@ model Banner {
 }
 
 model Coupon {
-  id              String   @id @default(cuid())
-  name            String   @unique
+  id              String    @id @default(cuid())
+  name            String    @unique
   discountPercent Int
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  minOrderValue   Decimal?  @db.Decimal(10, 2)
+  maxUses         Int?
+  usageCount      Int       @default(0)
+  expiresAt       DateTime?
+  categorySlug    String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@map("coupons")
 }
@@ -109,7 +115,12 @@ model Product {
   requiredBy         ProductDependency[] @relation("RequiredByProducts")
   dependencies       ProductDependency[] @relation("ProductDependencies")
   reviews            Review[]
+  stockAlerts        StockAlert[]
   wishlist           WishlistItem[]
+
+  @@index([categoryId, status, createdAt])
+  @@index([brand])
+  @@index([inStock, createdAt])
 }
 
 model Brand {
@@ -167,6 +178,7 @@ model User {
   city              String?
   state             String?
   pincode           String?
+  savedAddresses    Json?
   savedUpiId        String?
   password          String?
   cart              Cart?
@@ -174,8 +186,46 @@ model User {
   reviews           Review[]
   identities        UserIdentity[]
   sessions          UserSession[]
+  searchHistory     SearchHistory[]
+  stockAlerts       StockAlert[]
   wishlist          WishlistItem[]
   supportTickets    SupportTicket[]
+}
+
+model StockAlert {
+  id         String    @id @default(cuid())
+  userId     String
+  productId  String
+  email      String
+  isActive   Boolean   @default(true)
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId, isActive, createdAt])
+  @@index([userId, isActive, createdAt])
+  @@map("stock_alerts")
+}
+
+model SearchHistory {
+  id              String   @id @default(cuid())
+  userId          String
+  authUserId      String?
+  query           String
+  normalizedQuery String
+  searchCount     Int      @default(1)
+  lastSearchedAt  DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, normalizedQuery])
+  @@index([userId, lastSearchedAt])
+  @@index([authUserId, lastSearchedAt])
+  @@map("search_history")
 }
 
 model WishlistItem {
@@ -222,14 +272,37 @@ model UserSession {
 }
 
 model Admin {
-  id        String         @id @default(cuid())
-  username  String         @unique
-  password  String
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  sessions  AdminSession[]
+  id                  String                    @id @default(cuid())
+  username            String                    @unique
+  email               String?                   @unique
+  password            String
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  sessions            AdminSession[]
+  otpChallenges       AdminOtpChallenge[]
+  passwordResetTokens AdminPasswordResetToken[]
+  auditLogs           AdminAuditLog[]
 
   @@map("admins")
+}
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  adminId     String
+  action      String
+  entityType  String
+  entityId    String?
+  description String
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  admin       Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, createdAt])
+  @@index([entityType, entityId, createdAt])
+  @@index([createdAt])
+  @@map("admin_audit_logs")
 }
 
 model AdminSession {
@@ -246,6 +319,40 @@ model AdminSession {
   @@index([adminId])
   @@index([expiresAt])
   @@map("admin_sessions")
+}
+
+model AdminOtpChallenge {
+  id         String    @id @default(cuid())
+  adminId    String
+  codeHash   String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  admin      Admin     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
+  @@map("admin_otp_challenges")
+}
+
+model AdminPasswordResetToken {
+  id         String    @id @default(cuid())
+  adminId    String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  admin      Admin     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
+  @@map("admin_password_reset_tokens")
 }
 
 model Order {
@@ -283,6 +390,12 @@ model Order {
 
   user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items OrderItem[]
+
+  @@index([userId, createdAt])
+  @@index([customerEmail, status])
+  @@index([paymentStatus, createdAt])
+  @@index([razorpayOrderId])
+  @@index([trackingNumber])
 }
 
 model OrderItem {
@@ -297,6 +410,10 @@ model OrderItem {
   status        String   @default("pending")
   order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product       Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId, status])
+  @@index([customerEmail, status])
+  @@index([productId])
 }
 
 model Review {
@@ -313,6 +430,7 @@ model Review {
 
   @@index([productId])
   @@index([userId])
+  @@index([createdAt])
 }
 
 model Cart {

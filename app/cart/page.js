@@ -39,6 +39,7 @@ function CartPageContent() {
     pincode: '',
     phone: '',
   })
+  const [savedAddresses, setSavedAddresses] = useState([])
   const [paymentMethod, setPaymentMethod] = useState('razorpay') // razorpay, cod
 
   const [couponCode, setCouponCode] = useState(appliedCoupon?.name || '')
@@ -74,6 +75,8 @@ function CartPageContent() {
           const { profile } = await response.json()
           
           if (profile) {
+            const addresses = Array.isArray(profile.savedAddresses) ? profile.savedAddresses : []
+            setSavedAddresses(addresses)
             setShippingData(prev => ({
               ...prev,
               addressLine1: profile.addressLine1 || prev.addressLine1,
@@ -95,7 +98,38 @@ function CartPageContent() {
   }, [user, session])
 
   function handleApplyCoupon() {
-     // ... (logic remains same)
+    if (!couponCode.trim()) {
+      setCouponError('Enter a coupon code first.')
+      setCouponMessage('')
+      return
+    }
+
+    startCouponTransition(async () => {
+      try {
+        setCouponError('')
+        setCouponMessage('')
+        const response = await fetch('/api/coupons', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify({ code: couponCode.trim() }),
+        })
+
+        const result = await response.json().catch(() => ({}))
+        if (!response.ok) {
+          throw new Error(result.error || 'Could not apply this coupon.')
+        }
+
+        applyCoupon(result.coupon)
+        setCouponMessage(`Coupon ${result.coupon.name} applied successfully.`)
+      } catch (error) {
+        removeCoupon()
+        setCouponError(error instanceof Error ? error.message : 'Could not apply this coupon.')
+        setCouponMessage('')
+      }
+    })
   }
 
   const validateShipping = () => {
@@ -174,6 +208,18 @@ function CartPageContent() {
         router.push('/active-orders')
       }
     })
+  }
+
+  function applySavedAddress(address) {
+    setShippingData((prev) => ({
+      ...prev,
+      addressLine1: address.addressLine1 || '',
+      addressLine2: address.addressLine2 || '',
+      city: address.city || '',
+      state: address.state || '',
+      pincode: address.pincode || '',
+      phone: address.phone || prev.phone || '',
+    }))
   }
 
   return (
@@ -285,6 +331,37 @@ function CartPageContent() {
               {step === 2 && (
                 <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-[0_16px_48px_rgba(15,23,42,0.05)] animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <h2 className="font-heading text-xl font-bold mb-6">Delivery Address</h2>
+                    {savedAddresses.length > 0 && (
+                      <div className="mb-6">
+                        <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Saved addresses</p>
+                        <div className="grid gap-3">
+                          {savedAddresses.map((address) => (
+                            <button
+                              key={address.id}
+                              type="button"
+                              onClick={() => applySavedAddress(address)}
+                              className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-blue-200 hover:bg-blue-50/50"
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-semibold text-slate-950">{address.label}</p>
+                                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                                    {[address.addressLine1, address.addressLine2, address.city, address.state, address.pincode]
+                                      .filter(Boolean)
+                                      .join(', ')}
+                                  </p>
+                                </div>
+                                {address.isDefault && (
+                                  <span className="rounded-full bg-slate-950 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
+                                    Default
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="grid gap-6 sm:grid-cols-2">
                         <div className="sm:col-span-2">
                             <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Street Address</label>
@@ -447,6 +524,21 @@ function CartPageContent() {
                     />
                     <button onClick={handleApplyCoupon} className="rounded-full bg-white/10 px-5 py-2 text-xs font-bold">Apply</button>
                   </div>
+                  {appliedCoupon ? (
+                    <div className="mt-3 flex items-center justify-between rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                      <div>
+                        <p className="font-semibold">{appliedCoupon.name} is active</p>
+                        <p className="text-xs text-emerald-100/80">
+                          {appliedCoupon.minOrderValue ? `Min. order Rs. ${Number(appliedCoupon.minOrderValue).toLocaleString('en-IN')}` : 'Applied to this order total'}
+                        </p>
+                      </div>
+                      <button type="button" onClick={removeCoupon} className="text-xs font-bold uppercase tracking-widest text-white/80">
+                        Remove
+                      </button>
+                    </div>
+                  ) : null}
+                  {couponMessage ? <p className="mt-3 text-xs text-emerald-300">{couponMessage}</p> : null}
+                  {couponError ? <p className="mt-3 text-xs text-rose-300">{couponError}</p> : null}
                 </div>
               )}
 

@@ -1,9 +1,16 @@
-import crypto from 'node:crypto'
-import { prisma } from '@/lib/database/nexus-db'
-import { sendOrderPendingEmail, sendAdminNewOrderEmail } from '@/lib/mail/mailer'
+import { NextResponse } from 'next/server'
+import { getPrismaClient } from '@/lib/database/nexus-db'
+import { getAppUserForRequest } from '@/lib/auth/user-session'
+import { normalizeText } from '@/lib/security/validation'
+import { finalizePaidOrder, verifyRazorpayPaymentSignature } from '@/lib/commerce/payments'
 
 export async function POST(request) {
   try {
+    const { appUser } = await getAppUserForRequest(request)
+    if (!appUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { 
       razorpay_order_id, 
       razorpay_payment_id, 
@@ -20,40 +27,36 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
 
-    // Verify signature
-    const hmac = crypto.createHmac('sha256', secret)
-    hmac.update(razorpay_order_id + '|' + razorpay_payment_id)
-    const generatedSignature = hmac.digest('hex')
-
-    if (generatedSignature !== razorpay_signature) {
+    if (!verifyRazorpayPaymentSignature({
+      orderId: razorpay_order_id,
+      paymentId: razorpay_payment_id,
+      signature: razorpay_signature,
+      secret,
+    })) {
       return NextResponse.json({ error: 'Invalid payment signature' }, { status: 400 })
     }
 
-    // Update Order Status in Database
-    const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        paymentStatus: 'PAID',
-        status: 'accepted', // Auto-accept paid orders
-        razorpayOrderId: razorpay_order_id,
-        razorpayPaymentId: razorpay_payment_id,
+    const normalizedOrderId = normalizeText(orderId, 64)
+    const prisma = getPrismaClient()
+    const existingOrder = await prisma.order.findFirst({
+      where: {
+        id: normalizedOrderId,
+        userId: appUser.id,
       },
-      include: {
-        items: true,
-        user: { include: { cart: true } }
-      }
+      select: {
+        id: true,
+      },
     })
 
-    // Clear the user's cart in the database now that payment is confirmed
-    if (updatedOrder.user?.cart?.id) {
-      await prisma.cartItem.deleteMany({
-        where: { cartId: updatedOrder.user.cart.id }
-      }).catch(err => console.error('Failed to clear DB cart items:', err))
+    if (!existingOrder) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    // Now send the emails because payment is CONFIRMED
-    sendOrderPendingEmail(updatedOrder.customerEmail, updatedOrder.id, Number(updatedOrder.total)).catch(console.error)
-    sendAdminNewOrderEmail(updatedOrder.id, updatedOrder.customerEmail, Number(updatedOrder.total)).catch(console.error)
+    await finalizePaidOrder({
+      appOrderId: normalizedOrderId,
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+    })
 
     return Response.json({ success: true })
   } catch (error) {

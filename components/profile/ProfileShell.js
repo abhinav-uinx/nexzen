@@ -7,6 +7,8 @@ import { createSupabaseBrowserClient } from '@/lib/auth/supabase-browser'
 import { useAuth } from '@/providers/AuthProvider'
 import ProductCard from '@/components/storefront/ProductCard'
 import Image from 'next/image'
+import LoadingPanel from '@/components/ui/LoadingPanel'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 function EmptyState({ title, description, actionHref = '/login', actionLabel = 'Sign in' }) {
   return (
@@ -38,6 +40,8 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
   const [profileState, setProfileState] = useState('')
   const [profilePincode, setProfilePincode] = useState('')
   const [profileUpi, setProfileUpi] = useState('')
+  const [savedAddresses, setSavedAddresses] = useState([])
+  const [addressLabel, setAddressLabel] = useState('Home')
   const [wishlist, setWishlist] = useState([])
   const [wishlistLoading, setWishlistLoading] = useState(false)
   
@@ -79,10 +83,11 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
             setProfileCity(profile.city || '')
             setProfileState(profile.state || '')
             setProfilePincode(profile.pincode || '')
+            setSavedAddresses(Array.isArray(profile.savedAddresses) ? profile.savedAddresses : [])
             setProfileUpi(profile.savedUpiId || '')
             if (profile.name) setProfileName(profile.name)
           }
-        } catch (e) {
+        } catch {
           console.warn('Could not load extended profile details')
         }
       }
@@ -158,7 +163,7 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
         if (!cancelled && data.ok) {
           setWishlist(data.wishlist)
         }
-      } catch (err) {
+      } catch {
         console.error('Wishlist load failed')
       } finally {
         if (!cancelled) setWishlistLoading(false)
@@ -214,6 +219,7 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
             city: profileCity,
             state: profileState,
             pincode: profilePincode,
+            savedAddresses,
             savedUpiId: profileUpi,
           })
         })
@@ -234,9 +240,12 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
   if (loading) {
     return (
       <section className="px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl rounded-[2rem] border border-slate-200 bg-white p-10 shadow-[0_16px_48px_rgba(15,23,42,0.05)]">
-          <p className="text-sm uppercase tracking-[0.24em] text-blue-700">Account</p>
-          <h1 className="mt-3 font-heading text-4xl font-semibold text-slate-950">Loading your profile...</h1>
+        <div className="mx-auto max-w-6xl">
+          <LoadingPanel
+            eyebrow="Account"
+            title="Loading your profile"
+            description="We are pulling in your profile details, saved addresses, orders, and wishlist."
+          />
         </div>
       </section>
     )
@@ -256,6 +265,54 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
   }
 
   const renderChildren = typeof children === 'function' ? children : null
+  const activeOrdersCount = orders.filter((order) => !['delivered', 'completed', 'cancelled'].includes(`${order.status || ''}`.toLowerCase())).length
+
+  function saveCurrentAddress() {
+    if (!profileAddress || !profileCity || !profileState || !profilePincode) {
+      setProfileError('Complete the address fields before saving an address card.')
+      setProfileMessage('')
+      return
+    }
+
+    const nextId = `addr-${Date.now()}`
+    const nextAddress = {
+      id: nextId,
+      label: addressLabel || `Address ${savedAddresses.length + 1}`,
+      addressLine1: profileAddress,
+      addressLine2: profileAddress2,
+      city: profileCity,
+      state: profileState,
+      pincode: profilePincode,
+      phone: profilePhone,
+      isDefault: savedAddresses.length === 0,
+    }
+
+    const deduped = [nextAddress, ...savedAddresses.filter((item) =>
+      item.addressLine1 !== nextAddress.addressLine1 ||
+      item.city !== nextAddress.city ||
+      item.pincode !== nextAddress.pincode
+    )].slice(0, 5)
+
+    setSavedAddresses(deduped.map((item, index) => ({ ...item, isDefault: item.isDefault || index === 0 })))
+    setProfileMessage('Address saved. It will be available in checkout after you save the profile.')
+    setProfileError('')
+  }
+
+  function applySavedAddress(address) {
+    setProfileAddress(address.addressLine1 || '')
+    setProfileAddress2(address.addressLine2 || '')
+    setProfileCity(address.city || '')
+    setProfileState(address.state || '')
+    setProfilePincode(address.pincode || '')
+    setProfilePhone(address.phone || profilePhone || '')
+    setAddressLabel(address.label || 'Home')
+    setIsEditing(true)
+  }
+
+  function removeSavedAddress(id) {
+    const nextAddresses = savedAddresses.filter((item) => item.id !== id)
+    setSavedAddresses(nextAddresses.map((item, index) => ({ ...item, isDefault: item.isDefault || index === 0 })))
+  }
 
   return (
     <section className="px-4 py-10 sm:px-6 lg:px-8">
@@ -270,10 +327,12 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
                   <h1 className="font-heading text-3xl font-bold text-slate-950">
                     Welcome, {user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0]}.
                   </h1>
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-1">
-                    <p className="text-slate-500">{user.email}</p>
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-1">
+                      <p className="text-slate-500">{user.email}</p>
                     <div className="flex gap-4 border-l border-slate-200 pl-6">
                        <p className="text-sm font-semibold text-slate-900">{orders.length} <span className="font-normal text-slate-500">Orders</span></p>
+                       <p className="text-sm font-semibold text-slate-900">{activeOrdersCount} <span className="font-normal text-slate-500">Active</span></p>
+                       <p className="text-sm font-semibold text-slate-900">{savedAddresses.length} <span className="font-normal text-slate-500">Addresses</span></p>
                     </div>
                   </div>
                </div>
@@ -425,6 +484,21 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
                             placeholder="Locality, Landmark"
                             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                           />
+                          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                            <input
+                              value={addressLabel}
+                              onChange={(e) => setAddressLabel(e.target.value)}
+                              placeholder="Label this address (Home, Office)"
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            />
+                            <button
+                              type="button"
+                              onClick={saveCurrentAddress}
+                              className="interactive-button inline-flex items-center justify-center rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50"
+                            >
+                              Save address
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <div className="px-4 py-4 bg-slate-50 rounded-2xl text-slate-900 border border-slate-100 font-semibold space-y-1">
@@ -478,8 +552,60 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
                         <p className="px-4 py-3 bg-slate-50 rounded-2xl text-slate-900 border border-slate-100 font-semibold">{profilePincode || '(Not set)'}</p>
                       )}
                     </div>
+                    </div>
                   </div>
-                </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Saved addresses</h3>
+                      <p className="text-xs text-slate-400">Up to 5 addresses for faster checkout</p>
+                    </div>
+                    {savedAddresses.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500">
+                        Save a few addresses here and they will show up in checkout as quick-select cards.
+                      </div>
+                    ) : (
+                      <div className="grid gap-3">
+                        {savedAddresses.map((address) => (
+                          <div key={address.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-semibold text-slate-950">{address.label}</p>
+                                  {address.isDefault && (
+                                    <span className="rounded-full bg-slate-950 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
+                                      Default
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="mt-2 text-sm leading-6 text-slate-600">
+                                  {[address.addressLine1, address.addressLine2, address.city, address.state, address.pincode]
+                                    .filter(Boolean)
+                                    .join(', ')}
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => applySavedAddress(address)}
+                                  className="interactive-button inline-flex rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50"
+                                >
+                                  Use in form
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeSavedAddress(address.id)}
+                                  className="interactive-button inline-flex rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-rose-600 hover:border-rose-200 hover:bg-rose-50"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   {isEditing && (
                     <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-100">
@@ -488,7 +614,7 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
                         disabled={isSavingProfile || isSendingReset}
                         className="interactive-button inline-flex min-w-[11.5rem] items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 hover:shadow-[0_16px_36px_rgba(37,99,235,0.24)] disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {isSavingProfile ? 'Saving profile...' : 'Save Account & Profile'}
+                        {isSavingProfile ? <LoadingSpinner size="sm" tone="light" label="Saving profile..." /> : 'Save Account & Profile'}
                       </button>
                       <button
                         type="button"
@@ -535,15 +661,15 @@ function ProfileShellInner({ tools = [], showProfileForm = false, showAccountSum
                     }}
                     className="interactive-button inline-flex min-w-[11.5rem] items-center justify-center rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {isSendingReset ? 'Sending OTP...' : 'Reset password'}
+                    {isSendingReset ? <LoadingSpinner size="sm" tone="dark" label="Sending OTP..." /> : 'Reset password'}
                   </button>
                 </div>
               </div>
             ) : (
               <div className="mt-10">
                 {wishlistLoading ? (
-                  <div className="py-20 text-center">
-                    <p className="animate-pulse text-slate-400">Loading your wishlist items...</p>
+                  <div className="py-20 text-center text-slate-500">
+                    <LoadingSpinner tone="blue" label="Loading your wishlist items..." className="justify-center" />
                   </div>
                 ) : wishlist.length === 0 ? (
                   <div className="py-20 text-center">

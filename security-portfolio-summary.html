@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nexzen Security Portfolio Summary</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #0f172a;
+        --muted: #475569;
+        --line: #cbd5e1;
+        --soft: #f8fafc;
+        --blue: #1d4ed8;
+        --green: #166534;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        color: var(--ink);
+        background: white;
+        line-height: 1.5;
+      }
+
+      .page {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        padding: 18mm 16mm;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .hero {
+        border: 1px solid var(--line);
+        padding: 18px 20px;
+        background: linear-gradient(135deg, #eff6ff, #ffffff);
+      }
+
+      .eyebrow {
+        color: var(--blue);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin-top: 8px;
+        font-size: 28px;
+        line-height: 1.15;
+      }
+
+      .subtitle {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .meta {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .meta-card {
+        border: 1px solid var(--line);
+        background: white;
+        padding: 10px 12px;
+      }
+
+      .meta-card .label {
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .meta-card .value {
+        margin-top: 6px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .section {
+        margin-top: 20px;
+      }
+
+      .section h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .section p {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      ul {
+        margin: 10px 0 0 18px;
+        padding: 0;
+      }
+
+      li {
+        margin: 0 0 6px;
+        font-size: 12px;
+      }
+
+      .badge {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 4px 8px;
+        border: 1px solid #bbf7d0;
+        background: #f0fdf4;
+        color: var(--green);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .footer {
+        margin-top: 22px;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Cybersecurity Portfolio Summary</div>
+        <h1>Nexzen E-Commerce Website Security Hardening</h1>
+        <p class="subtitle">
+          Full-stack security improvements delivered on a Next.js 16, Prisma, Supabase, and Razorpay commerce platform for electronics and IoT hardware sales.
+        </p>
+        <div class="meta">
+          <div class="meta-card">
+            <div class="label">Role</div>
+            <div class="value">Cybersecurity Engineer</div>
+          </div>
+          <div class="meta-card">
+            <div class="label">Platform</div>
+            <div class="value">Next.js 16 / Prisma / Supabase</div>
+          </div>
+          <div class="meta-card">
+            <div class="label">Verification</div>
+            <div class="value">Production build passed</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Project Overview</h2>
+        <p>
+          Nexzen is a modern electronics storefront with catalog browsing, customer authentication, cart and checkout flows, Razorpay payment support, support tickets, wishlist, reviews, inventory controls, and an internal admin console for products, orders, banners, highlights, collections, brands, categories, and coupons.
+        </p>
+      </section>
+
+      <section class="section grid">
+        <div>
+          <h2>Security Work Delivered</h2>
+          <ul>
+            <li>Added global HTTP security headers including CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, and nosniff.</li>
+            <li>Disabled the `X-Powered-By` header and hardened proxy behavior for hidden admin routes.</li>
+            <li>Implemented real admin login throttling with a hard stop at 15 password attempts inside a 10-minute window.</li>
+            <li>Added CSRF protection for cookie-based admin actions using a dedicated CSRF cookie and required request header.</li>
+            <li>Centralized admin request validation with IP allowlisting, session checks, origin checks, and CSRF enforcement.</li>
+            <li>Hardened admin CRUD routes across products, orders, coupons, banners, categories, collections, highlights, and brand management.</li>
+            <li>Introduced admin account recovery with OTP login and password reset options after 10 failed password attempts.</li>
+          </ul>
+        </div>
+        <div>
+          <h2>Data and Payment Protections</h2>
+          <ul>
+            <li>Moved checkout pricing enforcement server-side so order totals are recalculated from database prices instead of trusting browser-submitted values.</li>
+            <li>Validated coupon reuse against prior customer orders before order creation.</li>
+            <li>Restricted Razorpay order creation to authenticated owners of the order and stopped trusting client-submitted amounts.</li>
+            <li>Switched payment signature checks to `timingSafeEqual`-based verification.</li>
+            <li>Restricted order lookup during payment to the authenticated owner instead of exposing order details publicly.</li>
+            <li>Validated cart sync payloads and filtered invalid product IDs before database writes.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section grid">
+        <div>
+          <h2>Input and Upload Hardening</h2>
+          <ul>
+            <li>Added shared normalization helpers for text, email, decimals, integers, phone numbers, and Indian pincodes.</li>
+            <li>Validated shipping, profile, and support-ticket inputs before persistence.</li>
+            <li>Removed trust in client-supplied `userId` during support ticket submission and resolved identity from authenticated context instead.</li>
+            <li>Validated uploaded images by MIME type and file size and restricted them to PNG, JPG, and WebP.</li>
+            <li>Constrained gallery URLs and asset links to HTTPS or local relative paths where applicable.</li>
+            <li>Added persistent database-backed OTP challenges and single-use password reset tokens for admin recovery workflows.</li>
+          </ul>
+        </div>
+        <div>
+          <h2>Authentication and Session Controls</h2>
+          <ul>
+            <li>Preserved Supabase token verification for customer-protected APIs.</li>
+            <li>Retained hashed admin passwords with scrypt and hashed session tokens in storage.</li>
+            <li>Extended admin login to issue both secure session cookies and CSRF cookies together.</li>
+            <li>Ensured admin logout clears both the admin session cookie and CSRF cookie.</li>
+            <li>Kept hidden admin path rewriting and 404 responses for direct `/admin` access.</li>
+            <li>Delivered email-based admin OTP and reset-link workflows using SMTP with expiry and one-time-use enforcement.</li>
+          </ul>
+          <div class="badge">Build verification completed successfully after changes.</div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Technical Stack</h2>
+        <p>
+          Next.js 16 App Router, React 19, Tailwind CSS v4, Prisma ORM, PostgreSQL, Supabase Authentication, Razorpay, Nodemailer SMTP, and Vercel deployment.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Portfolio Summary</h2>
+        <p>
+          I secured a production-style e-commerce platform by hardening admin access, session handling, CSRF defenses, server-side checkout validation, payment integrity checks, HTTP response headers, file upload restrictions, and sensitive route authorization. This project demonstrates practical web security implementation across authentication, authorization, payment security, secure input handling, and defense-in-depth controls for a modern JavaScript commerce stack.
+        </p>
+      </section>
+
+      <section class="footer">
+        Prepared for portfolio use from the local project source after code-level review and implementation.
+      </section>
+    </main>
+  </body>
+</html>

@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
+import { getAdminBasePath } from '@/lib/admin/config'
 
 export default function AdminHighlightsPage() {
+  const adminBasePath = getAdminBasePath()
   const [highlights, setHighlights] = useState([])
   const [isPending, startTransition] = useTransition()
   const [status, setStatus] = useState({ error: '', success: '' })
@@ -62,7 +64,7 @@ export default function AdminHighlightsPage() {
       <div className="mx-auto max-w-5xl space-y-10">
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/admin" className="text-sm font-semibold text-slate-500 hover:text-slate-950">&larr; Dashboard</Link>
+            <Link href={adminBasePath} className="text-sm font-semibold text-slate-500 hover:text-slate-950">&larr; Dashboard</Link>
             <h1 className="mt-2 font-heading text-4xl font-bold text-slate-950">Manage Home Page Highlights</h1>
           </div>
         </div>

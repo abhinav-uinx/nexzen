@@ -1,23 +1,21 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/database/nexus-db'
-import { getAdminSession, getAdminCookieName } from '@/lib/admin/auth'
-import { cookies } from 'next/headers'
+import { requireAdminRequest } from '@/lib/admin/request'
+import { logAdminAudit } from '@/lib/admin/audit'
+import { normalizeText } from '@/lib/security/validation'
 
 export async function PATCH(request, { params }) {
   try {
     const { id } = await params
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const body = await request.json()
-    const { status } = body
+    const status = normalizeText(body?.status, 32).toLowerCase()
 
-    if (!status) {
+    if (!['pending', 'accepted', 'rejected'].includes(status)) {
       return NextResponse.json({ error: 'Status required' }, { status: 400 })
     }
 
@@ -51,6 +49,21 @@ export async function PATCH(request, { params }) {
         data: { status: newOrderStatus }
       })
     }
+
+    await logAdminAudit({
+      adminId: auth.session.adminId,
+      action: 'order_item_status_updated',
+      entityType: 'order_item',
+      entityId: updatedItem.id,
+      description: `Updated order item ${updatedItem.id.slice(-8)} to ${status}.`,
+      metadata: {
+        orderId: updatedItem.orderId,
+        status,
+        orderStatus: newOrderStatus,
+      },
+      ipAddress: auth.ip,
+      userAgent: request.headers.get('user-agent'),
+    }).catch(() => null)
 
     return NextResponse.json({ item: updatedItem })
   } catch (error) {

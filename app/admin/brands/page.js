@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
+import { getAdminBasePath } from '@/lib/admin/config'
 
 export default function AdminBrandsPage() {
+  const adminBasePath = getAdminBasePath()
   const [brands, setBrands] = useState([])
   const [isPending, startTransition] = useTransition()
   const [status, setStatus] = useState({ error: '', success: '' })
@@ -68,7 +70,7 @@ export default function AdminBrandsPage() {
       <div className="mx-auto max-w-5xl space-y-10">
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/admin" className="text-sm font-semibold text-slate-500 hover:text-slate-950">&larr; Dashboard</Link>
+            <Link href={adminBasePath} className="text-sm font-semibold text-slate-500 hover:text-slate-950">&larr; Dashboard</Link>
             <h1 className="mt-2 font-heading text-4xl font-bold text-slate-950">Manage Brands</h1>
             <p className="text-slate-500 mt-1">Organize and manage your device and component manufacturers.</p>
           </div>

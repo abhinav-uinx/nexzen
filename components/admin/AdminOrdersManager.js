@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import Image from 'next/image'
+import { withAdminHeaders } from '@/lib/admin/client'
+import AdminAuditLogPanel from '@/components/admin/AdminAuditLogPanel'
 
 export default function AdminOrdersManager() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -58,7 +59,7 @@ export default function AdminOrdersManager() {
     try {
       const res = await fetch(`/api/admin/order-items/${itemId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: withAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ status: newStatus }),
       })
       if (res.ok) {
@@ -87,7 +88,7 @@ export default function AdminOrdersManager() {
     try {
       const res = await fetch(`/api/admin/orders/${orderId}/bulk-action`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: withAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ action: 'accept_all' }),
       })
       if (res.ok) {
@@ -108,7 +109,8 @@ export default function AdminOrdersManager() {
     setActionLoading(`user-${email}`)
     try {
       const res = await fetch(`/api/admin/users/${encodeURIComponent(email)}/bulk-accept`, {
-        method: 'POST'
+        method: 'POST',
+        headers: withAdminHeaders(),
       })
       if (res.ok) {
         // Simple strategy: Just refetch all orders to get the new statuses
@@ -300,7 +302,10 @@ export default function AdminOrdersManager() {
           })
         )}
       </div>
+
+      <div className="mt-8">
+        <AdminAuditLogPanel />
+      </div>
     </div>
   )
 }
-

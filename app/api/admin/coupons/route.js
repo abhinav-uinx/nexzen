@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/database/nexus-db'
-import { getAdminSession, getAdminCookieName } from '@/lib/admin/auth'
-import { cookies } from 'next/headers'
+import { requireAdminRequest } from '@/lib/admin/request'
+import { normalizeDecimal, normalizeInteger, normalizeText } from '@/lib/security/validation'
 
 export async function GET(request) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request)
+    if (auth.error) {
+      return auth.error
     }
 
     const coupons = await prisma.coupon.findMany({
@@ -26,25 +23,30 @@ export async function GET(request) {
 
 export async function PATCH(request) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const body = await request.json()
-    const { id, discountPercent, isActive } = body
+    const { id, discountPercent, isActive, minOrderValue, maxUses, expiresAt, categorySlug } = body
 
     if (!id) {
        return NextResponse.json({ error: 'Coupon ID required' }, { status: 400 })
     }
 
     const updatedCoupon = await prisma.coupon.update({
-      where: { id },
+      where: { id: normalizeText(id, 64) },
       data: {
-        discountPercent: discountPercent !== undefined ? Number(discountPercent) : undefined,
+        discountPercent: discountPercent !== undefined ? normalizeInteger(discountPercent, { min: 0, max: 90, fallback: 0 }) : undefined,
+        minOrderValue: minOrderValue !== undefined && minOrderValue !== null && `${minOrderValue}` !== ''
+          ? normalizeDecimal(minOrderValue, { min: 0, max: 999999, fallback: 0 })
+          : null,
+        maxUses: maxUses !== undefined && maxUses !== null && `${maxUses}` !== ''
+          ? normalizeInteger(maxUses, { min: 1, max: 100000, fallback: 1 })
+          : null,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        categorySlug: normalizeText(categorySlug, 120) || null,
         isActive: isActive !== undefined ? Boolean(isActive) : undefined
       }
     })
@@ -58,16 +60,13 @@ export async function PATCH(request) {
 
 export async function POST(request) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const body = await request.json()
-    const { name, discountPercent } = body
+    const { name, discountPercent, minOrderValue, maxUses, expiresAt, categorySlug } = body
 
     if (!name || discountPercent === undefined) {
       return NextResponse.json({ error: 'Name and Discount Percentage required' }, { status: 400 })
@@ -75,8 +74,16 @@ export async function POST(request) {
 
     const newCoupon = await prisma.coupon.create({
       data: {
-        name: name.toUpperCase().trim(),
-        discountPercent: Number(discountPercent),
+        name: normalizeText(name, 64).toUpperCase(),
+        discountPercent: normalizeInteger(discountPercent, { min: 0, max: 90, fallback: 0 }),
+        minOrderValue: minOrderValue !== undefined && minOrderValue !== null && `${minOrderValue}` !== ''
+          ? normalizeDecimal(minOrderValue, { min: 0, max: 999999, fallback: 0 })
+          : null,
+        maxUses: maxUses !== undefined && maxUses !== null && `${maxUses}` !== ''
+          ? normalizeInteger(maxUses, { min: 1, max: 100000, fallback: 1 })
+          : null,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        categorySlug: normalizeText(categorySlug, 120) || null,
         isActive: true
       }
     })

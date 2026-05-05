@@ -1,16 +1,12 @@
 import { generateProductData } from '@/lib/ai/gemini'
-import { cookies } from 'next/headers'
-import { getAdminCookieName, getAdminSession } from '@/lib/admin/auth'
+import { requireAdminRequest } from '@/lib/admin/request'
+import { normalizeText } from '@/lib/security/validation'
 
 export async function POST(request) {
   try {
-    // Basic admin check
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const { name, sku, categories } = await request.json()
@@ -20,11 +16,11 @@ export async function POST(request) {
     }
 
     // Clean name from the '!' trigger
-    const cleanName = name.replace(/!$/, '').trim()
+    const cleanName = normalizeText(name.replace(/!$/, ''), 160)
 
     const data = await generateProductData({ 
       name: cleanName, 
-      sku, 
+      sku: normalizeText(sku, 64), 
       categories 
     })
 

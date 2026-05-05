@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useCart } from '@/providers/CartProvider'
+import { useAuth } from '@/providers/AuthProvider'
 
 export default function RazorpayPaymentPage({ params: paramsPromise }) {
   const params = use(paramsPromise)
@@ -11,6 +12,7 @@ export default function RazorpayPaymentPage({ params: paramsPromise }) {
   const vpa = searchParams.get('vpa') || null
   const orderId = params.id
   const { clearCart } = useCart()
+  const { session, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [status, setStatus] = useState('initializing') // initializing, paying, success, failed
@@ -28,16 +30,24 @@ export default function RazorpayPaymentPage({ params: paramsPromise }) {
         script.onload = async () => {
           try {
             // 2. Fetch the Razorpay Order from our API
-            const res = await fetch('/api/orders/' + orderId)
+            const authHeaders = session?.access_token
+              ? { Authorization: `Bearer ${session.access_token}` }
+              : {}
+
+            const res = await fetch('/api/orders/' + orderId, {
+              headers: authHeaders,
+            })
             if (!res.ok) throw new Error('Order not found')
             const { order } = await res.json()
 
             const rzpRes = await fetch('/api/checkout/razorpay', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders,
+              },
               body: JSON.stringify({
-                amount: order.total,
-                receipt: order.id
+                orderId: order.id,
               })
             })
             
@@ -62,7 +72,10 @@ export default function RazorpayPaymentPage({ params: paramsPromise }) {
                 try {
                   const verifyRes = await fetch('/api/checkout/verify', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                      'Content-Type': 'application/json',
+                      ...authHeaders,
+                    },
                     body: JSON.stringify({
                       razorpay_order_id: response.razorpay_order_id,
                       razorpay_payment_id: response.razorpay_payment_id,
@@ -112,8 +125,20 @@ export default function RazorpayPaymentPage({ params: paramsPromise }) {
       }
     }
 
-    if (orderId) loadRazorpay()
-  }, [orderId])
+    if (authLoading) {
+      return
+    }
+
+    if (!session?.access_token) {
+      setError('Sign in required to continue with payment.')
+      setLoading(false)
+      return
+    }
+
+    if (orderId) {
+      loadRazorpay()
+    }
+  }, [authLoading, orderId, session?.access_token])
 
   if (loading) {
     return (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { withAdminHeaders } from '@/lib/admin/client'
 
 export default function CouponManager() {
   const [coupons, setCoupons] = useState([])
@@ -8,6 +9,10 @@ export default function CouponManager() {
   const [updateLoading, setUpdateLoading] = useState(null)
   const [newName, setNewName] = useState('')
   const [newPercent, setNewPercent] = useState('')
+  const [newMinOrderValue, setNewMinOrderValue] = useState('')
+  const [newMaxUses, setNewMaxUses] = useState('')
+  const [newExpiresAt, setNewExpiresAt] = useState('')
+  const [newCategorySlug, setNewCategorySlug] = useState('')
   const [createLoading, setCreateLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -40,14 +45,25 @@ export default function CouponManager() {
     try {
       const res = await fetch('/api/admin/coupons', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName, discountPercent: newPercent })
+        headers: withAdminHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({
+          name: newName,
+          discountPercent: newPercent,
+          minOrderValue: newMinOrderValue,
+          maxUses: newMaxUses,
+          expiresAt: newExpiresAt,
+          categorySlug: newCategorySlug,
+        })
       })
       const data = await res.json()
       if (res.ok) {
         setCoupons([data.coupon, ...coupons])
         setNewName('')
         setNewPercent('')
+        setNewMinOrderValue('')
+        setNewMaxUses('')
+        setNewExpiresAt('')
+        setNewCategorySlug('')
       } else {
         setError(data.error || 'Failed to create coupon')
       }
@@ -64,7 +80,7 @@ export default function CouponManager() {
     try {
       const res = await fetch('/api/admin/coupons', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: withAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ id, ...updates })
       })
       if (res.ok) {
@@ -88,7 +104,7 @@ export default function CouponManager() {
         </div>
 
         {/* Create Coupon Form */}
-        <form onSubmit={createNewCoupon} className="flex flex-col gap-3 rounded-[1.5rem] bg-slate-50 p-4 border border-slate-100 sm:w-80">
+        <form onSubmit={createNewCoupon} className="flex flex-col gap-3 rounded-[1.5rem] bg-slate-50 p-4 border border-slate-100 sm:w-[28rem]">
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Create New Coupon</p>
           <input 
             suppressHydrationWarning
@@ -117,6 +133,39 @@ export default function CouponManager() {
               {createLoading ? '...' : 'Create'}
             </button>
           </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <input
+              suppressHydrationWarning
+              type="number"
+              placeholder="Min Order Value"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              value={newMinOrderValue}
+              onChange={(e) => setNewMinOrderValue(e.target.value)}
+            />
+            <input
+              suppressHydrationWarning
+              type="number"
+              placeholder="Max Uses"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              value={newMaxUses}
+              onChange={(e) => setNewMaxUses(e.target.value)}
+            />
+            <input
+              suppressHydrationWarning
+              type="datetime-local"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              value={newExpiresAt}
+              onChange={(e) => setNewExpiresAt(e.target.value)}
+            />
+            <input
+              suppressHydrationWarning
+              type="text"
+              placeholder="Category slug (optional)"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              value={newCategorySlug}
+              onChange={(e) => setNewCategorySlug(e.target.value)}
+            />
+          </div>
           {error && <p className="text-[10px] font-bold text-rose-600">{error}</p>}
         </form>
       </div>
@@ -138,6 +187,12 @@ export default function CouponManager() {
                     </span>
                   </div>
                   <p className="mt-2 text-xs text-slate-500">Created {new Date(coupon.createdAt).toLocaleDateString()}</p>
+                  <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    {coupon.minOrderValue ? <span>Min Rs. {Number(coupon.minOrderValue).toLocaleString()}</span> : null}
+                    {coupon.maxUses ? <span>Cap {coupon.usageCount || 0}/{coupon.maxUses}</span> : null}
+                    {coupon.categorySlug ? <span>{coupon.categorySlug}</span> : null}
+                    {coupon.expiresAt ? <span>Expires {new Date(coupon.expiresAt).toLocaleDateString()}</span> : null}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
@@ -167,6 +222,39 @@ export default function CouponManager() {
                     </button>
                   </div>
                 </div>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                <input
+                  suppressHydrationWarning
+                  type="number"
+                  defaultValue={coupon.minOrderValue || ''}
+                  placeholder="Min order"
+                  onBlur={(e) => updateCoupon(coupon.id, { minOrderValue: e.target.value })}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                />
+                <input
+                  suppressHydrationWarning
+                  type="number"
+                  defaultValue={coupon.maxUses || ''}
+                  placeholder="Max uses"
+                  onBlur={(e) => updateCoupon(coupon.id, { maxUses: e.target.value })}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                />
+                <input
+                  suppressHydrationWarning
+                  type="datetime-local"
+                  defaultValue={coupon.expiresAt ? new Date(coupon.expiresAt).toISOString().slice(0, 16) : ''}
+                  onBlur={(e) => updateCoupon(coupon.id, { expiresAt: e.target.value })}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                />
+                <input
+                  suppressHydrationWarning
+                  type="text"
+                  defaultValue={coupon.categorySlug || ''}
+                  placeholder="Category slug"
+                  onBlur={(e) => updateCoupon(coupon.id, { categorySlug: e.target.value })}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                />
               </div>
             </div>
           ))

@@ -1,27 +1,30 @@
 import { prisma } from '@/lib/database/nexus-db'
-import { cookies } from 'next/headers'
-import { getAdminCookieName, getAdminSession } from '@/lib/admin/auth'
+import { requireAdminRequest } from '@/lib/admin/request'
+import { isSafeRelativeAssetPath, isValidHttpsUrl, normalizeMultilineText, normalizeText } from '@/lib/security/validation'
 
 export async function PATCH(request, { params }) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const { id } = await params
     const { name, description, logoUrl } = await request.json()
+    const normalizedName = normalizeText(name, 120)
+    const normalizedLogoUrl = normalizeText(logoUrl, 500)
+
+    if (normalizedLogoUrl && !isValidHttpsUrl(normalizedLogoUrl) && !isSafeRelativeAssetPath(normalizedLogoUrl)) {
+      return Response.json({ error: 'Logo URL must be https or a local asset path.' }, { status: 400 })
+    }
 
     const updateData = {}
-    if (name) {
-      updateData.name = name
-      updateData.slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    if (normalizedName) {
+      updateData.name = normalizedName
+      updateData.slug = normalizedName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
     }
-    if (description !== undefined) updateData.description = description
-    if (logoUrl !== undefined) updateData.logoUrl = logoUrl
+    if (description !== undefined) updateData.description = normalizeMultilineText(description, 1000) || null
+    if (logoUrl !== undefined) updateData.logoUrl = normalizedLogoUrl || null
 
     const brand = await prisma.brand.update({
       where: { id },
@@ -36,12 +39,9 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const { id } = await params

@@ -19,7 +19,7 @@ export default function ScrollReveal({ children, delay = 0, direction = 'up', di
       transition: {
         duration: duration,
         delay: delay,
-        ease: [0.25, 0.1, 0.25, 1], // Apple-like easing
+        ease: [0.25, 0.1, 0.25, 1],
       },
     },
   }

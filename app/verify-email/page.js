@@ -122,25 +122,19 @@ function VerifyEmailContent() {
 
     startResendTransition(async () => {
       try {
-        const supabase = createSupabaseBrowserClient()
-
-        if (flowType === 'recovery') {
-          const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/update-password`,
-          })
-
-          if (resetError) {
-            throw resetError
-          }
-        } else {
-          const { error: resendError } = await supabase.auth.resend({
-            type: 'signup',
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: flowType === 'recovery' ? 'reset-resend' : 'signup-resend',
             email,
-          })
+          }),
+        })
 
-          if (resendError) {
-            throw resendError
-          }
+        const result = await response.json().catch(() => ({}))
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Could not resend the code.')
         }
 
         setMessage(`A new code has been sent to ${email}.`)

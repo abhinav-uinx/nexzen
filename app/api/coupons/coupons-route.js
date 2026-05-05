@@ -1,5 +1,6 @@
 import { getPrismaClient } from '@/lib/database/nexus-db'
 import { createSupabaseServerClient } from '@/lib/auth/supabase-server'
+import { normalizeDecimal, normalizeText } from '@/lib/security/validation'
 
 function getBearerToken(request) {
   const authorization = request.headers.get('authorization') || ''
@@ -17,17 +18,36 @@ export async function handleCouponLookup(request) {
       return Response.json({ error: 'Coupon code is required.' }, { status: 400 })
     }
 
-    const rows = await prisma.$queryRaw`
-      SELECT "id", "name", "discountPercent"
-      FROM "coupons"
-      WHERE LOWER("name") = LOWER(${code})
-        AND "isActive" = true
-      LIMIT 1
-    `
-    const coupon = Array.isArray(rows) ? rows[0] : null
+    const coupon = await prisma.coupon.findFirst({
+      where: {
+        name: {
+          equals: normalizeText(code, 64).toUpperCase(),
+          mode: 'insensitive',
+        },
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        discountPercent: true,
+        minOrderValue: true,
+        maxUses: true,
+        usageCount: true,
+        expiresAt: true,
+        categorySlug: true,
+      },
+    })
 
     if (!coupon) {
       return Response.json({ error: 'Invalid coupon code.' }, { status: 404 })
+    }
+
+    if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
+      return Response.json({ error: 'This coupon has expired.' }, { status: 400 })
+    }
+
+    if (coupon.maxUses && coupon.usageCount >= coupon.maxUses) {
+      return Response.json({ error: 'This coupon is no longer available.' }, { status: 400 })
     }
 
     // Check for early usage detection if user is logged in
@@ -57,7 +77,10 @@ export async function handleCouponLookup(request) {
 
     return Response.json({
       ok: true,
-      coupon,
+      coupon: {
+        ...coupon,
+        minOrderValue: coupon.minOrderValue ? normalizeDecimal(coupon.minOrderValue, { min: 0, fallback: 0 }) : null,
+      },
     })
   } catch (error) {
     const message =

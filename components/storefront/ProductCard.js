@@ -8,6 +8,7 @@ import { useCart } from '@/providers/CartProvider'
 import { useAuth } from '@/providers/AuthProvider'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, ShoppingBag } from 'lucide-react'
+import CompareButton from '@/components/storefront/CompareButton'
 
 import styles from './ProductCard.module.css'
 
@@ -67,7 +68,7 @@ export default function ProductCard({ product, initiallyWishlisted = false, vari
       })
       
       if (!res.ok) throw new Error()
-    } catch (err) {
+    } catch {
       setIsWishlisted(!nextState)
     } finally {
       setIsSyncing(false)
@@ -190,6 +191,7 @@ export default function ProductCard({ product, initiallyWishlisted = false, vari
                 fill={isWishlisted ? "currentColor" : "none"} 
               />
             </motion.button>
+            <CompareButton product={product} />
           </div>
         </div>
       </div>

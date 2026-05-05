@@ -4,8 +4,10 @@ import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import InsightBadge from '@/components/admin/InsightBadge'
+import { getAdminBasePath } from '@/lib/admin/config'
 
 export default function AdminBannersPage() {
+  const adminBasePath = getAdminBasePath()
   const [banners, setBanners] = useState([])
   const [isPending, startTransition] = useTransition()
   const [status, setStatus] = useState({ error: '', success: '' })
@@ -58,7 +60,7 @@ export default function AdminBannersPage() {
       <div className="mx-auto max-w-5xl space-y-10">
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/admin" className="text-sm font-semibold text-slate-500 hover:text-slate-950">&larr; Dashboard</Link>
+            <Link href={adminBasePath} className="text-sm font-semibold text-slate-500 hover:text-slate-950">&larr; Dashboard</Link>
             <h1 className="mt-2 font-heading text-4xl font-bold text-slate-950">Manage Hero Banners</h1>
           </div>
         </div>

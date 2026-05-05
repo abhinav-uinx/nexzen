@@ -1,23 +1,21 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/database/nexus-db'
-import { getAdminSession, getAdminCookieName } from '@/lib/admin/auth'
-import { cookies } from 'next/headers'
+import { requireAdminRequest } from '@/lib/admin/request'
+import { logAdminAudit } from '@/lib/admin/audit'
+import { normalizeText } from '@/lib/security/validation'
 
 export async function POST(request, { params }) {
   try {
     const { id } = await params
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const body = await request.json()
-    const { action } = body // e.g., 'accept_all', 'reject_all'
+    const action = normalizeText(body?.action, 32)
 
-    if (!action) {
+    if (!['accept_all', 'reject_all'].includes(action)) {
       return NextResponse.json({ error: 'Action required' }, { status: 400 })
     }
 
@@ -37,6 +35,19 @@ export async function POST(request, { params }) {
         items: true
       }
     })
+
+    await logAdminAudit({
+      adminId: auth.session.adminId,
+      action: action,
+      entityType: 'order',
+      entityId: id,
+      description: `${action === 'accept_all' ? 'Accepted' : 'Rejected'} all items for order ${id.slice(-8)}.`,
+      metadata: {
+        status: newStatus,
+      },
+      ipAddress: auth.ip,
+      userAgent: request.headers.get('user-agent'),
+    }).catch(() => null)
 
     return NextResponse.json({ order: updatedOrder })
   } catch (error) {

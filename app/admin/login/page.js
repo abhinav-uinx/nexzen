@@ -1,5 +1,6 @@
 import AdminLoginForm from '@/components/admin/AdminLoginForm'
 import { getAdminBasePath } from '@/lib/admin/config'
+import { Suspense } from 'react'
 
 export const metadata = {
   title: 'Admin Login | Nexzen',
@@ -23,7 +24,15 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        <AdminLoginForm adminBasePath={adminBasePath} />
+        <Suspense
+          fallback={
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-[0_16px_48px_rgba(15,23,42,0.05)] sm:p-8">
+              Loading admin sign-in...
+            </div>
+          }
+        >
+          <AdminLoginForm adminBasePath={adminBasePath} />
+        </Suspense>
       </div>
     </section>
   )

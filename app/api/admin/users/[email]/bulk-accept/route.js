@@ -1,19 +1,17 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/database/nexus-db'
-import { getAdminSession, getAdminCookieName } from '@/lib/admin/auth'
-import { cookies } from 'next/headers'
+import { requireAdminRequest } from '@/lib/admin/request'
+import { logAdminAudit } from '@/lib/admin/audit'
+import { normalizeEmail } from '@/lib/security/validation'
 
 export async function POST(request, { params }) {
   try {
     const { email } = await params
-    const decodedEmail = decodeURIComponent(email)
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
+    const decodedEmail = normalizeEmail(decodeURIComponent(email))
 
     // Update all items for this user's orders that are pending
     await prisma.orderItem.updateMany({
@@ -32,6 +30,19 @@ export async function POST(request, { params }) {
       },
       data: { status: 'accepted' }
     })
+
+    await logAdminAudit({
+      adminId: auth.session.adminId,
+      action: 'accept_all_for_user',
+      entityType: 'user_orders',
+      entityId: decodedEmail,
+      description: `Accepted all pending items for ${decodedEmail}.`,
+      metadata: {
+        customerEmail: decodedEmail,
+      },
+      ipAddress: auth.ip,
+      userAgent: request.headers.get('user-agent'),
+    }).catch(() => null)
 
     return NextResponse.json({ success: true })
   } catch (error) {

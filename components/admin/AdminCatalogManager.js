@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import ProductForm from '@/components/admin/ProductForm'
 import Pagination from '@/components/storefront/Pagination'
 import { getAdminBasePath } from '@/lib/admin/config'
+import { withAdminHeaders } from '@/lib/admin/client'
 import * as XLSX from 'xlsx'
 import { DownloadCloud, Filter, SlidersHorizontal, X } from 'lucide-react'
 
@@ -123,7 +124,7 @@ export default function AdminCatalogManager({
     startDeleteTransition(async () => {
       const response = await fetch('/api/admin/products', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: withAdminHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ id: product.id }),
       })
       const result = await response.json()

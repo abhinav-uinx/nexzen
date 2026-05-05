@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
+import { getAdminBasePath } from '@/lib/admin/config'
 
 export default function AdminCollectionsPage() {
+  const adminBasePath = getAdminBasePath()
   const [collections, setCollections] = useState([])
   const [isPending, startTransition] = useTransition()
   const [status, setStatus] = useState({ error: '', success: '' })
@@ -64,7 +66,7 @@ export default function AdminCollectionsPage() {
       <div className="mx-auto max-w-5xl space-y-10">
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/admin" className="text-sm font-semibold text-slate-500 hover:text-slate-950">&larr; Dashboard</Link>
+            <Link href={adminBasePath} className="text-sm font-semibold text-slate-500 hover:text-slate-950">&larr; Dashboard</Link>
             <h1 className="mt-2 font-heading text-4xl font-bold text-slate-950">Manage Store Collections</h1>
           </div>
         </div>
@@ -74,30 +76,30 @@ export default function AdminCollectionsPage() {
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Collection Name</label>
-               <input name="name" required className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all" placeholder="Creator Boards" />
+               <input suppressHydrationWarning name="name" required className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all" placeholder="Creator Boards" />
             </div>
             <div>
                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Slug</label>
-               <input name="slug" required className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all" placeholder="development-boards" />
+               <input suppressHydrationWarning name="slug" required className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all" placeholder="development-boards" />
             </div>
             <div className="sm:col-span-2">
                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Description</label>
-               <input name="description" required className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all" placeholder="Performance-first microcontrollers and SBCs." />
+               <input suppressHydrationWarning name="description" required className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all" placeholder="Performance-first microcontrollers and SBCs." />
             </div>
             <div>
                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Image URL (Optional)</label>
-               <input name="imageUrl" className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all" placeholder="https://..." />
+               <input suppressHydrationWarning name="imageUrl" className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all" placeholder="https://..." />
             </div>
             <div>
                <label className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Display Order</label>
-               <input name="order" type="number" defaultValue={0} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all" />
+               <input suppressHydrationWarning name="order" type="number" defaultValue={0} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all" />
             </div>
           </div>
 
           {status.error && <p className="mt-6 text-sm font-bold text-rose-500 bg-rose-50 border border-rose-100 p-4 rounded-xl">{status.error}</p>}
           {status.success && <p className="mt-6 text-sm font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 p-4 rounded-xl">{status.success}</p>}
 
-          <button disabled={isPending} className="mt-8 rounded-full bg-slate-950 px-8 py-4 text-sm font-bold text-white hover:bg-blue-700 disabled:bg-slate-400 transition-all">
+          <button suppressHydrationWarning disabled={isPending} className="mt-8 rounded-full bg-slate-950 px-8 py-4 text-sm font-bold text-white hover:bg-blue-700 disabled:bg-slate-400 transition-all">
             {isPending ? 'Saving...' : 'Save Collection'}
           </button>
         </form>

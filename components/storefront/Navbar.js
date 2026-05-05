@@ -6,13 +6,19 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 import { useCart } from '@/providers/CartProvider'
-import { Search, ShoppingBag, User, Menu, X, ChevronRight, SlidersHorizontal } from 'lucide-react'
+import { ShoppingBag, User, Menu, X, ChevronRight, SlidersHorizontal, GitCompareArrows } from 'lucide-react'
+import SearchSuggest from '@/components/storefront/SearchSuggest'
+import { useCompareItems } from '@/components/storefront/CompareButton'
+import { buildSearchPath } from '@/lib/catalog/search-url'
+
+const SEARCH_STORAGE_KEY = 'nexzen:search-state'
 
 export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
   const { cartCount } = useCart()
-  const { user, loading, signOut } = useAuth()
+  const compareItems = useCompareItems()
+  const { session, user, signOut } = useAuth()
   const [query, setQuery] = useState('')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
@@ -42,11 +48,48 @@ export default function Navbar() {
     return () => document.addEventListener('mousedown', handleOutsideClick)
   }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    if (pathname === '/search') {
+      try {
+        const raw = window.sessionStorage.getItem(SEARCH_STORAGE_KEY)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          setQuery(parsed?.query || '')
+        }
+      } catch {
+        setQuery('')
+      }
+      return
+    }
+
+    if (!pathname.startsWith('/search')) {
+      setQuery('')
+    }
+  }, [pathname])
+
+  function goToSearch(value = query.trim()) {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(
+        SEARCH_STORAGE_KEY,
+        JSON.stringify({
+          query: value,
+          availability: '',
+          minPrice: 0,
+          maxPrice: 25000,
+        })
+      )
+    }
+    router.push(buildSearchPath(value))
+    setMobileOpen(false)
+  }
+
   function submitSearch(event) {
     event.preventDefault()
-    const value = query.trim()
-    router.push(value ? `/p?query=${encodeURIComponent(value)}` : '/p')
-    setMobileOpen(false)
+    goToSearch(query.trim())
   }
 
   async function handleLogout() {
@@ -96,31 +139,35 @@ export default function Navbar() {
         {!isAdminRoute && (
           <div className="hidden flex-1 max-w-xl md:block">
             <form onSubmit={submitSearch} className="relative group">
-              <div className="flex items-center rounded-full bg-black border border-white/20 p-1.5 pl-2 transition-all focus-within:border-white/40 focus-within:ring-2 focus-within:ring-white/5">
-                <button
-                  suppressHydrationWarning
-                  type="button"
-                  onClick={() => router.push('/p?filter=open')}
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-all hover:scale-110 active:scale-90"
-                  title="Advanced Filters"
-                >
-                  <SlidersHorizontal size={16} />
-                </button>
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search products..."
-                  className="flex-1 bg-transparent py-2 pl-3 text-sm text-white placeholder:text-white/30 outline-none"
-                  suppressHydrationWarning={true}
-                />
-                <button 
-                  type="submit"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105 active:scale-95"
-                  suppressHydrationWarning={true}
-                >
-                  <ChevronRight size={20} strokeWidth={3} />
-                </button>
-              </div>
+              <SearchSuggest
+                value={query}
+                onChange={setQuery}
+                onSubmit={goToSearch}
+                authToken={session?.access_token || ''}
+                placeholder="Search products..."
+                wrapperClassName="text-slate-950"
+                inputClassName="w-full rounded-full bg-black border border-white/20 py-3 pl-[4.25rem] pr-14 text-sm text-white placeholder:text-white/30 outline-none transition-all focus:border-white/40 focus:ring-2 focus:ring-white/5"
+                renderLeading={() => (
+                  <button
+                    suppressHydrationWarning
+                    type="button"
+                    onClick={() => router.push('/p')}
+                    className="absolute left-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-white transition-all hover:scale-110 active:scale-90"
+                    title="Advanced Filters"
+                  >
+                    <SlidersHorizontal size={16} />
+                  </button>
+                )}
+                renderTrailing={() => (
+                  <button
+                    type="submit"
+                    className="absolute right-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black transition-transform hover:scale-105 active:scale-95"
+                    suppressHydrationWarning
+                  >
+                    <ChevronRight size={20} strokeWidth={3} />
+                  </button>
+                )}
+              />
             </form>
           </div>
         )}
@@ -136,6 +183,20 @@ export default function Navbar() {
           )}
 
           <div className="flex items-center gap-6">
+            {!isAdminRoute && (
+              <Link href="/compare" className="flex items-center gap-2 text-white/70 transition-colors hover:text-white">
+                <div className="relative">
+                  <GitCompareArrows size={20} />
+                  {compareItems.length > 0 && (
+                    <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-black border border-[#111]">
+                      {compareItems.length}
+                    </span>
+                  )}
+                </div>
+                <span className="hidden lg:inline text-sm font-medium">Compare</span>
+              </Link>
+            )}
+
             {!isAdminRoute && (
               <Link href="/cart" className="flex items-center gap-2 text-white/70 transition-colors hover:text-white">
                 <div className="relative">
@@ -211,34 +272,39 @@ export default function Navbar() {
         <div className="fixed inset-0 top-[80px] z-40 bg-[#000] px-10 pt-10 text-white animate-apple-fade">
           <nav className="flex flex-col gap-6 text-3xl font-bold tracking-tight">
             <Link href="/p" onClick={() => setMobileOpen(false)}>Catalog</Link>
+            <Link href="/compare" onClick={() => setMobileOpen(false)}>Compare</Link>
             <Link href="/p?category=stem-kits" onClick={() => setMobileOpen(false)}>STEM Kits</Link>
             <Link href="/p?sort=newest" onClick={() => setMobileOpen(false)}>New Arrivals</Link>
             <Link href="/support" onClick={() => setMobileOpen(false)}>Support</Link>
           </nav>
 
           <form onSubmit={submitSearch} className="mt-12">
-            <div className="flex items-center rounded-full bg-white/5 border border-white/10 p-2 pl-2">
-              <button
-                suppressHydrationWarning
-                type="button"
-                onClick={() => { setMobileOpen(false); router.push('/p?filter=open'); }}
-                className="flex h-12 w-12 items-center justify-center rounded-full text-white active:scale-90"
-              >
-                <SlidersHorizontal size={20} />
-              </button>
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search Nexzen..."
-                className="flex-1 bg-transparent py-2 pl-4 text-lg text-white placeholder:text-white/20 outline-none"
-              />
-              <button 
-                type="submit"
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-black"
-              >
-                <ChevronRight size={24} strokeWidth={3} />
-              </button>
-            </div>
+            <SearchSuggest
+              value={query}
+              onChange={setQuery}
+              onSubmit={goToSearch}
+              authToken={session?.access_token || ''}
+              placeholder="Search Nexzen..."
+              inputClassName="w-full rounded-full border border-white/10 bg-white/5 py-4 pl-16 pr-16 text-lg text-white placeholder:text-white/20 outline-none"
+              renderLeading={() => (
+                <button
+                  suppressHydrationWarning
+                  type="button"
+                  onClick={() => { setMobileOpen(false); router.push('/p'); }}
+                  className="absolute left-2 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full text-white active:scale-90"
+                >
+                  <SlidersHorizontal size={20} />
+                </button>
+              )}
+              renderTrailing={() => (
+                <button
+                  type="submit"
+                  className="absolute right-2 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black"
+                >
+                  <ChevronRight size={24} strokeWidth={3} />
+                </button>
+              )}
+            />
           </form>
         </div>
       )}

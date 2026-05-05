@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/auth/supabase-browser'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 const providerButtons = [
   {
@@ -109,6 +110,7 @@ export default function UserLoginForm() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [rateLimitMessage, setRateLimitMessage] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
@@ -121,6 +123,16 @@ export default function UserLoginForm() {
     setShowPassword(false)
     setError('')
     setMessage('')
+    setRateLimitMessage('')
+  }
+
+  async function readJson(response) {
+    try {
+      const text = await response.text()
+      return text ? JSON.parse(text) : {}
+    } catch {
+      return {}
+    }
   }
 
   async function handleSubmit(event) {
@@ -128,6 +140,7 @@ export default function UserLoginForm() {
     setLoading(true)
     setError('')
     setMessage('')
+    setRateLimitMessage('')
 
     const formData = new FormData(event.currentTarget)
     const email = `${formData.get('email') || ''}`.trim()
@@ -135,12 +148,21 @@ export default function UserLoginForm() {
 
     try {
       if (mode === 'reset') {
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/update-password`,
+        const resetResponse = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'reset',
+            email,
+          }),
         })
 
-        if (resetError) {
-          throw resetError
+        const resetResult = await readJson(resetResponse)
+        if (!resetResponse.ok) {
+          if (resetResponse.status === 429) {
+            setRateLimitMessage('Password reset is temporarily rate-limited. Please wait a few minutes before trying again.')
+          }
+          throw new Error(resetResult.error || 'Could not start password reset.')
         }
 
         sessionStorage.setItem('verifyEmail', email)
@@ -149,36 +171,21 @@ export default function UserLoginForm() {
       }
 
       if (mode === 'signup') {
-        // Prevent sending OTP if account already exists
-        const checkResponse = await fetch('/api/auth/check-email', {
+        const signupResponse = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({
+            mode: 'signup',
+            email,
+          }),
         })
-        
-        if (checkResponse.ok) {
-          const { exists } = await checkResponse.json()
-          if (exists) {
-            setError('Email is already registered. Please log in to the already registered account.')
-            setLoading(false)
-            return
+
+        const signupResult = await readJson(signupResponse)
+        if (!signupResponse.ok) {
+          if (signupResponse.status === 429) {
+            setRateLimitMessage('OTP requests are temporarily rate-limited. Please wait before requesting another code.')
           }
-        }
-
-        // Reverting to signInWithOtp because signUp only sends an email if 'Confirm email'
-        // is enabled in the Supabase Dashboard. signInWithOtp forces the email out.
-        // NOTE: Supabase uses the "Magic Link" template for signInWithOtp. 
-        // To make it an OTP, the Magic Link template in Supabase must be edited.
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            shouldCreateUser: true,
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        })
-
-        if (otpError) {
-          throw otpError
+          throw new Error(signupResult.error || 'Could not send signup OTP.')
         }
 
         sessionStorage.setItem('verifyEmail', email)
@@ -186,17 +193,36 @@ export default function UserLoginForm() {
         return
       }
 
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const signInResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'signin',
+          email,
+          password,
+        }),
       })
 
-      if (signInError) {
-        throw signInError
+      const signInResult = await readJson(signInResponse)
+
+      if (!signInResponse.ok) {
+        if (signInResponse.status === 429) {
+          setRateLimitMessage('Too many login attempts. Please wait a few minutes before trying again.')
+        }
+        throw new Error(signInResult.error || 'Could not complete your login request.')
       }
 
-      if (data.session) {
-        await syncSession(data.session)
+      if (signInResult.session?.access_token && signInResult.session?.refresh_token) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: signInResult.session.access_token,
+          refresh_token: signInResult.session.refresh_token,
+        })
+
+        if (sessionError) {
+          throw sessionError
+        }
+
+        await syncSession(signInResult.session)
       }
 
       router.replace('/')
@@ -302,6 +328,12 @@ export default function UserLoginForm() {
           </div>
         )}
 
+        {rateLimitMessage && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {rateLimitMessage}
+          </div>
+        )}
+
         {message && (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
             {message}
@@ -315,7 +347,7 @@ export default function UserLoginForm() {
           className="interactive-button mt-3 inline-flex w-full items-center justify-center rounded-full bg-rose-600 px-6 py-3 text-sm font-semibold text-white hover:bg-rose-700 hover:shadow-[0_16px_36px_rgba(225,29,72,0.22)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading
-            ? 'Please wait...'
+            ? <LoadingSpinner size="sm" tone="light" label="Please wait..." />
             : isReset
               ? 'Send reset OTP'
               : isSignup
@@ -343,7 +375,7 @@ export default function UserLoginForm() {
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/10 text-base font-bold">
               {provider.symbol}
             </span>
-            <span>{provider.label}</span>
+            <span>{loading ? <LoadingSpinner size="sm" tone={provider.name === 'Google' ? 'dark' : 'light'} label="Connecting..." /> : provider.label}</span>
             <span className="w-9" />
           </button>
         ))}

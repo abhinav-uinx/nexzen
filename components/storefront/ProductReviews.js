@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton'
 
 import styles from './ProductReviews.module.css'
 
@@ -95,7 +97,28 @@ export default function ProductReviews({ productId, density = 'default' }) {
       </div>
 
       {loading ? (
-        <p className={styles.loading}>Loading reviews...</p>
+        <div className="space-y-4">
+          <div className="text-slate-500">
+            <LoadingSpinner tone="blue" label="Loading reviews..." />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {Array.from({ length: 2 }).map((_, index) => (
+              <div key={index} className="rounded-2xl border border-slate-100 bg-white p-5">
+                <div className="flex items-center gap-3">
+                  <LoadingSkeleton className="h-11 w-11 rounded-full" />
+                  <div className="space-y-2">
+                    <LoadingSkeleton className="h-4 w-28 rounded-full" />
+                    <LoadingSkeleton className="h-3 w-20 rounded-full" />
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  <LoadingSkeleton className="h-4 w-full rounded-full" />
+                  <LoadingSkeleton className="h-4 w-5/6 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       ) : reviews.length === 0 ? (
         <p className={styles.emptyState}>No reviews yet. Be the first to review this product!</p>
       ) : (
@@ -195,7 +218,7 @@ export default function ProductReviews({ productId, density = 'default' }) {
                   disabled={isSubmitting}
                   className={styles.submitBtn}
                 >
-                  {isSubmitting ? 'Submitting...' : 'Post Review'}
+                  {isSubmitting ? <LoadingSpinner size="sm" tone="light" label="Submitting..." /> : 'Post Review'}
                 </button>
               </div>
             </form>

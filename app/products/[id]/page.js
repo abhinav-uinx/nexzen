@@ -1,17 +1,24 @@
+import { cache } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import ProductCard from '@/components/storefront/ProductCard'
 import ProductActions from '@/components/storefront/ProductActions'
 import ProductReviews from '@/components/storefront/ProductReviews'
 import ImageGallery from '@/components/storefront/ImageGallery'
+import PincodeChecker from '@/components/storefront/PincodeChecker'
 import VariantSelector from '@/components/storefront/VariantSelector'
 import ProductAccordions from '@/components/storefront/ProductAccordions'
-import { getAllProducts, getProductByIdOrSlug } from '@/lib/catalog/products'
-import { MapPin, Truck, ShieldCheck, RefreshCcw } from 'lucide-react'
+import RecentlyViewedShelf from '@/components/storefront/RecentlyViewedShelf'
+import RecentlyViewedTracker from '@/components/storefront/RecentlyViewedTracker'
+import StockAlertButton from '@/components/storefront/StockAlertButton'
+import { getProductByIdOrSlug, getRelatedProductsByCategory } from '@/lib/catalog/products'
+import { Truck, ShieldCheck, RefreshCcw } from 'lucide-react'
+
+const getCachedProduct = cache(getProductByIdOrSlug)
 
 export async function generateMetadata({ params }) {
   const { id } = await params
-  const product = await getProductByIdOrSlug(id)
+  const product = await getCachedProduct(id)
   if (!product) return { title: 'Product not found' }
   return {
     title: `${product.name} | Nexzen`,
@@ -21,7 +28,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ProductDetailsPage({ params }) {
   const { id } = await params
-  const product = await getProductByIdOrSlug(id)
+  const product = await getCachedProduct(id)
 
   if (!product) {
     return (
@@ -34,14 +41,13 @@ export default async function ProductDetailsPage({ params }) {
     )
   }
 
-  const relatedProducts = (await getAllProducts())
-    .filter((item) => item.category === product.category && item.id !== product.id)
-    .slice(0, 4)
+  const relatedProducts = await getRelatedProductsByCategory(product.category, product.id, 4)
 
   const discount = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0
 
   return (
     <div className="bg-white min-h-screen pb-32 lg:pb-0 font-sans">
+      <RecentlyViewedTracker product={product} />
       <div className="mx-auto max-w-[1440px] px-6 py-10 lg:px-12 lg:py-20">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:items-start">
           
@@ -101,25 +107,10 @@ export default async function ProductDetailsPage({ params }) {
             {/* Selection Logic */}
             <VariantSelector flavours={product.flavours} sizes={product.sizes} />
 
-            {/* Pincode Check (Mock) */}
-            <div className="mt-12 overflow-hidden rounded-2xl bg-slate-50 border border-slate-100 p-1">
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h3 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-950">
-                  <MapPin size={14} className="text-slate-400" />
-                  Serviceability Check
-                </h3>
-                <div className="mt-6 flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="ENTER PINCODE" 
-                    className="flex-1 rounded-lg border-2 border-slate-100 bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-widest outline-none transition-all focus:border-slate-950 focus:bg-white"
-                    maxLength={6}
-                  />
-                  <button className="rounded-lg bg-slate-950 px-8 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-blue-700 active:scale-95 shadow-xl shadow-slate-950/10">
-                    CHECK
-                  </button>
-                </div>
-              </div>
+            <PincodeChecker />
+
+            <div className="mt-6">
+              <StockAlertButton product={product} />
             </div>
 
             {/* Main CTA */}
@@ -138,6 +129,46 @@ export default async function ProductDetailsPage({ params }) {
         </div>
 
         {/* Related Products */}
+        {product.dependencyProducts?.length > 0 && (
+          <div className="mt-24 rounded-[2rem] border border-slate-200 bg-slate-50 p-8">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-blue-700">Recommended extras</p>
+                <h2 className="mt-3 font-heading text-3xl font-semibold text-slate-950">Frequently paired with this build.</h2>
+              </div>
+              <p className="max-w-2xl text-sm leading-7 text-slate-600">
+                Accessory and dependency suggestions come from the admin inventory relationships, so bundles can match the actual hardware stack.
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              {product.dependencyProducts.map((item) => (
+                <Link
+                  key={`${item.id}-${item.quantity}`}
+                  href={`/p/${item.slug}`}
+                  className="group flex items-center gap-4 rounded-[1.5rem] border border-slate-200 bg-white p-4 transition hover:border-blue-200 hover:shadow-[0_14px_36px_rgba(37,99,235,0.08)]"
+                >
+                  <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-slate-100">
+                    {item.imageUrl ? (
+                      <Image src={item.imageUrl} alt={item.name} fill className="object-cover" sizes="80px" />
+                    ) : null}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-950 group-hover:text-blue-700">{item.name}</p>
+                      <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                        {item.isOptional ? 'Optional' : `Qty ${item.quantity}`}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{item.shortDescription || 'Useful companion hardware for this setup.'}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-950">Rs. {item.price.toLocaleString('en-IN')}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {relatedProducts.length > 0 && (
           <div className="mt-32">
             <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-950 decoration-blue-600 underline-offset-8">Complete the Setup</h2>
@@ -148,6 +179,8 @@ export default async function ProductDetailsPage({ params }) {
             </div>
           </div>
         )}
+
+        <RecentlyViewedShelf currentProductId={product.id} title="Continue where you left off" />
       </div>
 
       {/* Sticky Bottom Bar (Mobile Only) */}

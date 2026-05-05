@@ -1,7 +1,10 @@
+import Link from 'next/link'
+import ProductCard from '@/components/storefront/ProductCard'
 import { getAllCategories, getPaginatedProducts, getProductCount } from '@/lib/catalog/products'
 import { createSupabaseServerClient } from '@/lib/auth/supabase-server'
 import { getPrismaClient } from '@/lib/database/nexus-db'
 import Pagination from '@/components/storefront/Pagination'
+import RecentlyViewedShelf from '@/components/storefront/RecentlyViewedShelf'
 
 export default async function ProductsPage({ searchParams }) {
   const params = await searchParams
@@ -110,6 +113,10 @@ export default async function ProductsPage({ searchParams }) {
           baseUrl="/products" 
           queryParams={{ ...params }} 
         />
+
+        <div className="mt-12">
+          <RecentlyViewedShelf title="Products you checked recently" />
+        </div>
       </div>
     </section>
   )

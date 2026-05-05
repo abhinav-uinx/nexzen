@@ -2,10 +2,7 @@ import { cookies } from 'next/headers'
 import {
   authenticateAdmin,
   createAdminSession,
-  getAdminCookieName,
-  getAdminSessionMaxAge,
 } from '@/lib/admin/auth'
-import { getAllowedAdminIps } from '@/lib/admin/config'
 import {
   clearFailedLogins,
   getClientIpFromHeaders,
@@ -13,8 +10,12 @@ import {
   isIpAllowed,
   recordFailedLogin,
   recordLoginAttempt,
+  STEP_UP_AFTER_ATTEMPTS,
   wait,
 } from '@/lib/admin/security'
+import { createCsrfToken, setAdminSecurityCookies } from '@/lib/admin/request'
+import { getAllowedAdminIps } from '@/lib/admin/config'
+import { normalizeText } from '@/lib/security/validation'
 
 export async function handleAdminLogin(request) {
   try {
@@ -25,21 +26,26 @@ export async function handleAdminLogin(request) {
       return Response.json({ error: 'Not found.' }, { status: 404 })
     }
 
-    const rateKey = ip || 'unknown'
+    const body = await request.json()
+    const username = normalizeText(body?.username, 120)
+    const password = `${body?.password || ''}`
+    const rateKey = `${ip || 'unknown'}:${username.toLowerCase() || 'unknown'}`
     const rateState = getLoginRateLimitState(rateKey)
 
     if (!rateState.allowed) {
       return Response.json(
-        { error: 'Too many login attempts. Please try again later.' },
+        {
+          error: 'Too many login attempts. Please try OTP or reset your password.',
+          failedAttempts: rateState.failedAttempts,
+          remaining: rateState.remaining,
+          stepUpRequired: true,
+          stepUpThreshold: STEP_UP_AFTER_ATTEMPTS,
+        },
         { status: 429 }
       )
     }
 
     recordLoginAttempt(rateKey)
-
-    const body = await request.json()
-    const username = `${body?.username || ''}`.trim()
-    const password = `${body?.password || ''}`
 
     if (!username || !password) {
       return Response.json({ error: 'Username and password are required.' }, { status: 400 })
@@ -49,8 +55,18 @@ export async function handleAdminLogin(request) {
 
     if (!admin) {
       const delay = recordFailedLogin(rateKey)
+      const failedState = getLoginRateLimitState(rateKey)
       await wait(delay)
-      return Response.json({ error: 'Invalid admin credentials.' }, { status: 401 })
+      return Response.json(
+        {
+          error: 'Invalid admin credentials.',
+          failedAttempts: failedState.failedAttempts,
+          remaining: failedState.remaining,
+          stepUpRequired: failedState.stepUpRequired,
+          stepUpThreshold: STEP_UP_AFTER_ATTEMPTS,
+        },
+        { status: 401 }
+      )
     }
 
     clearFailedLogins(rateKey)
@@ -60,15 +76,9 @@ export async function handleAdminLogin(request) {
     })
 
     const cookieStore = await cookies()
-    cookieStore.set(getAdminCookieName(), session.token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-      maxAge: getAdminSessionMaxAge(),
-    })
+    setAdminSecurityCookies(cookieStore, session.token, createCsrfToken())
 
-    return Response.json({ ok: true })
+    return Response.json({ ok: true, stepUpThreshold: STEP_UP_AFTER_ATTEMPTS })
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Something went wrong during admin login.'

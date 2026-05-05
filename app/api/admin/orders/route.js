@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/database/nexus-db'
-import { getAdminSession, getAdminCookieName } from '@/lib/admin/auth'
-import { cookies } from 'next/headers'
+import { requireAdminRequest } from '@/lib/admin/request'
 
 export async function GET(request) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request)
+    if (auth.error) {
+      return auth.error
     }
 
     const { searchParams } = new URL(request.url)

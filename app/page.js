@@ -4,6 +4,8 @@ import HeroSlider from '@/components/storefront/HeroSlider'
 import ProductCard from '@/components/storefront/ProductCard'
 import DiscountedProducts from '@/components/storefront/DiscountedProducts'
 import ScrollReveal from '@/components/storefront/ScrollReveal'
+import RecentlyViewedShelf from '@/components/storefront/RecentlyViewedShelf'
+import TrustSignals from '@/components/storefront/TrustSignals'
 import { getAllProducts } from '@/lib/catalog/products'
 import { createSupabaseServerClient } from '@/lib/auth/supabase-server'
 import { getPrismaClient } from '@/lib/database/nexus-db'
@@ -91,6 +93,10 @@ export default async function HomePage() {
       </ScrollReveal>
 
       <ScrollReveal>
+        <TrustSignals />
+      </ScrollReveal>
+
+      <ScrollReveal>
         <section className="px-6 py-24 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-[1200px] rounded-[3.5rem] bg-white px-10 py-24 text-black shadow-[0_40px_120px_rgba(0,0,0,0.05)] sm:px-20 relative overflow-hidden">
             {/* Minimalist Decor */}
@@ -118,6 +124,14 @@ export default async function HomePage() {
                 />
               ))}
             </div>
+          </div>
+        </section>
+      </ScrollReveal>
+
+      <ScrollReveal>
+        <section className="px-6 pb-12 sm:px-8 lg:px-12">
+          <div className="mx-auto max-w-[1200px]">
+            <RecentlyViewedShelf title="Recently viewed builds" />
           </div>
         </section>
       </ScrollReveal>

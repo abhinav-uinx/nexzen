@@ -1,21 +1,51 @@
 import { NextResponse } from 'next/server'
 import { getRazorpay, getRazorpayConfig } from '@/lib/commerce/razorpay'
+import { getAppUserForRequest } from '@/lib/auth/user-session'
+import { getPrismaClient } from '@/lib/database/nexus-db'
+import { normalizeText } from '@/lib/security/validation'
 
 export async function POST(request) {
   try {
-    const body = await request.json()
-    const { amount, currency = 'INR', receipt } = body
+    const { appUser } = await getAppUserForRequest(request)
+    if (!appUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    if (!amount) {
-      return NextResponse.json({ error: 'Amount is required' }, { status: 400 })
+    const body = await request.json()
+    const orderId = normalizeText(body?.orderId, 64)
+    const currency = 'INR'
+
+    if (!orderId) {
+      return NextResponse.json({ error: 'Order ID is required' }, { status: 400 })
+    }
+
+    const prisma = getPrismaClient()
+    const orderRecord = await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        userId: appUser.id,
+      },
+      select: {
+        id: true,
+        total: true,
+        paymentStatus: true,
+      },
+    })
+
+    if (!orderRecord) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    }
+
+    if (orderRecord.paymentStatus === 'PAID') {
+      return NextResponse.json({ error: 'Order is already paid' }, { status: 400 })
     }
 
     const razorpay = getRazorpay()
     const currentKey = getRazorpayConfig().key_id
 
     // Razorpay expect amount in paise (multiply by 100)
-    const amountInPaise = Math.round(Number(amount) * 100)
-    const currencyCode = currency || 'INR'
+    const amountInPaise = Math.round(Number(orderRecord.total) * 100)
+    const currencyCode = currency
 
     // VALIDATION: Razorpay Live mode requires a minimum of Rs 1.00 (100 paise)
     if (amountInPaise < 100) {
@@ -28,10 +58,21 @@ export async function POST(request) {
     const options = {
       amount: amountInPaise,
       currency: currencyCode,
-      receipt: `receipt_${receipt || Date.now()}`,
+      receipt: `receipt_${orderRecord.id}`,
+      notes: {
+        appOrderId: orderRecord.id,
+        appUserId: appUser.id,
+      },
     }
 
     const order = await razorpay.orders.create(options)
+
+    await prisma.order.update({
+      where: { id: orderRecord.id },
+      data: {
+        razorpayOrderId: order.id,
+      },
+    })
     
     return NextResponse.json({
       id: order.id,

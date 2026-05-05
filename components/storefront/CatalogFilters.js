@@ -1,160 +1,131 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Search, SlidersHorizontal, X, ChevronRight, Zap } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 import PriceRangeSlider from './PriceRangeSlider'
-import Link from 'next/link'
 
-export default function CatalogFilters({ categories, brands, currentCategory }) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  
+export default function CatalogFilters({
+  availability = '',
+  minPrice = 0,
+  maxPrice = 25000,
+  onAvailabilityChange,
+  onPriceChange,
+  onClearAll,
+}) {
+  const containerRef = useRef(null)
   const [isOpen, setIsOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('query') || '')
-  
-  const selectedBrands = searchParams.get('brands')?.split(',') || []
-  const isIoT = searchParams.get('iot') === 'true'
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (availability) count += 1
+    if (minPrice > 0 || maxPrice < 25000) count += 1
+    return count
+  }, [availability, minPrice, maxPrice])
 
   useEffect(() => {
-    if (searchParams.get('filter') === 'open') {
-      setIsOpen(true)
+    function handleOutsideClick(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
     }
-  }, [searchParams])
 
-  function applyQuickFilter(key, value) {
-    const params = new URLSearchParams(window.location.search)
-    if (value) params.set(key, value)
-    else params.delete(key)
-    params.set('page', '1')
-    router.push(`${window.location.pathname}?${params.toString()}`)
-  }
-
-  function toggleBrand(brandName) {
-    const current = new Set(selectedBrands)
-    if (current.has(brandName)) current.delete(brandName)
-    else current.add(brandName)
-    
-    const brandsArr = Array.from(current)
-    applyQuickFilter('brands', brandsArr.length > 0 ? brandsArr.join(',') : null)
-  }
-
-  function handleSearch(e) {
-    if (e.key === 'Enter') {
-      applyQuickFilter('query', searchTerm)
-    }
-  }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [])
 
   return (
-    <div className="space-y-6">
-      {/* Top Search & Toggle Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 max-w-2xl items-center">
-          <div className="relative flex-1 group">
-            <button
-              suppressHydrationWarning
-              onClick={() => setIsOpen(!isOpen)}
-              className={`absolute left-1.5 top-1.5 z-10 flex h-[42px] w-[42px] items-center justify-center rounded-xl transition-all ${
-                isOpen ? 'text-blue-600' : 'text-slate-900 group-focus-within:text-blue-600'
-              }`}
-              title="Toggle Filters"
-            >
-              {isOpen ? <X size={18} /> : <SlidersHorizontal size={18} />}
-            </button>
-            <input
-              suppressHydrationWarning
-              type="text"
-              placeholder="Search catalog... (hit Enter)"
-              className="w-full rounded-2xl border border-slate-200 bg-white pl-14 pr-14 py-3.5 text-sm ring-blue-600/10 transition-all focus:border-blue-600 focus:outline-none focus:ring-4 placeholder:text-slate-400 shadow-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={handleSearch}
-            />
-            <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600 transition-colors">
-              <Search size={20} />
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className={`inline-flex h-11 items-center gap-3 rounded-xl border px-4 text-sm font-semibold transition-all ${
+          isOpen || activeFilterCount > 0
+            ? 'border-blue-600 bg-blue-50 text-blue-700'
+            : 'border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50'
+        }`}
+      >
+        <SlidersHorizontal size={16} />
+        Filters
+        {activeFilterCount > 0 ? (
+          <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+            {activeFilterCount}
+          </span>
+        ) : null}
+        <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen ? (
+        <div className="absolute left-0 top-[calc(100%+0.75rem)] z-40 w-[min(92vw,26rem)] rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_20px_60px_rgba(15,23,42,0.14)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Refine Results</p>
+              <h3 className="mt-2 text-base font-semibold text-slate-950">Filter products</h3>
             </div>
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-           <button
-             suppressHydrationWarning
-             onClick={() => applyQuickFilter('iot', !isIoT ? 'true' : null)}
-             className={`flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-bold transition-all ${
-               isIoT 
-                ? 'border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-200' 
-                : 'border-slate-200 bg-white text-slate-600 hover:border-blue-600 hover:text-blue-600'
-             }`}
-           >
-             <Zap size={16} fill={isIoT ? 'currentColor' : 'none'} />
-             <span>IoT Selection</span>
-           </button>
-        </div>
-      </div>
-
-      {/* Expandable Filter Panel */}
-      {isOpen && (
-        <div className="grid gap-8 rounded-[2rem] border border-slate-100 bg-slate-50/50 p-8 animate-apple-fade lg:grid-cols-3">
-          {/* Categories */}
-          <div className="space-y-4">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Categories</p>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/p"
-                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                  !currentCategory 
-                    ? 'bg-slate-950 text-white shadow-lg' 
-                    : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-950'
-                }`}
+            {activeFilterCount > 0 ? (
+              <button
+                type="button"
+                onClick={onClearAll}
+                className="text-xs font-semibold text-slate-500 hover:text-slate-900"
               >
-                All Gear
-              </Link>
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/p?category=${cat.slug}`}
-                  className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                    currentCategory === cat.slug 
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
-                      : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-600'
-                  }`}
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
+                Clear all
+              </button>
+            ) : null}
           </div>
 
-          {/* Brands */}
-          <div className="space-y-4">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Manufacturers</p>
-            <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto scrollbar-thin pr-2">
-              {brands.map((brand) => (
+          <div className="mt-5 space-y-6">
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Availability</p>
+              <div className="flex flex-wrap gap-2">
                 <button
-                  key={brand}
-                  onClick={() => toggleBrand(brand)}
-                  className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                    selectedBrands.includes(brand)
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' 
-                      : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-600 hover:text-emerald-600'
+                  type="button"
+                  onClick={() => onAvailabilityChange?.('')}
+                  className={`rounded-lg px-3.5 py-2 text-xs font-semibold transition-all ${
+                    !availability
+                      ? 'bg-slate-950 text-white'
+                      : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                   }`}
                 >
-                  {brand}
+                  All
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => onAvailabilityChange?.('in-stock')}
+                  className={`rounded-lg px-3.5 py-2 text-xs font-semibold transition-all ${
+                    availability === 'in-stock'
+                      ? 'bg-blue-600 text-white'
+                      : 'border border-slate-200 bg-white text-slate-600 hover:border-blue-300'
+                  }`}
+                >
+                  In stock
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onAvailabilityChange?.('out-of-stock')}
+                  className={`rounded-lg px-3.5 py-2 text-xs font-semibold transition-all ${
+                    availability === 'out-of-stock'
+                      ? 'bg-blue-600 text-white'
+                      : 'border border-slate-200 bg-white text-slate-600 hover:border-blue-300'
+                  }`}
+                >
+                  Out of stock
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Price Range */}
-          <div className="space-y-4">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Budget Range (₹)</p>
-            <PriceRangeSlider min={0} max={25000} step={500} />
-            <p className="text-[10px] text-slate-400 leading-relaxed italic mt-2">
-              Prices represent current retail value in India. All taxes inclusive.
-            </p>
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Price</p>
+              <PriceRangeSlider
+                min={0}
+                max={25000}
+                step={500}
+                compact
+                value={{ min: minPrice, max: maxPrice }}
+                onChange={onPriceChange}
+              />
+            </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

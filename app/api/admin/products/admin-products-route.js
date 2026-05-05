@@ -1,11 +1,11 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { cookies } from 'next/headers'
-import { getAllowedAdminIps } from '@/lib/admin/config'
-import { getAdminCookieName, getAdminSession } from '@/lib/admin/auth'
-import { getClientIpFromHeaders, isIpAllowed } from '@/lib/admin/security'
+import { requireAdminRequest } from '@/lib/admin/request'
+import { notifyProductBackInStock } from '@/lib/commerce/stock-alerts'
 import { prisma } from '@/lib/database/nexus-db'
+import { isSafeRelativeAssetPath, isValidHttpsUrl, normalizeDecimal, normalizeInteger, normalizeMultilineText, normalizeText, parseCsvValues } from '@/lib/security/validation'
+import { validateImageFile } from '@/lib/security/upload'
 
 function slugify(value) {
   return value
@@ -15,55 +15,17 @@ function slugify(value) {
     .replace(/^-+|-+$/g, '')
 }
 
-function parseDecimal(value) {
-  if (!value) {
-    return null
-  }
-
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
-
-function parseInteger(value, fallback = 0) {
-  const parsed = Number.parseInt(value, 10)
-  return Number.isFinite(parsed) ? parsed : fallback
-}
-
-async function requireAdminSession(request) {
-  const ip = getClientIpFromHeaders(request.headers)
-  const allowedIps = getAllowedAdminIps()
-
-  if (!isIpAllowed(ip, allowedIps)) {
-    return {
-      error: Response.json({ error: 'Not found.' }, { status: 404 }),
-      ip,
-    }
-  }
-
-  const cookieStore = await cookies()
-  const sessionToken = cookieStore.get(getAdminCookieName())?.value
-  const session = await getAdminSession(sessionToken)
-
-  if (!session) {
-    return {
-      error: Response.json({ error: 'Unauthorized.' }, { status: 401 }),
-      ip,
-    }
-  }
-
-  return { session, ip }
-}
-
 async function saveUploadedImage(image, slug) {
-  if (!image || typeof image !== 'object' || image.size <= 0) {
+  const validated = validateImageFile(image)
+
+  if (!validated) {
     return null
   }
 
   const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
   await mkdir(uploadsDir, { recursive: true })
 
-  const ext = path.extname(image.name) || '.png'
-  const fileName = `${slug}-${randomUUID()}${ext}`
+  const fileName = `${slug}-${randomUUID()}${validated.extension}`
   const filePath = path.join(uploadsDir, fileName)
   const arrayBuffer = await image.arrayBuffer()
 
@@ -73,11 +35,13 @@ async function saveUploadedImage(image, slug) {
 
 async function buildMetadata(formData, slug) {
   // 1. Process manually entered URLs
-  const manualGallery = `${formData.get('galleryUrls') || ''}`.split(',').map(s => s.trim()).filter(Boolean)
+  const manualGallery = parseCsvValues(formData.get('galleryUrls'), 10).filter(
+    (value) => isValidHttpsUrl(value) || isSafeRelativeAssetPath(value)
+  )
   
   // 2. Process uploaded gallery files
   const uploadedGallery = []
-  const galleryFiles = formData.getAll('gallery')
+  const galleryFiles = formData.getAll('gallery').slice(0, 10)
   for (const file of galleryFiles) {
     const url = await saveUploadedImage(file, `${slug}-gallery`)
     if (url) uploadedGallery.push(url)
@@ -85,15 +49,15 @@ async function buildMetadata(formData, slug) {
 
   const gallery = [...manualGallery, ...uploadedGallery]
   
-  const flavours = `${formData.get('variants') || formData.get('flavours') || ''}`.split(',').map(s => s.trim()).filter(Boolean)
-  const sizes = `${formData.get('configs') || formData.get('sizes') || ''}`.split(',').map(s => {
+  const flavours = parseCsvValues(formData.get('variants') || formData.get('flavours'), 12)
+  const sizes = parseCsvValues(formData.get('configs') || formData.get('sizes'), 12).map(s => {
     const label = s.trim()
     return label ? { label } : null
   }).filter(Boolean)
   
   const details = []
-  const benefit = `${formData.get('featureContent') || formData.get('benefitContent') || ''}`.trim()
-  const usage = `${formData.get('technicalContent') || formData.get('usageContent') || ''}`.trim()
+  const benefit = normalizeMultilineText(formData.get('featureContent') || formData.get('benefitContent'), 1200)
+  const usage = normalizeMultilineText(formData.get('technicalContent') || formData.get('usageContent'), 1200)
   
   if (benefit) details.push({ title: 'Technical Highlights', content: benefit })
   if (usage) details.push({ title: 'Usage & Setup Guide', content: usage })
@@ -118,15 +82,15 @@ async function buildMetadata(formData, slug) {
 }
 
 async function buildProductData(formData, imageUrl, fallbackImageUrl = null) {
-  const name = `${formData.get('name') || ''}`.trim()
-  const sku = `${formData.get('sku') || ''}`.trim().toUpperCase()
-  const categoryId = `${formData.get('categoryId') || ''}`.trim()
-  const description = `${formData.get('description') || ''}`.trim()
-  const status = `${formData.get('status') || 'ACTIVE'}`.trim().toUpperCase()
-  const barcode = `${formData.get('barcode') || ''}`.trim()
+  const name = normalizeText(formData.get('name'), 160)
+  const sku = normalizeText(formData.get('sku'), 64).toUpperCase()
+  const categoryId = normalizeText(formData.get('categoryId'), 64)
+  const description = normalizeMultilineText(formData.get('description'), 4000)
+  const status = normalizeText(formData.get('status') || 'ACTIVE', 16).toUpperCase()
+  const barcode = normalizeText(formData.get('barcode'), 64)
   const requiresShipping = formData.get('requiresShipping') === 'on'
   const trackInventory = formData.get('trackInventory') === 'on'
-  const stockQuantity = parseInteger(`${formData.get('stockQuantity') || ''}`, 0)
+  const stockQuantity = normalizeInteger(formData.get('stockQuantity'), { min: 0, max: 100000, fallback: 0 })
   const slug = slugify(name)
 
   return {
@@ -137,29 +101,26 @@ async function buildProductData(formData, imageUrl, fallbackImageUrl = null) {
     categoryId,
     description,
     stockQuantity,
-    dependencyTokens: `${formData.get('dependencies') || ''}`
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean),
+    dependencyTokens: parseCsvValues(formData.get('dependencies'), 20),
     data: {
       sku,
       name,
       slug,
       description,
-      shortDescription: `${formData.get('shortDescription') || ''}`.trim() || null,
-      price: parseDecimal(`${formData.get('price') || ''}`) || 0,
-      compareAtPrice: parseDecimal(`${formData.get('compareAtPrice') || ''}`),
-      costPrice: parseDecimal(`${formData.get('costPrice') || ''}`),
+      shortDescription: normalizeMultilineText(formData.get('shortDescription'), 500) || null,
+      price: normalizeDecimal(formData.get('price'), { min: 0, max: 10000000, fallback: 0 }),
+      compareAtPrice: formData.get('compareAtPrice') ? normalizeDecimal(formData.get('compareAtPrice'), { min: 0, max: 10000000, fallback: 0 }) : null,
+      costPrice: formData.get('costPrice') ? normalizeDecimal(formData.get('costPrice'), { min: 0, max: 10000000, fallback: 0 }) : null,
       imageUrl: imageUrl || fallbackImageUrl || null,
       barcode: barcode || null,
-      brandId: `${formData.get('brandId') || ''}`.trim() || null,
-      brand: `${formData.get('brandName') || formData.get('brand') || ''}`.trim() || null,
+      brandId: normalizeText(formData.get('brandId'), 64) || null,
+      brand: normalizeText(formData.get('brandName') || formData.get('brand'), 120) || null,
       stockQuantity,
-      lowStockThreshold: parseInteger(`${formData.get('lowStockThreshold') || ''}`, 5),
+      lowStockThreshold: normalizeInteger(formData.get('lowStockThreshold'), { min: 0, max: 100000, fallback: 5 }),
       inStock: stockQuantity > 0,
       status: ['ACTIVE', 'DRAFT', 'ARCHIVED'].includes(status) ? status : 'ACTIVE',
-      weightGrams: parseInteger(`${formData.get('weightGrams') || ''}`, -1) >= 0
-        ? parseInteger(`${formData.get('weightGrams') || ''}`, 0)
+      weightGrams: normalizeInteger(formData.get('weightGrams'), { min: -1, max: 1000000, fallback: -1 }) >= 0
+        ? normalizeInteger(formData.get('weightGrams'), { min: 0, max: 1000000, fallback: 0 })
         : null,
       requiresShipping,
       trackInventory,
@@ -234,7 +195,7 @@ async function ensureUniqueSlug(baseSlug, productId = null) {
 
 export async function handleCreateAdminProduct(request) {
   try {
-    const auth = await requireAdminSession(request)
+    const auth = await requireAdminRequest(request, { csrf: true })
     if (auth.error) {
       return auth.error
     }
@@ -305,7 +266,7 @@ export async function handleCreateAdminProduct(request) {
 
 export async function handleUpdateAdminProduct(request) {
   try {
-    const auth = await requireAdminSession(request)
+    const auth = await requireAdminRequest(request, { csrf: true })
     if (auth.error) {
       return auth.error
     }
@@ -362,6 +323,16 @@ export async function handleUpdateAdminProduct(request) {
       })
     }
 
+    const restocked =
+      (existingProduct.stockQuantity <= 0 || !existingProduct.inStock) &&
+      (payload.stockQuantity > 0 || payload.data.inStock)
+
+    if (restocked) {
+      notifyProductBackInStock(product.id).catch((error) => {
+        console.error('Failed to process stock alerts', error)
+      })
+    }
+
     await syncDependencies(product.id, payload.dependencyTokens)
 
     return Response.json({
@@ -395,7 +366,7 @@ export async function handleUpdateAdminProduct(request) {
 
 export async function handleDeleteAdminProduct(request) {
   try {
-    const auth = await requireAdminSession(request)
+    const auth = await requireAdminRequest(request, { csrf: true })
     if (auth.error) {
       return auth.error
     }

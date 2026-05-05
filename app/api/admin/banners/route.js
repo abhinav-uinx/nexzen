@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/database/nexus-db'
-import { getAdminSession, getAdminCookieName } from '@/lib/admin/auth'
-import { cookies } from 'next/headers'
 import { createSupabaseServerClient } from '@/lib/auth/supabase-server'
+import { requireAdminRequest } from '@/lib/admin/request'
+import { validateImageFile } from '@/lib/security/upload'
+import { isValidHttpsUrl, normalizeInteger, normalizeText } from '@/lib/security/validation'
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request)
+    if (auth.error) {
+      return auth.error
     }
 
     const banners = await prisma.banner.findMany({
@@ -27,35 +25,35 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const formData = await request.formData()
-    const title = formData.get('title')
-    const subtitle = formData.get('subtitle')
-    const eyebrow = formData.get('eyebrow')
-    const metric = formData.get('metric')
-    const ctaText = formData.get('ctaText')
-    const secondaryCtaText = formData.get('secondaryCtaText')
-    const secondaryHref = formData.get('secondaryHref')
-    const accent = formData.get('accent')
-    const link = formData.get('link')
-    const order = parseInt(formData.get('order') || '0', 10)
+    const title = normalizeText(formData.get('title'), 160)
+    const subtitle = normalizeText(formData.get('subtitle'), 300)
+    const eyebrow = normalizeText(formData.get('eyebrow'), 80)
+    const metric = normalizeText(formData.get('metric'), 80)
+    const ctaText = normalizeText(formData.get('ctaText'), 60)
+    const secondaryCtaText = normalizeText(formData.get('secondaryCtaText'), 60)
+    const secondaryHref = normalizeText(formData.get('secondaryHref'), 500)
+    const accent = normalizeText(formData.get('accent'), 200)
+    const link = normalizeText(formData.get('link'), 500)
+    const order = normalizeInteger(formData.get('order'), { min: 0, max: 1000, fallback: 0 })
     const imageFile = formData.get('image')
 
     if (!title || !imageFile) {
       return NextResponse.json({ error: 'Title and image are required' }, { status: 400 })
     }
+    if ((secondaryHref && !isValidHttpsUrl(secondaryHref) && !secondaryHref.startsWith('/')) || (link && !isValidHttpsUrl(link) && !link.startsWith('/'))) {
+      return NextResponse.json({ error: 'Banner links must be https URLs or relative paths.' }, { status: 400 })
+    }
+    const validatedImage = validateImageFile(imageFile, { required: true })
 
     // 1. Upload to Supabase Storage
     const supabase = createSupabaseServerClient()
-    const fileExt = imageFile.name.split('.').pop()
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}${validatedImage.extension}`
     const filePath = `banners/${fileName}`
 
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -99,30 +97,30 @@ export async function POST(request) {
 
 export async function PATCH(request) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const formData = await request.formData()
-    const id = formData.get('id')
-    const title = formData.get('title')
-    const subtitle = formData.get('subtitle')
-    const eyebrow = formData.get('eyebrow')
-    const metric = formData.get('metric')
-    const ctaText = formData.get('ctaText')
-    const secondaryCtaText = formData.get('secondaryCtaText')
-    const secondaryHref = formData.get('secondaryHref')
-    const accent = formData.get('accent')
-    const link = formData.get('link')
-    const order = parseInt(formData.get('order') || '0', 10)
+    const id = normalizeText(formData.get('id'), 64)
+    const title = normalizeText(formData.get('title'), 160)
+    const subtitle = normalizeText(formData.get('subtitle'), 300)
+    const eyebrow = normalizeText(formData.get('eyebrow'), 80)
+    const metric = normalizeText(formData.get('metric'), 80)
+    const ctaText = normalizeText(formData.get('ctaText'), 60)
+    const secondaryCtaText = normalizeText(formData.get('secondaryCtaText'), 60)
+    const secondaryHref = normalizeText(formData.get('secondaryHref'), 500)
+    const accent = normalizeText(formData.get('accent'), 200)
+    const link = normalizeText(formData.get('link'), 500)
+    const order = normalizeInteger(formData.get('order'), { min: 0, max: 1000, fallback: 0 })
     const imageFile = formData.get('image')
 
     if (!id || !title) {
       return NextResponse.json({ error: 'ID and title are required' }, { status: 400 })
+    }
+    if ((secondaryHref && !isValidHttpsUrl(secondaryHref) && !secondaryHref.startsWith('/')) || (link && !isValidHttpsUrl(link) && !link.startsWith('/'))) {
+      return NextResponse.json({ error: 'Banner links must be https URLs or relative paths.' }, { status: 400 })
     }
 
     const updateData = {
@@ -141,8 +139,8 @@ export async function PATCH(request) {
     // Handle optional image upload
     if (imageFile && typeof imageFile === 'object' && imageFile.size > 0) {
       const supabase = createSupabaseServerClient()
-      const fileExt = imageFile.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+      const validatedImage = validateImageFile(imageFile, { required: true })
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}${validatedImage.extension}`
       const filePath = `banners/${fileName}`
 
       const { error: uploadError } = await supabase.storage
@@ -175,12 +173,9 @@ export async function PATCH(request) {
 
 export async function DELETE(request) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const { id } = await request.json()

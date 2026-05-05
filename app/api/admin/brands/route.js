@@ -1,9 +1,14 @@
 import { prisma } from '@/lib/database/nexus-db'
-import { cookies } from 'next/headers'
-import { getAdminCookieName, getAdminSession } from '@/lib/admin/auth'
+import { requireAdminRequest } from '@/lib/admin/request'
+import { isSafeRelativeAssetPath, isValidHttpsUrl, normalizeMultilineText, normalizeText } from '@/lib/security/validation'
 
 export async function GET(request) {
   try {
+    const auth = await requireAdminRequest(request)
+    if (auth.error) {
+      return auth.error
+    }
+
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('query')
 
@@ -24,28 +29,31 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const cookieStore = await cookies()
-    const sessionToken = cookieStore.get(getAdminCookieName())?.value
-    const session = await getAdminSession(sessionToken)
-
-    if (!session) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await requireAdminRequest(request, { csrf: true })
+    if (auth.error) {
+      return auth.error
     }
 
     const { name, description, logoUrl } = await request.json()
+    const normalizedName = normalizeText(name, 120)
+    const normalizedLogoUrl = normalizeText(logoUrl, 500)
 
-    if (!name) {
+    if (!normalizedName) {
       return Response.json({ error: 'Brand name is required' }, { status: 400 })
     }
 
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+    if (normalizedLogoUrl && !isValidHttpsUrl(normalizedLogoUrl) && !isSafeRelativeAssetPath(normalizedLogoUrl)) {
+      return Response.json({ error: 'Logo URL must be https or a local asset path.' }, { status: 400 })
+    }
+
+    const slug = normalizedName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
     const brand = await prisma.brand.create({
       data: {
-        name,
+        name: normalizedName,
         slug,
-        description,
-        logoUrl
+        description: normalizeMultilineText(description, 1000) || null,
+        logoUrl: normalizedLogoUrl || null
       }
     })
 

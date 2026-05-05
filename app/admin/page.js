@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import AdminLanding from '@/components/admin/AdminLanding'
+import { getAdminDashboardAnalytics } from '@/lib/admin/analytics'
 import { getAdminCookieName, getAdminSession } from '@/lib/admin/auth'
 import { getAdminBasePath } from '@/lib/admin/config'
 import { getAllCategories } from '@/lib/catalog/products'
@@ -24,7 +25,7 @@ export default async function AdminDashboardPage() {
     redirect(`${adminBasePath}/login`)
   }
 
-  const [categories, productCount, categoryCount, stockSnapshot, recentProducts, brandRows] = await Promise.all([
+  const [categories, productCount, categoryCount, stockSnapshot, recentProducts, brandRows, analytics] = await Promise.all([
     getAllCategories(),
     prisma.product.count(),
     prisma.category.count(),
@@ -57,6 +58,7 @@ export default async function AdminDashboardPage() {
         brand: 'asc',
       },
     }),
+    getAdminDashboardAnalytics(),
   ])
 
   const lowStockCount = stockSnapshot.filter(
@@ -74,6 +76,7 @@ export default async function AdminDashboardPage() {
         categories: categoryCount,
         lowStock: lowStockCount,
       }}
+      analytics={analytics}
       recentProducts={recentProducts}
     />
   )

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/database/nexus-db'
 import { createSupabaseServerClient } from '@/lib/auth/supabase-server'
 import { syncAuthenticatedUser } from '@/lib/auth/user-auth'
+import { normalizeInteger, normalizeText } from '@/lib/security/validation'
 
 function getBearerToken(request) {
   const authorization = request.headers.get('authorization') || ''
@@ -97,6 +98,22 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
+    const normalizedItems = cartItems
+      .map((item) => ({
+        productId: normalizeText(item?.id, 64),
+        quantity: normalizeInteger(item?.quantity, { min: 1, max: 25, fallback: 1 }),
+      }))
+      .filter((item) => item.productId)
+
+    const productIds = [...new Set(normalizedItems.map((item) => item.productId))]
+    const validProducts = await prisma.product.findMany({
+      where: {
+        id: { in: productIds },
+      },
+      select: { id: true },
+    })
+    const validIds = new Set(validProducts.map((product) => product.id))
+
     let cart = await prisma.cart.findUnique({
       where: { userId: dbUser.id }
     })
@@ -118,10 +135,12 @@ export async function POST(request) {
 
     if (cartItems.length > 0) {
       await prisma.cartItem.createMany({
-        data: cartItems.map(item => ({
+        data: normalizedItems
+          .filter((item) => validIds.has(item.productId))
+          .map(item => ({
           cartId: cart.id,
-          productId: item.id,
-          quantity: item.quantity || 1,
+          productId: item.productId,
+          quantity: item.quantity,
           userName: dbUser.name || '',
           userEmail: dbUser.email,
         }))

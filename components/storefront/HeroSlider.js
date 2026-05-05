@@ -4,7 +4,9 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function HeroSlider() {
   const [banners, setBanners] = useState([])
@@ -13,6 +15,7 @@ export default function HeroSlider() {
   const [loading, setLoading] = useState(true)
   const [direction, setDirection] = useState(0)
   const lastScrollTime = useRef(0)
+  const dragOffset = useRef(0)
 
   const fetchBanners = useCallback(async () => {
     try {
@@ -63,10 +66,40 @@ export default function HeroSlider() {
     }
   }
 
+  const handleDragEnd = (_, info) => {
+    const offsetX = info?.offset?.x || 0
+    const velocityX = info?.velocity?.x || 0
+    const travel = Math.abs(offsetX)
+    const speed = Math.abs(velocityX)
+
+    if (travel < 60 && speed < 450) {
+      return
+    }
+
+    if (offsetX < 0 || velocityX < -450) {
+      paginate(1)
+      return
+    }
+
+    if (offsetX > 0 || velocityX > 450) {
+      paginate(-1)
+    }
+  }
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-[1440px] px-6 py-6 transition-all duration-1000">
-        <div className="aspect-[21/9] w-full animate-pulse rounded-[2.5rem] bg-black/5" />
+      <div className="mx-auto max-w-[1440px] px-6 py-6 transition-all duration-1000 loading-fade-in">
+        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-6">
+          <LoadingSkeleton className="absolute inset-0 rounded-[2.5rem]" />
+          <div className="relative z-10 flex h-full flex-col justify-end gap-5">
+            <LoadingSpinner tone="light" label="Loading featured banners" className="text-sm font-medium text-white" />
+            <div className="max-w-xl space-y-3">
+              <LoadingSkeleton className="h-4 w-28 rounded-full" />
+              <LoadingSkeleton className="h-12 w-full max-w-lg rounded-2xl" />
+              <LoadingSkeleton className="h-5 w-3/4 rounded-full" />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -93,6 +126,14 @@ export default function HeroSlider() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
             className="absolute inset-0"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.08}
+            onDragStart={() => {
+              dragOffset.current = 0
+              setIsPaused(true)
+            }}
+            onDragEnd={handleDragEnd}
           >
             {/* Image Background */}
             <div className="absolute inset-0">
@@ -108,7 +149,7 @@ export default function HeroSlider() {
 
             {/* Content Overlay */}
             <div className="relative h-full flex flex-col items-center justify-center p-8 text-center sm:p-16 lg:p-24 bg-gradient-to-t from-black/80 via-black/20 to-transparent">
-              <div className="max-w-3xl">
+              <div className="max-w-3xl pb-14 sm:pb-16">
                 {slide.eyebrow && (
                   <motion.p 
                     initial={{ opacity: 0, y: 10 }}
@@ -162,39 +203,35 @@ export default function HeroSlider() {
                   )}
                 </motion.div>
               </div>
+
+              {banners.length > 1 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.8 }}
+                  className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center gap-2.5 sm:bottom-10"
+                >
+                  {banners.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setDirection(idx > current ? 1 : -1)
+                        setCurrent(idx)
+                      }}
+                      className={`rounded-full transition-all duration-500 ease-out ${
+                        idx === current ? 'h-2 w-10 bg-white' : 'h-2 w-2 bg-white/35 hover:bg-white/55'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </motion.div>
+              )}
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Arrows */}
-        <button
-          onClick={() => paginate(-1)}
-          className="absolute left-6 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-black/10 text-white opacity-0 backdrop-blur-md transition-all hover:bg-black/30 group-hover:opacity-100"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <button
-          onClick={() => paginate(1)}
-          className="absolute right-6 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-black/10 text-white opacity-0 backdrop-blur-md transition-all hover:bg-black/30 group-hover:opacity-100"
-        >
-          <ChevronRight size={24} />
-        </button>
-
-        {/* Progress Navigation (Dots) */}
-        {banners.length > 1 && (
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2.5 z-20">
-            {banners.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrent(idx)}
-                className={`h-2 rounded-full transition-all duration-500 ease-out ${idx === current ? 'w-10 bg-white' : 'w-2 bg-white/30 hover:bg-white/50'}`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </section>
   )
 }
-
